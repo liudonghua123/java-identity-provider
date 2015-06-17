@@ -38,6 +38,7 @@ import net.shibboleth.idp.attribute.resolver.DataConnector;
 import net.shibboleth.idp.attribute.resolver.LegacyPrincipalDecoder;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
 import net.shibboleth.idp.attribute.resolver.ResolvedAttributeDefinition;
+import net.shibboleth.idp.attribute.resolver.ResolvedDataConnector;
 import net.shibboleth.idp.attribute.resolver.ResolverPlugin;
 import net.shibboleth.idp.attribute.resolver.ResolverPluginDependency;
 import net.shibboleth.idp.attribute.resolver.context.AttributeResolutionContext;
@@ -315,7 +316,14 @@ public class AttributeResolverImpl extends AbstractServiceableComponent<Attribut
                         + " connector '{}'.  Reason for failure:", logPrefix, connectorId,
                         failoverDataConnectorId, e);
                 resolveDataConnector(failoverDataConnectorId, resolutionContext);
-                return;
+                
+                final ResolvedDataConnector resolvedFailoverConector =
+                        workContext.getResolvedDataConnectors().get(failoverDataConnectorId);
+                if (null == resolvedFailoverConector) {
+                    throw new ResolutionException("The resolution of failover conector" + failoverDataConnectorId
+                            + " was not recorded");
+                }
+                resolvedAttributes = resolvedFailoverConector.getResolvedAttributes();
             } else {
                 // Pass it on. Do not look at propagateException because this is handled in the
                 // connector code logic.

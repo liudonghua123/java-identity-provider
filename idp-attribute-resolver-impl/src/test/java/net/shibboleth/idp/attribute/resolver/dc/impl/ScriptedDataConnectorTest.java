@@ -33,6 +33,7 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.scripting.EvaluableScript;
 
+import org.opensaml.profile.context.ProfileRequestContext;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -57,7 +58,8 @@ public class ScriptedDataConnectorTest {
         return StringSupport.inputStreamToString(getClass().getResourceAsStream(name), null);
     }
 
-    @Test public void simple() throws ComponentInitializationException, ResolutionException, ScriptException, IOException {
+    @Test public void simple() throws ComponentInitializationException, ResolutionException, ScriptException,
+            IOException {
 
         final ScriptedDataConnector connector = new ScriptedDataConnector();
         connector.setId("Scripted");
@@ -66,12 +68,13 @@ public class ScriptedDataConnectorTest {
 
         connector.initialize();
 
-        final AttributeResolutionContext context = new AttributeResolutionContext();
+        final AttributeResolutionContext context =
+                new ProfileRequestContext<>().getSubcontext(AttributeResolutionContext.class, true);
         context.getSubcontext(AttributeResolverWorkContext.class, true);
         final Map<String, IdPAttribute> result = connector.resolve(context);
 
-        Assert.assertEquals(result.size(), 2);
-        
+        Assert.assertEquals(result.size(), 3);
+
         List<IdPAttributeValue<?>> values = result.get("ScriptedOne").getValues();
         Assert.assertEquals(values.size(), 2);
         Assert.assertTrue(values.contains(new StringAttributeValue("Value 1")));
@@ -82,6 +85,10 @@ public class ScriptedDataConnectorTest {
         Assert.assertTrue(values.contains(new StringAttributeValue("1Value")));
         Assert.assertTrue(values.contains(new StringAttributeValue("2Value")));
         Assert.assertTrue(values.contains(new StringAttributeValue("3Value")));
+        
+        values = result.get("ThreeScripted").getValues();
+        Assert.assertEquals(values.size(), 1);
+        Assert.assertTrue(values.contains(new StringAttributeValue(AttributeResolutionContext.class.getSimpleName())));
     }
 
 }

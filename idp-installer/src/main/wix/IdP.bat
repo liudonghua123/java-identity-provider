@@ -94,6 +94,9 @@ for /D %%X in (*) do set idpex=%%X
 rem we do not want to populate conf/flows/view/messages
 rem we will populate them from the dist directory
 
+rename %idpex% TheIdp
+set idpex=TheIdp
+
 rd/s/q %idpex%\conf
 if ERRORLEVEL 1 (
   cd ..

@@ -119,14 +119,18 @@ if ERRORLEVEL 1 (
   goto done;
 )
 
-rem we Want to call embedded/jetty-base jetty-base
-move %idpex%\embedded\jetty-base %idpex%\jetty-base
+rem The file names gets too big....
+rename %idpex% IdPEx
+set idpex=IdPEx
+
+rem we Want to call embedded/jetty-base-9.3 jetty-base
+move %idpex%\embedded\jetty-base-9.3 %idpex%\jetty-base
 if ERRORLEVEL 1 (
   cd ..
-  echo embedded/jetty-base directory not found?
+  echo embedded/jetty-base-9.3 directory not found?
   goto done;
 )
-rd embedded
+rd /s /q %idpex%\embedded
 
 rem We want to call jetty-base/start.d jetty-base/start.d.dist
 

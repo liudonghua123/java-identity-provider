@@ -46,6 +46,7 @@
                         <Permission User="Administrators" GenericAll="yes" />
                         <Permission User="SYSTEM" GenericAll="yes" />
                         <MultiStringValue>-Didp.home=[JAVA_IDP_HOME]</MultiStringValue>
+                        <MultiStringValue>-Djava.io.tmpdir=[JAVA_IDP_HOME]/jetty-base/tmp</MultiStringValue>
                     </RegistryValue>
                     <RegistryValue Name="JvmMx" Value="[JAVA_JVMMX]" Type="string">
                         <!-- Its an integer, but we added the # -->

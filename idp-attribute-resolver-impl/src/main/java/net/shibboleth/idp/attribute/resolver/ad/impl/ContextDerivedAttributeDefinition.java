@@ -95,6 +95,10 @@ public class ContextDerivedAttributeDefinition extends AbstractAttributeDefiniti
         final ProfileRequestContext prc = prcLookupStrategy.apply(resolutionContext);
         final List<IdPAttributeValue<?>> results = attributeValuesFunction.apply(prc);
 
+        if (null == results) {
+            log.debug("{} Generated no values.", getLogPrefix());
+            return null;
+        }
         log.debug("{} Generated {} values.", getLogPrefix(), results.size());
         log.trace("{} Values:", getLogPrefix(), results);
         final IdPAttribute attribute = new IdPAttribute(getId());

@@ -32,10 +32,15 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
+import org.ldaptive.Connection;
+import org.ldaptive.ConnectionConfig;
 import org.ldaptive.ConnectionFactory;
 import org.ldaptive.LdapException;
 import org.ldaptive.SearchExecutor;
 import org.ldaptive.SearchResult;
+import org.ldaptive.ssl.X509SSLContextInitializer;
+import org.ldaptive.ssl.SslConfig;
+import org.ldaptive.ssl.SSLContextInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,6 +149,35 @@ public class LDAPDataConnector extends AbstractSearchDataConnector<ExecutableSea
         } catch (final ValidationException e) {
             log.error("{} Invalid connector configuration", getLogPrefix(), e);
             throw new ComponentInitializationException(getLogPrefix() + " Invalid connector configuration", e);
+        }
+
+        // TODO: remove deprecation warning in v4
+        Connection conn = null;
+        try {
+            conn = connectionFactory.getConnection();
+            final ConnectionConfig connConfig = conn.getConnectionConfig();
+            if (connConfig.getUseStartTLS() ||
+                    connConfig.getUseSSL() ||
+                    connConfig.getLdapUrl().toLowerCase().contains("ldaps://")) {
+                final SslConfig sslConfig = connConfig.getSslConfig();
+                if (sslConfig != null) {
+                    final SSLContextInitializer cxtInit = sslConfig.getCredentialConfig() != null ?
+                        sslConfig.getCredentialConfig().createSSLContextInitializer() : null;
+                    if (cxtInit instanceof X509SSLContextInitializer) {
+                        if (((X509SSLContextInitializer) cxtInit).getTrustCertificates() == null) {
+                            log.warn(
+                                "{} Use of default JVM trust store will be removed in the next major version of " +
+                                    "this software; replacement is trustFile attribute", getLogPrefix());
+                        }
+                    }
+                }
+            }
+        } catch (final Exception e) {
+            log.warn("{} Error inspecting SSL configuration", getLogPrefix(), e);
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
         }
     }
 

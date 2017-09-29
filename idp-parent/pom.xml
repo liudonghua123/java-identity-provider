@@ -66,10 +66,11 @@
         <idwsfconsumer.version>1.0.0</idwsfconsumer.version>
         <java-support.version>7.3.0</java-support.version>
         <opensaml.groupId>org.opensaml</opensaml.groupId>
-        <opensaml.version>3.3.0</opensaml.version>
+        <opensaml.version>3.3.1-SNAPSHOT</opensaml.version>
         <spring-extensions.version>5.3.0</spring-extensions.version>
         <!-- Override for patch release. -->
         <spring-webflow.version>2.4.6.RELEASE</spring-webflow.version>
+        <ldaptive.version>1.0.11</ldaptive.version>
         <checkstyle.configLocation>${project.basedir}/../idp-parent/resources/checkstyle/checkstyle.xml</checkstyle.configLocation>
         <idp-parent.site.url>${shibboleth.site.url}java-identity-provider/${project.version}/</idp-parent.site.url>
         <idp-module.site.url>${idp-parent.site.url}${project.artifactId}</idp-module.site.url>

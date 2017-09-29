@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:resolver="urn:mace:shibboleth:2.0:resolver" xmlns:sec="urn:mace:shibboleth:2.0:security" 
     targetNamespace="urn:mace:shibboleth:2.0:resolver" elementFormDefault="qualified"
-    version="3.0">
+    version="3.3.2">
 
     <import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd" />
     <import namespace="urn:mace:shibboleth:2.0:security" schemaLocation="http://shibboleth.net/schema/idp/shibboleth-security.xsd"/>
@@ -827,7 +827,8 @@
     <complexType name="ComputedId">
         <annotation>
             <documentation>
-                An ID created by taking the SHA-1 hash of the requesting entity's ID, an attribute value (usually a user identifier), and a salt.
+                An ID created by taking the SHA-1 hash of the requesting entity's ID,
+                an attribute value (usually a user identifier), and a salt.
             </documentation>
         </annotation>
         <complexContent>
@@ -856,6 +857,13 @@
                     <annotation>
                         <documentation>
                             A salt, of at least 16 bytes, used in the computed ID.
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="encoding" type="string">
+                    <annotation>
+                        <documentation>
+                            The binary-to-textual encoding used to convert the hash into a usable value.
                         </documentation>
                     </annotation>
                 </attribute>
@@ -1348,6 +1356,13 @@
                     <annotation>
                         <documentation>
                             A salt, of at least 16 bytes, used in the computed ID.
+                        </documentation>
+                    </annotation>
+                </attribute>
+                <attribute name="encoding" type="string">
+                    <annotation>
+                        <documentation>
+                            The binary-to-textual encoding used to convert the hash into a usable value.
                         </documentation>
                     </annotation>
                 </attribute>

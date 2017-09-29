@@ -26,6 +26,7 @@ import javax.xml.namespace.QName;
 import net.shibboleth.idp.attribute.resolver.spring.BaseResolverPluginParser;
 import net.shibboleth.idp.attribute.resolver.spring.dc.AbstractDataConnectorParser;
 import net.shibboleth.idp.attribute.resolver.spring.impl.AttributeResolverNamespaceHandler;
+import net.shibboleth.idp.saml.nameid.impl.ComputedPersistentIdGenerationStrategy.Encoding;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.AttributeSupport;
@@ -53,6 +54,7 @@ public abstract class BaseComputedIDDataConnectorParser extends BaseResolverPlug
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseComputedIDDataConnectorParser.class);
 
+// Checkstyle: MethodLength|CyclomaticComplexity OFF    
     /**
      * Parse the common definitions for {@link net.shibboleth.idp.saml.attribute.resolver.impl.ComputedIDDataConnector}
      * and {@link net.shibboleth.idp.saml.nameid.impl.StoredIDDataConnector}.
@@ -77,9 +79,21 @@ public abstract class BaseComputedIDDataConnectorParser extends BaseResolverPlug
             if (log.isDebugEnabled()) {
                 final QName otherQname =
                         new QName(DataConnectorNamespaceHandler.NAMESPACE,suppliedQname.getLocalPart(), "dc:");
-            log.debug("{} Deprecated Namespace element '{}' in {}, consider using' {}'",
+                log.debug("{} Deprecated Namespace element '{}' in {}, consider using' {}'",
                     getLogPrefix(), suppliedQname.toString(),
                     parserContext.getReaderContext().getResource().getDescription(), otherQname.toString());
+            }
+        }
+        
+        Encoding encoding = Encoding.BASE64;
+        if (config.hasAttributeNS(null, "encoding")) {
+            final String enc = StringSupport.trimOrNull(config.getAttributeNS(null, "encoding"));
+            if (enc != null) {
+                if ("BASE32".equals(enc)) {
+                    encoding = Encoding.BASE32;
+                } else if (!"BASE64".equals(enc)) {
+                    log.warn("{} Ignoring unknown encoding value '{}'", getLogPrefix(), enc);
+                }
             }
         }
 
@@ -124,7 +138,10 @@ public abstract class BaseComputedIDDataConnectorParser extends BaseResolverPlug
         builder.addPropertyValue("generatedAttributeId", generatedAttribute);
         builder.addPropertyValue("sourceAttributeId", sourceAttribute);
         builder.addPropertyValue("salt", salt);
+        builder.addPropertyValue("encoding", encoding);
     }
+ // Checkstyle: MethodLength|CyclomaticComplexity ON
+    
     /**
      * return a string which is to be prepended to all log messages.
      * 

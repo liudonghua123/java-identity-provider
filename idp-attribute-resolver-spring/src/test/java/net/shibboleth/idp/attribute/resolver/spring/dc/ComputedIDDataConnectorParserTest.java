@@ -22,6 +22,7 @@ import net.shibboleth.ext.spring.util.SchemaTypeAwareXMLBeanDefinitionReader;
 import net.shibboleth.idp.attribute.resolver.spring.BaseAttributeDefinitionParserTest;
 import net.shibboleth.idp.attribute.resolver.spring.dc.impl.ComputedIDDataConnectorParser;
 import net.shibboleth.idp.saml.attribute.resolver.impl.ComputedIDDataConnector;
+import net.shibboleth.idp.saml.nameid.impl.ComputedPersistentIdGenerationStrategy.Encoding;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 
 import org.springframework.context.support.GenericApplicationContext;
@@ -44,6 +45,7 @@ public class ComputedIDDataConnectorParserTest extends BaseAttributeDefinitionPa
         Assert.assertEquals(connector.getSourceAttributeId(), "theSourceRemainsTheSame");
         Assert.assertEquals(connector.getGeneratedAttributeId(), "jenny");
         Assert.assertEquals(connector.getSalt(), "abcdefghijklmnopqrst ".getBytes());
+        Assert.assertEquals(connector.getEncoding(), Encoding.BASE64);
 
         connector.initialize();
     }
@@ -55,10 +57,23 @@ public class ComputedIDDataConnectorParserTest extends BaseAttributeDefinitionPa
         Assert.assertEquals(connector.getSourceAttributeId(), "theSourceRemainsTheSame");
         Assert.assertEquals(connector.getGeneratedAttributeId(), "jenny");
         Assert.assertEquals(connector.getSalt(), "abcdefghijklmnopqrst ".getBytes());
+        Assert.assertEquals(connector.getEncoding(), Encoding.BASE64);
 
         connector.initialize();
     }
 
+    @Test public void resolverBase32() throws ComponentInitializationException {
+        final ComputedIDDataConnector connector = getDataConnector("resolver/computedBase32.xml", ComputedIDDataConnector.class);
+        
+        Assert.assertEquals(connector.getId(), "computed");
+        Assert.assertEquals(connector.getSourceAttributeId(), "theSourceRemainsTheSame");
+        Assert.assertEquals(connector.getGeneratedAttributeId(), "jenny");
+        Assert.assertEquals(connector.getSalt(), "abcdefghijklmnopqrst ".getBytes());
+        Assert.assertEquals(connector.getEncoding(), Encoding.BASE32);
+
+        connector.initialize();
+    }
+    
     @Test public void propertySalt()  {
         final String salt = "0123456789ABCDEF ";
 

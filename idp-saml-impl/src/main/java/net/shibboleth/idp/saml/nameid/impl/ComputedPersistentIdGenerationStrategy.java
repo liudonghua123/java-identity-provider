@@ -127,6 +127,15 @@ public class ComputedPersistentIdGenerationStrategy extends AbstractInitializabl
     }
     
     /**
+     * Get the post-digest encoding to use.
+     * 
+     * @return post-digest encoding
+     */
+    @Nonnull public Encoding getEncoding() {
+        return encoding;
+    }
+    
+    /**
      * Set the post-digest encoding to use.
      * 
      * @param enc encoding

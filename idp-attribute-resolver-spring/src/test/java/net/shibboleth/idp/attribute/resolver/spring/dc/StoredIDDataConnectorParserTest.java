@@ -20,6 +20,7 @@ package net.shibboleth.idp.attribute.resolver.spring.dc;
 import net.shibboleth.idp.attribute.resolver.spring.BaseAttributeDefinitionParserTest;
 import net.shibboleth.idp.attribute.resolver.spring.dc.impl.StoredIDDataConnectorParser;
 import net.shibboleth.idp.saml.attribute.resolver.impl.StoredIDDataConnector;
+import net.shibboleth.idp.saml.nameid.impl.ComputedPersistentIdGenerationStrategy.Encoding;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 
 import org.bouncycastle.util.Arrays;
@@ -47,17 +48,30 @@ public class StoredIDDataConnectorParserTest extends BaseAttributeDefinitionPars
         final StoredIDDataConnector connector = getDataConnector("stored.xml", StoredIDDataConnector.class);
         
         Assert.assertEquals(connector.getSalt(), "abcdefghijklmnopqrst".getBytes());
+        Assert.assertEquals(connector.getEncoding(), Encoding.BASE64);
         testIt(connector);
     }
 
     @Test public void withOutSalt() throws ComponentInitializationException {
         final StoredIDDataConnector connector = getDataConnector("storedNoSalt.xml", StoredIDDataConnector.class);
+        
+        Assert.assertNull(connector.getEncoding());
         testIt(connector);
     }
 
     @Test public void resolver() throws ComponentInitializationException {
         final StoredIDDataConnector connector = getDataConnector("resolver/stored.xml", StoredIDDataConnector.class);
         
+        Assert.assertNull(connector.getEncoding());
         testIt(connector);
     }
+
+    @Test public void resolverBase32() throws ComponentInitializationException {
+        final StoredIDDataConnector connector = getDataConnector("resolver/storedBase32.xml", StoredIDDataConnector.class);
+        
+        Assert.assertEquals(connector.getEncoding(), Encoding.BASE32);
+        testIt(connector);
+        
+    }
+
 }

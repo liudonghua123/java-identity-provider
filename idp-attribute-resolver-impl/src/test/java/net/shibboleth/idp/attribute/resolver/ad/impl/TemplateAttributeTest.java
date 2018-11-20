@@ -204,7 +204,6 @@ public class TemplateAttributeTest {
         // ds.add(TestSources.makeResolverPluginDependency(TestSources.DEPENDS_ON_ATTRIBUTE_NAME_CONNECTOR,
         // TestSources.STATIC_ATTRIBUTE_NAME));
         templateDef.setDependencies(ds);
-        templateDef.setSourceAttributes(Collections.singletonList(TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR));
         templateDef.initialize();
 
         final Set<AttributeDefinition> attrDefinitions = new LazySet<>();
@@ -233,6 +232,27 @@ public class TemplateAttributeTest {
      * @throws ComponentInitializationException if it goes wrong.
      */
     @Test public void templateWithValues() throws ResolutionException, ComponentInitializationException {
+        templateWithValues(false);
+    }
+
+    /**
+     * Test resolution of an template script with data generated from the attributes, but with
+     * explicit setting of source attributes.
+     *
+     * @throws ResolutionException if it goes wrong.
+     * @throws ComponentInitializationException if it goes wrong.
+     */
+    @Test public void templateWithValuesTestSources() throws ResolutionException, ComponentInitializationException {
+        templateWithValues(false);
+    }
+
+    /** Worker function for the templateWithValues and templateWithValuesTestSources tests.
+     *
+     * @param setSources whether to all {@link TemplateAttributeDefinition#setSourceAttributes(List)}
+     * @throws ResolutionException if it goes wrong.
+     * @throws ComponentInitializationException if it goes wrong.
+     */
+    private final void templateWithValues(boolean setSources) throws ResolutionException, ComponentInitializationException {
 
         final String name = TEST_ATTRIBUTE_BASE_NAME + "3";
 
@@ -247,8 +267,9 @@ public class TemplateAttributeTest {
         ds.add(TestSources.makeResolverPluginDependency(TestSources.STATIC_CONNECTOR_NAME,
                 TestSources.DEPENDS_ON_SECOND_ATTRIBUTE_NAME));
         templateDef.setDependencies(ds);
-        templateDef.setSourceAttributes(Arrays.asList(TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR,
-                TestSources.DEPENDS_ON_SECOND_ATTRIBUTE_NAME));
+        if (setSources) {
+            templateDef.setSourceAttributes(Collections.singletonList(TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR));
+        }
         templateDef.initialize();
 
         final Set<AttributeDefinition> attrDefinitions = new LazySet<>();
@@ -286,7 +307,6 @@ public class TemplateAttributeTest {
         ds.add(TestSources.makeResolverPluginDependency(TestSources.STATIC_ATTRIBUTE_NAME,
                 TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR));
         templateDef.setDependencies(ds);
-        templateDef.setSourceAttributes(Arrays.asList(TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR));
         templateDef.initialize();
 
         final List<IdPAttributeValue<?>> values = new ArrayList<>();
@@ -331,7 +351,6 @@ public class TemplateAttributeTest {
                 TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR));
         ds.add(TestSources.makeResolverPluginDependency(otherDefName, otherAttrName));
         templateDef.setDependencies(ds);
-        templateDef.setSourceAttributes(Arrays.asList(TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR, otherAttrName));
         templateDef.initialize();
 
         final Set<AttributeDefinition> attrDefinitions = new LazySet<>();
@@ -363,7 +382,6 @@ public class TemplateAttributeTest {
         ds.add(TestSources.makeResolverPluginDependency(TestSources.STATIC_ATTRIBUTE_NAME,
                 TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR));
         templateDef.setDependencies(ds);
-        templateDef.setSourceAttributes(Collections.singletonList(TestSources.DEPENDS_ON_ATTRIBUTE_NAME_ATTR));
         
         templateDef.initialize();
 

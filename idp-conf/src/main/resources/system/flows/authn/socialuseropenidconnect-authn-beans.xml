@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+
+	default-init-method="initialize" default-destroy-method="destroy">
+	
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer" p:placeholderPrefix="%{"
+        p:placeholderSuffix="}" />
+       
+
+    <bean class="net.shibboleth.ext.spring.config.IdentifiableBeanPostProcessor" />
+    <bean class="net.shibboleth.idp.profile.impl.ProfileActionBeanPostProcessor" />
+
+
+	<import resource="../../../conf/authn/socialuser-authn-config.xml" />
+
+	<bean id="SetRPUIInformation" class="net.shibboleth.idp.ui.impl.SetRPUIInformation"
+		scope="prototype" p:activationCondition-ref="shibboleth.authn.SocialUser.populateUIInfo"
+		p:httpServletRequest-ref="shibboleth.HttpServletRequest">
+		<property name="fallbackLanguages">
+			<bean parent="shibboleth.CommaDelimStringArray" c:_0="%{idp.ui.fallbackLanguages:}" />
+		</property>
+	</bean>
+
+	<bean id="SetOIDCInformation" class="net.shibboleth.idp.authn.oidc.impl.SetOIDCInformation">
+		<property name="clientId" value="%{idp.oidc.clientid:none}" />
+		<property name="clientSecret" value="%{idp.oidc.clientSecret:none}" />
+		<property name="providerMetadataLocation" value="%{idp.oidc.providerConfigurationDocument:none}" />
+		<property name="redirectURI" value="%{idp.oidc.redirectUri:none}" />
+		<property name="scope" value="%{idp.oidc.scope:none}"/>
+			
+		<!-- <property name="responseType" value="id_token token"/> -->
+	</bean>
+
+	<bean id="ValidateOIDCAuthenticationResponse"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCAuthenticationResponse"
+		p:httpServletRequest-ref="shibboleth.HttpServletRequest" />
+
+	<bean id="ValidateOIDCIDTokenACR" class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenACR" />
+
+	<bean id="ValidateOIDCIDTokenAudience" class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenAudience" />
+
+	<bean id="ValidateOIDCIDTokenAuthenticationTime"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenAuthenticationTime" />
+
+	<bean id="ValidateOIDCIDTokenAuthorizedParty"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenAuthorizedParty" />
+
+	<bean id="ValidateOIDCIDTokenExpirationTime"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenExpirationTime" />
+
+	<bean id="ValidateOIDCIDTokenIssuer" class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenIssuer" />
+
+	<bean id="ValidateOIDCIDTokenSignature"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenSignature" />
+
+	<bean id="ValidateOIDCAuthentication" class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCAuthentication" scope="prototype" />
+
+	<bean id="GetOIDCTokenResponse" class="net.shibboleth.idp.authn.oidc.impl.GetOIDCTokenResponse"
+		p:httpServletRequest-ref="shibboleth.HttpServletRequest" />
+
+</beans>

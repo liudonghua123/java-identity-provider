@@ -1,0 +1,67 @@
+
+<flow xmlns="http://www.springframework.org/schema/webflow"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
+	parent="authn.abstract">
+
+	<!-- This is a login flow for oidc -->
+	<!-- Still a draft flow, do not use -->
+
+	<action-state id="SetRPUIInformation">
+		<evaluate expression="SetRPUIInformation" />
+		<evaluate expression="'proceed'" />
+		<transition on="proceed" to="SetOIDCInformation" />	</action-state>
+
+	<action-state id="SetOIDCInformation">
+		<evaluate expression="SetOIDCInformation" />
+		<evaluate expression="'proceed'" />
+		<transition on="proceed" to="ExternalTransfer" />
+	</action-state>
+
+	<view-state id="ExternalTransfer"
+		view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.SocialUserOpenIdConnect.externalAuthnPath')}?conversation=#{flowExecutionContext.getKey().toString()}">
+		<on-render>
+			<evaluate
+				expression="opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).getSubcontext(T(net.shibboleth.idp.authn.context.ExternalAuthenticationContext), true).setFlowExecutionUrl(flowExecutionUrl + '&amp;_eventId_proceed=1')" />
+			<evaluate
+				expression="externalContext.getNativeRequest().getSession().setAttribute('conversation' + flowExecutionContext.getKey().toString(), new net.shibboleth.idp.authn.impl.ExternalAuthenticationImpl(opensamlProfileRequestContext))" />
+		</on-render>
+		<transition to="ValidateResponse" />
+	</view-state>
+
+	<action-state id="ValidateResponse">
+		<evaluate expression="ValidateOIDCAuthenticationResponse" />
+		<evaluate expression="'proceed'" />
+		<transition on="proceed" to="GetToken" />
+	</action-state>
+
+	<action-state id="GetToken">
+		<evaluate expression="GetOIDCTokenResponse" />
+		<evaluate expression="'proceed'" />
+		<transition on="proceed" to="ValidateOIDCTokenResponse" />
+	</action-state>
+
+	<action-state id="ValidateOIDCTokenResponse">
+		<evaluate expression="ValidateOIDCIDTokenACR" />
+		<evaluate expression="ValidateOIDCIDTokenAudience" />
+		<evaluate expression="ValidateOIDCIDTokenAuthorizedParty" />
+		<evaluate expression="ValidateOIDCIDTokenExpirationTime" />
+		<evaluate expression="ValidateOIDCIDTokenIssuer" />
+		<evaluate expression="ValidateOIDCIDTokenSignature" />
+		<evaluate expression="ValidateOIDCIDTokenAuthenticationTime" />
+		<evaluate expression="'proceed'" />
+		<transition on="proceed" to="SetPrincipal" />
+	</action-state>
+
+
+	<action-state id="SetPrincipal">
+		<evaluate expression="ValidateOIDCAuthentication" />
+		<evaluate expression="'proceed'" />
+		<transition on="proceed" to="proceed" />
+	</action-state>
+
+	<bean-import
+		resource="socialuseropenidconnect-authn-beans.xml" />
+
+
+</flow>

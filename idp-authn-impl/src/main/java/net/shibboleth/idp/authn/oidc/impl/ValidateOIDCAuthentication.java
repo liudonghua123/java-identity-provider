@@ -131,7 +131,7 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
     @Nonnull
     private List<IdPAttributePrincipal> buildIdPAttributePrincipalsFromStandardClaims() {
 
-        final List<IdPAttributePrincipal> claimPrincipals = new ArrayList<IdPAttributePrincipal>();
+        final List<IdPAttributePrincipal> claimPrincipals = new ArrayList<>();
         if (jwtClaims != null) {
             // jwtClaims.getClaims() is never null
             for (final Map.Entry<String, Object> claim : jwtClaims.getClaims().entrySet()) {
@@ -139,16 +139,16 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
                 if (UserInfo.getStandardClaimNames().contains(claim.getKey())) {
 
                     String claimValue = null;
-                    if (claim.getValue()!=null && claim.getValue() instanceof String) {
+                    if (claim.getValue() instanceof String) {
                         claimValue = StringSupport.trimOrNull((String) claim.getValue());
                     }
 
-                    if (claim.getValue()!=null && claim.getValue() instanceof Boolean) {
+                    if (claim.getValue() instanceof Boolean) {
                         claimValue = StringSupport.trimOrNull(Boolean.toString((Boolean) claim.getValue()));
                     }
-
                     if (claimValue == null) {
-                        log.warn("{} JWT Claim [{}] not of a supported type, ignored", getLogPrefix(), claim);
+                        log.trace("{} JWT Claim [{}] is not of a supported type or is null/empty, ignored", 
+                                getLogPrefix(), claim);
                         continue;
                     }
 

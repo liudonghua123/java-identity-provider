@@ -60,6 +60,10 @@
         <bean id="authn/RemoteUserInternal" parent="shibboleth.AuthenticationFlow" />
 
         <bean id="authn/Function" parent="shibboleth.AuthenticationFlow" />
+        
+        <bean id="authn/SocialUserOpenIdConnect" parent="shibboleth.AuthenticationFlow"
+            p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true"/>
+            
 
         <bean id="authn/X509" parent="shibboleth.AuthenticationFlow"
                 p:nonBrowserSupported="false">

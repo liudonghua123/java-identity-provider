@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+                           
+       default-init-method="initialize"
+       default-destroy-method="destroy">
+
+    
+    <!-- new more webflow based oidc -->
+    <bean id="shibboleth.authn.SocialUserOpenIdConnect.externalAuthnPath" class="java.lang.String"
+        c:_0="contextRelative:/Authn/SocialUserOpenIdConnectStart">
+    </bean>
+    
+    <!-- Populate RP UI info from metadata? -->
+    <util:constant id="shibboleth.authn.SocialUser.populateUIInfo" static-field="java.lang.Boolean.FALSE" />
+
+    <!--
+    Define entries here to map error messages returned by external modules and classify them as particular
+    kinds of errors for use in your templates and as events in flows.
+    
+    These mapping are example mappings that may be used but are not necessary
+    -->
+    
+    <!--  
+    
+    first mapping maps suexception to more generic shib auth exception. 
+    The second mapping maps user cancel to reselect 
+    
+    Do not use unless you know what you are doing.
+    -->
+    <util:map id="shibboleth.authn.SocialUser.ClassifiedMessageMap">
+    <!-- 
+        <entry key="AuthenticationException">
+            <list>
+                <value>SocialUserException</value>
+            </list>
+        </entry>
+        <entry key="ReselectFlow">
+            <list>
+                <value>SocialUserCanceled</value>
+            </list>
+        </entry>
+     -->    
+    </util:map>
+    
+</beans>

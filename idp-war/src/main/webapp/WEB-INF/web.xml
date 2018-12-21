@@ -143,6 +143,27 @@
         <servlet-name>X509AuthHandler</servlet-name>
         <url-pattern>/Authn/X509</url-pattern>
     </servlet-mapping>
+    
+    <!--  Servlet used to initiate an OIDC external authentication flow -->
+    <servlet> 
+    	<servlet-name>SocialUserOpenIdConnectStartServlet</servlet-name> 
+    	<servlet-class>net.shibboleth.idp.authn.oidc.impl.SocialUserOpenIdConnectStartServlet</servlet-class> 
+    	<load-on-startup>4</load-on-startup>
+	</servlet>
+	<servlet-mapping> 
+		<servlet-name>SocialUserOpenIdConnectStartServlet</servlet-name> 
+		<url-pattern>/Authn/SocialUserOpenIdConnectStart</url-pattern>
+     </servlet-mapping>
+     <!--  Servlet used to consume the OAuth response of an OIDC external authentication flow -->
+	<servlet> 
+		<servlet-name>SocialUserOpenIdConnectEndServlet</servlet-name> 
+		<servlet-class>net.shibboleth.idp.authn.oidc.impl.SocialUserOpenIdConnectEndServlet</servlet-class> 
+		<load-on-startup>4</load-on-startup>
+	</servlet>
+	<servlet-mapping> 
+		<servlet-name>SocialUserOpenIdConnectEndServlet</servlet-name> 
+		<url-pattern>/Authn/SocialUserOpenIdConnectEnd</url-pattern>
+     </servlet-mapping>
 
     <!-- Send request for the EntityID to the SAML metadata echoing JSP. -->
     <servlet>

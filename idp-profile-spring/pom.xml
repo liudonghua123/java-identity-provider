@@ -85,6 +85,13 @@
 
         <!-- Provided Dependencies -->
 
+		<!-- Override test scope from parent POM to fulfill excluded Spring dependency. -->
+        <dependency>
+            <groupId>${slf4j.groupId}</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Runtime Dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>

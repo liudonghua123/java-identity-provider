@@ -421,7 +421,7 @@ public class DynamicHTTPMetadataProviderParserTest extends AbstractMetadataParse
         Assert.assertNull(ed);
     }
     
-    @Test
+    @Test(enabled=false)
     public void testHTTPSTrustEngineValidPKIX() throws Exception {
         MockPropertySource propSource = singletonPropertySource(PROP_MDURL, 
                 RepositorySupport.buildHTTPSResourceURL(REPO_OPENSAML, TEMPLATE_URL));
@@ -438,7 +438,7 @@ public class DynamicHTTPMetadataProviderParserTest extends AbstractMetadataParse
         Assert.assertEquals(ed.getEntityID(), entityID);
     }
     
-    @Test
+    @Test(enabled=false)
     public void testHTTPSTrustEngineValidPKIXExplicitTrustedName() throws Exception {
         MockPropertySource propSource = singletonPropertySource(PROP_MDURL, 
                 RepositorySupport.buildHTTPSResourceURL(REPO_OPENSAML, TEMPLATE_URL));

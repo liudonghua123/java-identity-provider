@@ -94,7 +94,8 @@ public class HTTPMetadataProviderParserTest extends AbstractMetadataParserTest {
         Assert.assertNotNull(resolver.resolveSingle(criteriaFor(IDP_ID)));
     } 
     
-    @Test public void httpsTrustEngineValidPKIX() throws Exception {
+    @Test(enabled=false)
+    public void httpsTrustEngineValidPKIX() throws Exception {
         MockPropertySource propSource = singletonPropertySource(PROP_MDURL, 
                 RepositorySupport.buildHTTPSResourceURL(REPO_IDP, ENTITY_XML));
 
@@ -105,7 +106,8 @@ public class HTTPMetadataProviderParserTest extends AbstractMetadataParserTest {
         Assert.assertNotNull(resolver.resolveSingle(criteriaFor(IDP_ID)));
     }
     
-    @Test public void httpsTrustEngineValidPKIXExplicitTrustedName() throws Exception {
+    @Test(enabled=false)
+    public void httpsTrustEngineValidPKIXExplicitTrustedName() throws Exception {
         MockPropertySource propSource = singletonPropertySource(PROP_MDURL, 
                 RepositorySupport.buildHTTPSResourceURL(REPO_IDP, ENTITY_XML));
 

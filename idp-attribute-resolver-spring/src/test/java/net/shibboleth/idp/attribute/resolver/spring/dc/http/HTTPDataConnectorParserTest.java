@@ -70,7 +70,8 @@ public class HTTPDataConnectorParserTest {
         pendingTeardownContext = context;
     }
     
-    @Test public void v2Config() throws Exception {
+    @Test(enabled=false)
+    public void v2Config() throws Exception {
         
         final MockPropertySource propSource = singletonPropertySource("serviceURL", TEST_URL);
         propSource.setProperty("scriptPath", (TestSupport.isJavaV8OrLater() ? SCRIPT_PATH_V8 : SCRIPT_PATH) + "test.js");
@@ -246,7 +247,8 @@ public class HTTPDataConnectorParserTest {
         connector.resolve(context);
     }
     
-    @Test public void v2ClientCertificate() throws Exception {
+    @Test(enabled=false)
+    public void v2ClientCertificate() throws Exception {
         
         // Could use a better test for this end to end.
         
@@ -281,7 +283,8 @@ public class HTTPDataConnectorParserTest {
         Assert.assertEquals(attrs.get("bar").getValues().get(1).getValue(), "bar2");
     }
     
-    @Test public void hybridConfig() throws Exception {
+    @Test(enabled=false)
+    public void hybridConfig() throws Exception {
         final MockPropertySource propSource = singletonPropertySource("serviceURL", TEST_URL);
         propSource.setProperty("scriptPath", (TestSupport.isJavaV8OrLater() ? SCRIPT_PATH_V8 : SCRIPT_PATH) + "test.js");
         propSource.setProperty("userAgent", "disguised/1.0.0 hidden/3.4.5");
@@ -311,7 +314,7 @@ public class HTTPDataConnectorParserTest {
         Assert.assertTrue(connector.getResultsCache().size() == 1);    
     }
 
-    @Test(enabled=false) public void v2ConfigPOST() throws Exception {
+    @Test public void v2ConfigPOST() throws Exception {
         
         final MockPropertySource propSource = singletonPropertySource("serviceURL", "https://shibboleth.net/cgi-bin/_frobnitz.cgi");
         propSource.setProperty("serviceBody",

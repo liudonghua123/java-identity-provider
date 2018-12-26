@@ -314,7 +314,8 @@ public class HTTPDataConnectorParserTest {
         Assert.assertTrue(connector.getResultsCache().size() == 1);    
     }
 
-    @Test public void v2ConfigPOST() throws Exception {
+    @Test(enabled=false)
+    public void v2ConfigPOST() throws Exception {
         
         final MockPropertySource propSource = singletonPropertySource("serviceURL", "https://shibboleth.net/cgi-bin/_frobnitz.cgi");
         propSource.setProperty("serviceBody",

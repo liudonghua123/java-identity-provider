@@ -181,8 +181,6 @@ public class TemplateAttributeDefinition extends AbstractAttributeDefinition {
             throw new ComponentInitializationException(getLogPrefix() + " no velocity engine was configured");
         }
     
-        checkSourceAttributes();
-    
         if (null == templateText) {
             // V2 compatibility - define our own template
             final StringBuffer defaultTemplate = new StringBuffer();
@@ -199,34 +197,6 @@ public class TemplateAttributeDefinition extends AbstractAttributeDefinition {
         }
     
         template = Template.fromTemplate(engine, templateText);
-    }
-
-    /**
-     * Check the provided source attributes against the provided dependencies.
-     */
-    private void checkSourceAttributes() {
-        if (sourceAttributes.isEmpty()) {
-            return;
-        }
-
-        final Set<String> dependencyAttributeNames = new HashSet<>(getDependencies().size());
-        for (final ResolverPluginDependency dependency: getDependencies()) {
-            if (dependency instanceof ResolverAttributeDefinitionDependency) {
-                dependencyAttributeNames.add( dependency.getDependencyPluginId());
-            } else if (dependency instanceof ResolverDataConnectorDependency) {
-                final ResolverDataConnectorDependency dc = (ResolverDataConnectorDependency) dependency;
-                if (dc.isAllAttributes()) {
-                    return;
-                }
-                dependencyAttributeNames.addAll(dc.getAttributeNames());
-            }
-        }
-
-        for (final String s: sourceAttributes) {
-            if (!dependencyAttributeNames.contains(s)) {
-                log.warn("{} Source Attribute {} is not provided as a dependency", getLogPrefix(),s);
-            }
-        }
     }
 
     /** {@inheritDoc} */

@@ -42,15 +42,15 @@ import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.context.ExternalAuthenticationContext;
 import net.shibboleth.idp.authn.impl.ExternalAuthenticationImpl;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 
 /**
- * Unit tests for {@link SocialUserOpenIdConnectEndServlet}.
+ * Unit tests for {@link OpenIdConnectEndServlet}.
  */
-public class SocialUserOpenIdConnectEndServletTest {
+public class OpenIdConnectEndServletTest {
 
     /** The servlet to be tested. */
-    SocialUserOpenIdConnectEndServlet servlet;
+    OpenIdConnectEndServlet servlet;
 
     /** The conversation key. */
     String conversationKey;
@@ -62,7 +62,7 @@ public class SocialUserOpenIdConnectEndServletTest {
      */
     @BeforeTest
     public void initTests() throws Exception {
-        servlet = new SocialUserOpenIdConnectEndServlet();
+        servlet = new OpenIdConnectEndServlet();
         MockServletConfig mockConfig = new MockServletConfig();
         servlet.init(mockConfig);
         conversationKey = "mockKey";
@@ -76,7 +76,7 @@ public class SocialUserOpenIdConnectEndServletTest {
     @Test
     public void testNoConversationKey() throws Exception {
         MockHttpServletRequest httpRequest = new MockHttpServletRequest();
-        Assert.assertTrue(SocialUserOpenIdConnectStartServletTest.runService(servlet, httpRequest,
+        Assert.assertTrue(OpenIdConnectStartServletTest.runService(servlet, httpRequest,
                 new MockHttpServletResponse()));
     }
 
@@ -89,21 +89,21 @@ public class SocialUserOpenIdConnectEndServletTest {
     public void testNoHttpSession() throws Exception {
         HttpServletRequest httpRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(httpRequest.getSession()).thenReturn(null);
-        Assert.assertTrue(SocialUserOpenIdConnectStartServletTest.runService(servlet, httpRequest,
+        Assert.assertTrue(OpenIdConnectStartServletTest.runService(servlet, httpRequest,
                 new MockHttpServletResponse()));
     }
 
     /**
-     * Run servlet without {@link SocialUserOpenIdConnectContext}.
+     * Run servlet without {@link OpenIdConnectContext}.
      * 
      * @throws Exception
      */
     @Test
-    public void testNoSocialUserContext() throws Exception {
+    public void testNoUserContext() throws Exception {
         final MockHttpServletRequest httpRequest = new MockHttpServletRequest();
-        httpRequest.getSession().setAttribute(SocialUserOpenIdConnectStartServlet.SESSION_ATTR_FLOWKEY,
+        httpRequest.getSession().setAttribute(OpenIdConnectStartServlet.SESSION_ATTR_FLOWKEY,
                 conversationKey);
-        Assert.assertTrue(SocialUserOpenIdConnectStartServletTest.runService(servlet, httpRequest,
+        Assert.assertTrue(OpenIdConnectStartServletTest.runService(servlet, httpRequest,
                 new MockHttpServletResponse()));
     }
 
@@ -115,13 +115,13 @@ public class SocialUserOpenIdConnectEndServletTest {
     @Test
     public void testInvalidAuthnResponseUri() throws Exception {
         final MockHttpServletRequest httpRequest = new MockHttpServletRequest();
-        httpRequest.getSession().setAttribute(SocialUserOpenIdConnectStartServlet.SESSION_ATTR_FLOWKEY,
+        httpRequest.getSession().setAttribute(OpenIdConnectStartServlet.SESSION_ATTR_FLOWKEY,
                 conversationKey);
-        final SocialUserOpenIdConnectContext suOidcCtx = Mockito.mock(SocialUserOpenIdConnectContext.class);
+        final OpenIdConnectContext suOidcCtx = Mockito.mock(OpenIdConnectContext.class);
         Mockito.doThrow(new URISyntaxException("mockException", "mock")).when(suOidcCtx)
                 .setAuthenticationResponseURI(httpRequest);
-        httpRequest.getSession().setAttribute(SocialUserOpenIdConnectStartServlet.SESSION_ATTR_SUCTX, suOidcCtx);
-        Assert.assertTrue(SocialUserOpenIdConnectStartServletTest.runService(servlet, httpRequest,
+        httpRequest.getSession().setAttribute(OpenIdConnectStartServlet.SESSION_ATTR_SUCTX, suOidcCtx);
+        Assert.assertTrue(OpenIdConnectStartServletTest.runService(servlet, httpRequest,
                 new MockHttpServletResponse()));
     }
 
@@ -133,10 +133,10 @@ public class SocialUserOpenIdConnectEndServletTest {
     @Test
     public void testSuccess() throws Exception {
         final MockHttpServletRequest httpRequest = new MockHttpServletRequest();
-        httpRequest.getSession().setAttribute(SocialUserOpenIdConnectStartServlet.SESSION_ATTR_FLOWKEY,
+        httpRequest.getSession().setAttribute(OpenIdConnectStartServlet.SESSION_ATTR_FLOWKEY,
                 conversationKey);
-        httpRequest.getSession().setAttribute(SocialUserOpenIdConnectStartServlet.SESSION_ATTR_SUCTX,
-                new SocialUserOpenIdConnectContext());
+        httpRequest.getSession().setAttribute(OpenIdConnectStartServlet.SESSION_ATTR_SUCTX,
+                new OpenIdConnectContext());
         final ProfileRequestContext<?, ?> ctx = new ProfileRequestContext<>();
         httpRequest.getSession().setAttribute(ExternalAuthentication.CONVERSATION_KEY + conversationKey,
                 new ExternalAuthenticationImpl(ctx));
@@ -149,7 +149,7 @@ public class SocialUserOpenIdConnectEndServletTest {
         flow.setId("mock");
         authnCtx.setAttemptedFlow(flow);
         final MockHttpServletResponse httpResponse = new MockHttpServletResponse();
-        Assert.assertFalse(SocialUserOpenIdConnectStartServletTest.runService(servlet, httpRequest, httpResponse));
+        Assert.assertFalse(OpenIdConnectStartServletTest.runService(servlet, httpRequest, httpResponse));
         Assert.assertEquals(httpResponse.getRedirectedUrl(), url);
     }
 }

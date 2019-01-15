@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
@@ -30,7 +30,7 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 
 /**
- * An action that calls the token endpoint and populates the information to {@link SocialUserOpenIdConnectContext}.
+ * An action that calls the token endpoint and populates the information to {@link OpenIdConnectContext}.
  * 
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
@@ -49,8 +49,8 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
     final ProfileRequestContext profileRequestContext, @Nonnull
     final AuthenticationContext authenticationContext) {
         log.trace("Entering");
-        final SocialUserOpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class);
+        final OpenIdConnectContext suCtx =
+                authenticationContext.getSubcontext(OpenIdConnectContext.class);
         if (suCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);

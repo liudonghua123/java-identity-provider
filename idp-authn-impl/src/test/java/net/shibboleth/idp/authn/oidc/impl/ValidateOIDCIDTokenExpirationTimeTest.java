@@ -12,7 +12,7 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
@@ -43,7 +43,7 @@ public class ValidateOIDCIDTokenExpirationTimeTest extends AbstractOIDCIDTokenTe
     public void testExpired() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(new DateTime().minusSeconds(1).toDate());
         suCtx.setOidcTokenResponse(oidcTokenResponse);
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
@@ -58,7 +58,7 @@ public class ValidateOIDCIDTokenExpirationTimeTest extends AbstractOIDCIDTokenTe
     public void testValid() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(new DateTime().plusMinutes(5).toDate());
         suCtx.setOidcTokenResponse(oidcTokenResponse);
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);

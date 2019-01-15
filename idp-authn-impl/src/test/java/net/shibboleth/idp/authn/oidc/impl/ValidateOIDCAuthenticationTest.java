@@ -19,7 +19,7 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
@@ -76,7 +76,7 @@ public class ValidateOIDCAuthenticationTest extends AbstractOIDCIDTokenTest {
     public void testNoOidcResponse() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
         final Event event = action.execute(src);
@@ -90,7 +90,7 @@ public class ValidateOIDCAuthenticationTest extends AbstractOIDCIDTokenTest {
     public void testNoOidcTokens() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
         final OIDCTokenResponse oidcTokenResponse = Mockito.mock(OIDCTokenResponse.class);
@@ -107,7 +107,7 @@ public class ValidateOIDCAuthenticationTest extends AbstractOIDCIDTokenTest {
     public void testNoSubject() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
         final OIDCTokenResponse oidcTokenResponse = Mockito.mock(OIDCTokenResponse.class);
@@ -128,7 +128,7 @@ public class ValidateOIDCAuthenticationTest extends AbstractOIDCIDTokenTest {
     public void testValid() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(new DateTime().minusSeconds(1).toDate());
         suCtx.setOidcTokenResponse(oidcTokenResponse);

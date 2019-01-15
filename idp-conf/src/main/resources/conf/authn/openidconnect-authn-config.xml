@@ -14,12 +14,12 @@
 
     
     <!-- new more webflow based oidc -->
-    <bean id="shibboleth.authn.SocialUserOpenIdConnect.externalAuthnPath" class="java.lang.String"
-        c:_0="contextRelative:/Authn/SocialUserOpenIdConnectStart">
+    <bean id="shibboleth.authn.OpenIdConnect.externalAuthnPath" class="java.lang.String"
+        c:_0="contextRelative:/Authn/OpenIdConnectStart">
     </bean>
     
     <!-- Populate RP UI info from metadata? -->
-    <util:constant id="shibboleth.authn.SocialUser.populateUIInfo" static-field="java.lang.Boolean.FALSE" />
+    <util:constant id="shibboleth.authn.oidc.populateUIInfo" static-field="java.lang.Boolean.FALSE" />
 
     <!--
     Define entries here to map error messages returned by external modules and classify them as particular

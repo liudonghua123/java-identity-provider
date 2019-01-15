@@ -36,7 +36,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
@@ -65,7 +65,7 @@ public class ValidateOIDCAuthenticationResponseTest extends AbstractOIDCIDTokenT
     }
 
     /**
-     * Runs action without {@link SocialUserOpenIdConnectContext}.
+     * Runs action without {@link OpenIdConnectContext}.
      */
     @Test
     public void testNoContext() throws Exception {
@@ -82,7 +82,7 @@ public class ValidateOIDCAuthenticationResponseTest extends AbstractOIDCIDTokenT
     public void testNoResponseUri() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
@@ -102,7 +102,7 @@ public class ValidateOIDCAuthenticationResponseTest extends AbstractOIDCIDTokenT
     public void testNoState() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         suCtx.setAuthenticationResponseURI(getHttpServletRequest(state));
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
         final Event event = action.execute(src);
@@ -116,7 +116,7 @@ public class ValidateOIDCAuthenticationResponseTest extends AbstractOIDCIDTokenT
     public void testStateMismatch() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         suCtx.setAuthenticationResponseURI(getHttpServletRequest(state));
         suCtx.setState(State.parse("invalid"));
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
@@ -131,7 +131,7 @@ public class ValidateOIDCAuthenticationResponseTest extends AbstractOIDCIDTokenT
     public void testStateMatch() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         suCtx.setAuthenticationResponseURI(getHttpServletRequest(state));
         suCtx.setState(State.parse(state));
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
@@ -149,7 +149,7 @@ public class ValidateOIDCAuthenticationResponseTest extends AbstractOIDCIDTokenT
     public void testErrorResponse() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         suCtx.setAuthenticationResponseURI(getHttpServletRequest(state, "request_not_supported", null));
         suCtx.setState(State.parse(state));
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
@@ -164,7 +164,7 @@ public class ValidateOIDCAuthenticationResponseTest extends AbstractOIDCIDTokenT
     public void testErrorResponseWithDescription() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         suCtx.setAuthenticationResponseURI(getHttpServletRequest(state, "request_not_supported", "mockReason"));
         suCtx.setState(State.parse(state));
         prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);

@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
@@ -51,8 +51,8 @@ public class ValidateOIDCIDTokenIssuer extends AbstractAuthenticationAction {
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
 
-        final SocialUserOpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class);
+        final OpenIdConnectContext suCtx =
+                authenticationContext.getSubcontext(OpenIdConnectContext.class);
         if (suCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);

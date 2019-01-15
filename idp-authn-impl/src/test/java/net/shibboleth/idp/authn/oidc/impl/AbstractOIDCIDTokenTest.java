@@ -26,12 +26,12 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.impl.BaseAuthenticationContextTest;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
 /**
- * Abstract test case sharing tests for OIDC token validation in {@link SocialUserOpenIdConnectContext}.
+ * Abstract test case sharing tests for OIDC token validation in {@link OpenIdConnectContext}.
  */
 public abstract class AbstractOIDCIDTokenTest extends BaseAuthenticationContextTest {
 
@@ -49,7 +49,7 @@ public abstract class AbstractOIDCIDTokenTest extends BaseAuthenticationContextT
     protected abstract AbstractProfileAction<?, ?> getAction();
 
     /**
-     * Runs action without {@link SocialUserOpenIdConnectContext}.
+     * Runs action without {@link OpenIdConnectContext}.
      */
     @Test
     public void testNoContext() throws Exception {
@@ -165,7 +165,7 @@ public abstract class AbstractOIDCIDTokenTest extends BaseAuthenticationContextT
         final OIDCTokenResponse oidcTokenResponse = new OIDCTokenResponse(oidcTokens);
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         suCtx.setOidcTokenResponse(oidcTokenResponse);
         if (nullifyIdToken) {
             suCtx.setIDToken(null);

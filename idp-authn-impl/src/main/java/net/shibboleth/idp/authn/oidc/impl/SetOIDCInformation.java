@@ -18,7 +18,7 @@ import net.minidev.json.JSONObject;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 
 import org.opensaml.messaging.context.navigate.ChildContextLookup;
 import org.opensaml.profile.action.ActionSupport;
@@ -60,7 +60,7 @@ import net.shibboleth.idp.profile.context.RelyingPartyContext;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
 /**
- * An action that sets oidc information to {@link SocialUserOpenIdConnectContext} and attaches it to
+ * An action that sets oidc information to {@link OpenIdConnectContext} and attaches it to
  * {@link AuthenticationContext}.
  */
 @SuppressWarnings("rawtypes")
@@ -321,7 +321,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param name of the attribute
      * @return attribute value if found, null otherwise
      */
-    private String attributeToString(@Nonnull final SocialUserOpenIdConnectContext suCtx, String name) {
+    private String attributeToString(@Nonnull final OpenIdConnectContext suCtx, String name) {
         log.trace("Entering");
         if (suCtx.getResolvedIdPAttributes() == null) {
             log.warn("Attribute context not available");
@@ -351,7 +351,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param suCtx to look values for
      * @return id token.
      */
-    private JSONObject buildIDToken(@Nonnull final SocialUserOpenIdConnectContext suCtx) {
+    private JSONObject buildIDToken(@Nonnull final OpenIdConnectContext suCtx) {
         log.trace("Entering");
         JSONObject idToken = new JSONObject();
         for (Map.Entry<String, String> entry : requestClaims.entrySet()) {
@@ -398,7 +398,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @return request object
      * @throws Exception if attribute context is not available or parsing/signing fails.
      */
-    private JWT getRequestObject(@Nonnull final SocialUserOpenIdConnectContext suCtx, State state) throws Exception {
+    private JWT getRequestObject(@Nonnull final OpenIdConnectContext suCtx, State state) throws Exception {
         log.trace("Entering");
 
         if (requestClaims == null || requestClaims.size() == 0) {
@@ -440,8 +440,8 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
 
-        final SocialUserOpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class, true);
+        final OpenIdConnectContext suCtx =
+                authenticationContext.getSubcontext(OpenIdConnectContext.class, true);
         // We initialize the context
         // If request is passive we override default prompt value
         Prompt ovrPrompt = authenticationContext.isPassive() ? new Prompt(Type.NONE) : prompt;

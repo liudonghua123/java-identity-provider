@@ -15,7 +15,7 @@ import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.authn.AbstractValidationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.idp.authn.principal.IdPAttributePrincipal;
 import net.shibboleth.idp.authn.principal.UsernamePrincipal;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
@@ -70,8 +70,8 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
         }
         log.trace("{}: Prerequisities fulfilled to start doPreExecute", getLogPrefix());
 
-        final SocialUserOpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class);
+        final OpenIdConnectContext suCtx =
+                authenticationContext.getSubcontext(OpenIdConnectContext.class);
         if (suCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);

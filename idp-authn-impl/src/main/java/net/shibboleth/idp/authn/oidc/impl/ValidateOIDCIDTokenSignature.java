@@ -16,7 +16,7 @@ import net.minidev.json.JSONObject;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
@@ -74,8 +74,8 @@ public class ValidateOIDCIDTokenSignature extends AbstractAuthenticationAction {
     final ProfileRequestContext profileRequestContext, @Nonnull
     final AuthenticationContext authenticationContext) {
         log.trace("Entering");
-        final SocialUserOpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class);
+        final OpenIdConnectContext suCtx =
+                authenticationContext.getSubcontext(OpenIdConnectContext.class);
         if (suCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);

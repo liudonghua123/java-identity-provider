@@ -46,15 +46,15 @@ import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.impl.ExternalAuthenticationImpl;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 
 /**
- * Unit tests for {@link SocialUserOpenIdConnectStartServlet}.
+ * Unit tests for {@link OpenIdConnectStartServlet}.
  */
-public class SocialUserOpenIdConnectStartServletTest {
+public class OpenIdConnectStartServletTest {
 
     /** The servlet to be tested. */
-    SocialUserOpenIdConnectStartServlet servlet;
+    OpenIdConnectStartServlet servlet;
 
     /** The conversation key. */
     String conversationKey;
@@ -66,7 +66,7 @@ public class SocialUserOpenIdConnectStartServletTest {
      */
     @BeforeTest
     public void initTests() throws Exception {
-        servlet = new SocialUserOpenIdConnectStartServlet();
+        servlet = new OpenIdConnectStartServlet();
         MockServletConfig mockConfig = new MockServletConfig();
         servlet.init(mockConfig);
         conversationKey = "mockKey";
@@ -138,12 +138,12 @@ public class SocialUserOpenIdConnectStartServletTest {
     }
 
     /**
-     * Run servlet without {@link SocialUserOpenIdConnectContext}.
+     * Run servlet without {@link OpenIdConnectContext}.
      * 
      * @throws Exception
      */
     @Test
-    public void testNoSocialUserContext() throws Exception {
+    public void testNoUserContext() throws Exception {
         final MockHttpServletRequest httpRequest = new MockHttpServletRequest();
         httpRequest.setParameter(ExternalAuthentication.CONVERSATION_KEY, conversationKey);
         final ProfileRequestContext<?, ?> ctx = new ProfileRequestContext<>();
@@ -170,8 +170,8 @@ public class SocialUserOpenIdConnectStartServletTest {
         final AuthenticationFlowDescriptor flow = new AuthenticationFlowDescriptor();
         flow.setId("mock");
         authnCtx.setAttemptedFlow(flow);
-        final SocialUserOpenIdConnectContext suOidcCtx =
-                authnCtx.getSubcontext(SocialUserOpenIdConnectContext.class, true);
+        final OpenIdConnectContext suOidcCtx =
+                authnCtx.getSubcontext(OpenIdConnectContext.class, true);
         final String redirectUri = "https://mock.example.org";
         suOidcCtx.setAuthenticationRequestURI(new URI(redirectUri));
         httpRequest.getSession().setAttribute(ExternalAuthentication.CONVERSATION_KEY + conversationKey,
@@ -180,9 +180,9 @@ public class SocialUserOpenIdConnectStartServletTest {
         Assert.assertFalse(runService(servlet, httpRequest, httpResponse));
         Assert.assertEquals(httpResponse.getRedirectedUrl(), redirectUri);
         Assert.assertNotNull(
-                httpRequest.getSession().getAttribute(SocialUserOpenIdConnectStartServlet.SESSION_ATTR_SUCTX));
+                httpRequest.getSession().getAttribute(OpenIdConnectStartServlet.SESSION_ATTR_SUCTX));
         Assert.assertTrue(httpRequest.getSession().getAttribute(
-                SocialUserOpenIdConnectStartServlet.SESSION_ATTR_SUCTX) instanceof SocialUserOpenIdConnectContext);
+                OpenIdConnectStartServlet.SESSION_ATTR_SUCTX) instanceof OpenIdConnectContext);
     }
 
     /**

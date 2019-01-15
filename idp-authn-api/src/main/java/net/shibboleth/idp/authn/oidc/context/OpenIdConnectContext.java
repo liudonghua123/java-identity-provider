@@ -53,11 +53,11 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 /**
  * This class is used to store oidc information produced in authentication for webflow to process later.
  */
-public class SocialUserOpenIdConnectContext extends BaseContext {
+public class OpenIdConnectContext extends BaseContext {
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(SocialUserOpenIdConnectContext.class);
+    private final Logger log = LoggerFactory.getLogger(OpenIdConnectContext.class);
 
     /** Client Id. */
     @Nonnull

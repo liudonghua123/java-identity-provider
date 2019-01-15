@@ -19,7 +19,7 @@
 	</action-state>
 
 	<view-state id="ExternalTransfer"
-		view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.SocialUserOpenIdConnect.externalAuthnPath')}?conversation=#{flowExecutionContext.getKey().toString()}">
+		view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.OpenIdConnect.externalAuthnPath')}?conversation=#{flowExecutionContext.getKey().toString()}">
 		<on-render>
 			<evaluate
 				expression="opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).getSubcontext(T(net.shibboleth.idp.authn.context.ExternalAuthenticationContext), true).setFlowExecutionUrl(flowExecutionUrl + '&amp;_eventId_proceed=1')" />
@@ -61,7 +61,7 @@
 	</action-state>
 
 	<bean-import
-		resource="socialuseropenidconnect-authn-beans.xml" />
+		resource="openidconnect-authn-beans.xml" />
 
 
 </flow>

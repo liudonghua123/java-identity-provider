@@ -34,7 +34,7 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
@@ -62,7 +62,7 @@ public class ValidateOIDCIDTokenAudienceTest extends AbstractOIDCIDTokenTest {
     public void testNotInAudience() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final SocialUserOpenIdConnectContext suCtx = authCtx.getSubcontext(SocialUserOpenIdConnectContext.class, true);
+        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(DEFAULT_ISSUER);
         suCtx.setOidcTokenResponse(oidcTokenResponse);
         suCtx.setClientID(new ClientID(DEFAULT_CLIENT_ID + "invalid"));
@@ -74,7 +74,7 @@ public class ValidateOIDCIDTokenAudienceTest extends AbstractOIDCIDTokenTest {
     public void testInAudience() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final SocialUserOpenIdConnectContext suCtx = authCtx.getSubcontext(SocialUserOpenIdConnectContext.class, true);
+        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(DEFAULT_ISSUER);
         suCtx.setOidcTokenResponse(oidcTokenResponse);
         suCtx.setClientID(new ClientID(DEFAULT_CLIENT_ID));

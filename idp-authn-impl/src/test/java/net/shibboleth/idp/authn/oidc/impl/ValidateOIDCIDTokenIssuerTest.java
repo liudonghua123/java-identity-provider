@@ -12,7 +12,7 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
@@ -43,7 +43,7 @@ public class ValidateOIDCIDTokenIssuerTest extends AbstractOIDCIDTokenTest {
     @Test
     public void testInvalid() throws Exception {
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         final OIDCProviderMetadata oidcMetadata = buildOidcMetadata(DEFAULT_ISSUER + ".invalid");
         suCtx.setoIDCProviderMetadata(oidcMetadata);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(DEFAULT_ISSUER);
@@ -59,7 +59,7 @@ public class ValidateOIDCIDTokenIssuerTest extends AbstractOIDCIDTokenTest {
     @Test
     public void testValid() throws Exception {
         action.initialize();
-        final SocialUserOpenIdConnectContext suCtx = new SocialUserOpenIdConnectContext();
+        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
         final OIDCProviderMetadata oidcMetadata = buildOidcMetadata(DEFAULT_ISSUER);
         suCtx.setoIDCProviderMetadata(oidcMetadata);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(DEFAULT_ISSUER);

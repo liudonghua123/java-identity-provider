@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.opensaml.profile.action.ActionSupport;
@@ -22,7 +22,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 /**
- * An action that creates a {@link SocialUserOpenIdConnectContext}, and attaches it to the
+ * An action that creates a {@link OpenIdConnectContext}, and attaches it to the
  * {@link AuthenticationContext}.
  * 
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
@@ -47,8 +47,8 @@ public class ValidateOIDCAuthenticationResponse extends AbstractExtractionAction
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
 
-        final SocialUserOpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class);
+        final OpenIdConnectContext suCtx =
+                authenticationContext.getSubcontext(OpenIdConnectContext.class);
         if (suCtx == null) {
             log.info("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);

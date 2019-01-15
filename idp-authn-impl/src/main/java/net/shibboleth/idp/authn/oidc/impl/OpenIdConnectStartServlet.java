@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.SocialUserOpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
 
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * Extracts Social identity and places it in a request attribute to be used by the IdP's external authentication
  * interface.
  */
-public class SocialUserOpenIdConnectStartServlet extends HttpServlet {
+public class OpenIdConnectStartServlet extends HttpServlet {
 
     /** Prefix for the session attribute ids. */
     public static final String SESSION_ATTR_PREFIX =
@@ -32,7 +32,7 @@ public class SocialUserOpenIdConnectStartServlet extends HttpServlet {
     /** Session attribute id for flow conversation key. */
     public static final String SESSION_ATTR_FLOWKEY = SESSION_ATTR_PREFIX + "key";
 
-    /** Session attribute id for {@link SocialUserOpenIdConnectContext}. */
+    /** Session attribute id for {@link OpenIdConnectContext}. */
     public static final String SESSION_ATTR_SUCTX = SESSION_ATTR_PREFIX + "socialUserOpenIdConnectContext";
 
     /** Serial UID. */
@@ -40,10 +40,10 @@ public class SocialUserOpenIdConnectStartServlet extends HttpServlet {
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(SocialUserOpenIdConnectStartServlet.class);
+    private final Logger log = LoggerFactory.getLogger(OpenIdConnectStartServlet.class);
 
     /** Constructor. */
-    public SocialUserOpenIdConnectStartServlet() {
+    public OpenIdConnectStartServlet() {
     }
 
     /** {@inheritDoc} */
@@ -71,9 +71,9 @@ public class SocialUserOpenIdConnectStartServlet extends HttpServlet {
             if (authenticationContext == null) {
                 throw new ExternalAuthenticationException("Could not find AuthenticationContext from the request");
             }
-            final SocialUserOpenIdConnectContext socialUserOpenIdConnectContext =
-                    (SocialUserOpenIdConnectContext) authenticationContext
-                            .getSubcontext(SocialUserOpenIdConnectContext.class);
+            final OpenIdConnectContext socialUserOpenIdConnectContext =
+                    (OpenIdConnectContext) authenticationContext
+                            .getSubcontext(OpenIdConnectContext.class);
             if (socialUserOpenIdConnectContext == null) {
                 throw new ExternalAuthenticationException(
                         "Could not find SocialUserOpenIdConnectContext from the request");

@@ -19,7 +19,7 @@
 	</action-state>
 
 	<view-state id="ExternalTransfer"
-		view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.OpenIdConnect.externalAuthnPath')}?conversation=#{flowExecutionContext.getKey().toString()}">
+		view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.OpenIDConnect.externalAuthnPath')}?conversation=#{flowExecutionContext.getKey().toString()}">
 		<on-render>
 			<evaluate
 				expression="opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).getSubcontext(T(net.shibboleth.idp.authn.context.ExternalAuthenticationContext), true).setFlowExecutionUrl(flowExecutionUrl + '&amp;_eventId_proceed=1')" />
@@ -42,13 +42,13 @@
 	</action-state>
 
 	<action-state id="ValidateOIDCTokenResponse">
-		<evaluate expression="ValidateOIDCIDTokenACR" />
-		<evaluate expression="ValidateOIDCIDTokenAudience" />
-		<evaluate expression="ValidateOIDCIDTokenAuthorizedParty" />
-		<evaluate expression="ValidateOIDCIDTokenExpirationTime" />
-		<evaluate expression="ValidateOIDCIDTokenIssuer" />
-		<evaluate expression="ValidateOIDCIDTokenSignature" />
-		<evaluate expression="ValidateOIDCIDTokenAuthenticationTime" />
+		<evaluate expression="ValidateIDTokenACR" />
+		<evaluate expression="ValidateIDTokenAudience" />
+		<evaluate expression="ValidateIDTokenAuthorizedParty" />
+		<evaluate expression="ValidateIDTokenExpirationTime" />
+		<evaluate expression="ValidateIDTokenIssuer" />
+		<evaluate expression="ValidateIDTokenSignature" />
+		<evaluate expression="ValidateIDTokenAuthenticationTime" />
 		<evaluate expression="'proceed'" />
 		<transition on="proceed" to="SetPrincipal" />
 	</action-state>

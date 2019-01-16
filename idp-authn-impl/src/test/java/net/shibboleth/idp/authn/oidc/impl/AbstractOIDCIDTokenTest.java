@@ -26,12 +26,12 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.impl.BaseAuthenticationContextTest;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
 /**
- * Abstract test case sharing tests for OIDC token validation in {@link OpenIdConnectContext}.
+ * Abstract test case sharing tests for OIDC token validation in {@link OpenIDConnectContext}.
  */
 public abstract class AbstractOIDCIDTokenTest extends BaseAuthenticationContextTest {
 
@@ -49,7 +49,7 @@ public abstract class AbstractOIDCIDTokenTest extends BaseAuthenticationContextT
     protected abstract AbstractProfileAction<?, ?> getAction();
 
     /**
-     * Runs action without {@link OpenIdConnectContext}.
+     * Runs action without {@link OpenIDConnectContext}. 
      */
     @Test
     public void testNoContext() throws Exception {
@@ -165,13 +165,13 @@ public abstract class AbstractOIDCIDTokenTest extends BaseAuthenticationContextT
         final OIDCTokenResponse oidcTokenResponse = new OIDCTokenResponse(oidcTokens);
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
+        final OpenIDConnectContext odicCtx = new OpenIDConnectContext();
+        odicCtx.setOidcTokenResponse(oidcTokenResponse);
         if (nullifyIdToken) {
-            suCtx.setIDToken(null);
+            odicCtx.setIDToken(null);
         }
-        suCtx.setoIDCProviderMetadata(buildOidcMetadata(DEFAULT_ISSUER));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        odicCtx.setoIDCProviderMetadata(buildOidcMetadata(DEFAULT_ISSUER));
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(odicCtx);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
 

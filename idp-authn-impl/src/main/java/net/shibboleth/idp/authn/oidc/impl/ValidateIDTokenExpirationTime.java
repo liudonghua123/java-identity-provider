@@ -1,14 +1,15 @@
 
+
 package net.shibboleth.idp.authn.oidc.impl;
 
-import java.text.ParseException;
+import java.util.Date;
 
 import javax.annotation.Nonnull;
 
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
@@ -16,8 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An action that verifies Issuer of ID Token.
+ * An action that verifies Expiration Time of ID Token.
  * 
+ *
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
  * @pre
@@ -31,19 +33,14 @@ import org.slf4j.LoggerFactory;
  *      <pre>
  *      SocialUserOpenIdConnectContext.getOidcTokenResponse() != null
  *      </pre>
- * 
- *      AND
- * 
- *      <pre>
- *      SocialUserOpenIdConnectContext.getoIDCProviderMetadata() != null
- *      </pre>
  */
 @SuppressWarnings("rawtypes")
-public class ValidateOIDCIDTokenIssuer extends AbstractAuthenticationAction {
+// TODO: Add preconditions to doc (suCtx.getOidcTokenResponse() etc)
+public class ValidateIDTokenExpirationTime extends AbstractAuthenticationAction {
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateOIDCIDTokenIssuer.class);
+    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenExpirationTime.class);
 
     /** {@inheritDoc} */
     @Override
@@ -51,29 +48,28 @@ public class ValidateOIDCIDTokenIssuer extends AbstractAuthenticationAction {
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
 
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
             return;
         }
 
-        final String issuer = suCtx.getoIDCProviderMetadata().getIssuer().getValue();
-        // The Issuer Identifier for the OpenID Provider (which is typically
-        // obtained during Discovery) MUST exactly match the value of the
-        // iss (issuer) Claim.
+        // Check time
+        // The current time MUST be before the time represented by the exp
+        Date currentDate = new Date();
         try {
-            if (!issuer.equals(suCtx.getIDToken().getJWTClaimsSet().getIssuer())) {
-                log.error("{} issuer mismatch", getLogPrefix());
+            Date expDate = oidcCtx.getIDToken().getJWTClaimsSet().getExpirationTime();
+            if (currentDate.after(expDate)) {
+                log.error("{} Current date {} is past exp date {}", getLogPrefix(), currentDate, expDate);
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
                 log.trace("Leaving");
                 return;
             }
-
-        } catch (ParseException e) {
-            log.error("{} unable to parse oidc token", getLogPrefix());
+        } catch (java.text.ParseException e) {
+            log.error("{} Error parsing id token", getLogPrefix(), e);
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
             return;
@@ -81,4 +77,5 @@ public class ValidateOIDCIDTokenIssuer extends AbstractAuthenticationAction {
         log.trace("Leaving");
         return;
     }
+
 }

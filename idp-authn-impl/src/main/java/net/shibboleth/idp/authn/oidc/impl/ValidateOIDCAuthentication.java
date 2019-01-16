@@ -15,7 +15,7 @@ import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.authn.AbstractValidationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.authn.principal.IdPAttributePrincipal;
 import net.shibboleth.idp.authn.principal.UsernamePrincipal;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
@@ -70,24 +70,23 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
         }
         log.trace("{}: Prerequisities fulfilled to start doPreExecute", getLogPrefix());
 
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx = authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
             return false;
         }
 
-        if (suCtx.getIDToken() == null) {
+        if (oidcCtx.getIDToken() == null) {
             log.error("{} No ID Token in response", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
             return false;
         }
         try {
-            oidcSubject = StringSupport.trimOrNull(suCtx.getIDToken().getJWTClaimsSet().getSubject());
-            jwtClaims = suCtx.getIDToken().getJWTClaimsSet();
+            oidcSubject = StringSupport.trimOrNull(oidcCtx.getIDToken().getJWTClaimsSet().getSubject());
+            jwtClaims = oidcCtx.getIDToken().getJWTClaimsSet();
         } catch (ParseException e) {
             log.error("{} unable to parse ID Token", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
@@ -106,9 +105,10 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
 
     /** {@inheritDoc} */
     @Override
-    protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext, @Nonnull
-            final AuthenticationContext authenticationContext) {
-        
+    protected void doExecute(@Nonnull
+    final ProfileRequestContext profileRequestContext, @Nonnull
+    final AuthenticationContext authenticationContext) {
+
         log.trace("Entering");
         buildAuthenticationResult(profileRequestContext, authenticationContext);
         log.trace("Leaving");
@@ -147,7 +147,7 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
                         claimValue = StringSupport.trimOrNull(Boolean.toString((Boolean) claim.getValue()));
                     }
                     if (claimValue == null) {
-                        log.trace("{} JWT Claim [{}] is not of a supported type or is null/empty, ignored", 
+                        log.trace("{} JWT Claim [{}] is not of a supported type or is null/empty, ignored",
                                 getLogPrefix(), claim);
                         continue;
                     }

@@ -12,23 +12,23 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
 /**
- * Unit tests for {@link ValidateOIDCIDTokenIssuer}.
+ * Unit tests for {@link ValidateIDTokenIssuer}.
  */
-public class ValidateOIDCIDTokenIssuerTest extends AbstractOIDCIDTokenTest {
+public class ValidateIDTokenIssuerTest extends AbstractOIDCIDTokenTest {
 
     /** The action to be tested. */
-    private ValidateOIDCIDTokenIssuer action;
+    private ValidateIDTokenIssuer action;
 
     /** {@inheritDoc} */
     @BeforeMethod
     public void setUp() throws Exception {
         super.setUp();
-        action = new ValidateOIDCIDTokenIssuer();
+        action = new ValidateIDTokenIssuer();
     }
 
     @Override
@@ -43,12 +43,12 @@ public class ValidateOIDCIDTokenIssuerTest extends AbstractOIDCIDTokenTest {
     @Test
     public void testInvalid() throws Exception {
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
         final OIDCProviderMetadata oidcMetadata = buildOidcMetadata(DEFAULT_ISSUER + ".invalid");
-        suCtx.setoIDCProviderMetadata(oidcMetadata);
+        oidcCtx.setoIDCProviderMetadata(oidcMetadata);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(DEFAULT_ISSUER);
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -59,12 +59,12 @@ public class ValidateOIDCIDTokenIssuerTest extends AbstractOIDCIDTokenTest {
     @Test
     public void testValid() throws Exception {
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
         final OIDCProviderMetadata oidcMetadata = buildOidcMetadata(DEFAULT_ISSUER);
-        suCtx.setoIDCProviderMetadata(oidcMetadata);
+        oidcCtx.setoIDCProviderMetadata(oidcMetadata);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(DEFAULT_ISSUER);
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         Assert.assertNull(event);
     }

@@ -12,23 +12,23 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
 /**
- * Unit tests for {@link ValidateOIDCIDTokenExpirationTime}.
+ * Unit tests for {@link ValidateIDTokenExpirationTime}.
  */
-public class ValidateOIDCIDTokenExpirationTimeTest extends AbstractOIDCIDTokenTest {
+public class ValidateIDTokenExpirationTimeTest extends AbstractOIDCIDTokenTest {
 
     /** The action to be tested. */
-    private ValidateOIDCIDTokenExpirationTime action;
+    private ValidateIDTokenExpirationTime action;
 
     /** {@inheritDoc} */
     @BeforeMethod
     public void setUp() throws Exception {
         super.setUp();
-        action = new ValidateOIDCIDTokenExpirationTime();
+        action = new ValidateIDTokenExpirationTime();
     }
 
     /** {@inheritDoc} */
@@ -43,10 +43,10 @@ public class ValidateOIDCIDTokenExpirationTimeTest extends AbstractOIDCIDTokenTe
     public void testExpired() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(new DateTime().minusSeconds(1).toDate());
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -58,10 +58,10 @@ public class ValidateOIDCIDTokenExpirationTimeTest extends AbstractOIDCIDTokenTe
     public void testValid() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(new DateTime().plusMinutes(5).toDate());
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         Assert.assertNull(event);
     }

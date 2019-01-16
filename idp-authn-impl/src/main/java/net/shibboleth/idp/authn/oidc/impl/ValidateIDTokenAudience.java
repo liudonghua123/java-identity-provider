@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  */
 @SuppressWarnings("rawtypes")
-public class ValidateOIDCIDTokenAudience extends AbstractAuthenticationAction {
+public class ValidateIDTokenAudience extends AbstractAuthenticationAction {
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateOIDCIDTokenAudience.class);
+    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAudience.class);
 
     /** {@inheritDoc} */
     @Override
@@ -33,15 +33,15 @@ public class ValidateOIDCIDTokenAudience extends AbstractAuthenticationAction {
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
 
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
             return;
         }
-        if (suCtx.getIDToken() == null) {
+        if (oidcCtx.getIDToken() == null) {
             log.error("{} Not able to find id token", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
@@ -55,7 +55,7 @@ public class ValidateOIDCIDTokenAudience extends AbstractAuthenticationAction {
         // audience, or if it contains additional audiences not trusted by
         // the Client.
         try {
-            if (!suCtx.getIDToken().getJWTClaimsSet().getAudience().contains(suCtx.getClientID().getValue())) {
+            if (!oidcCtx.getIDToken().getJWTClaimsSet().getAudience().contains(oidcCtx.getClientID().getValue())) {
                 log.error("{} client is not the intended audience", getLogPrefix());
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
                 log.trace("Leaving");

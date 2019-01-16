@@ -86,7 +86,7 @@
                 <entry key="authn/Duo" value="../system/flows/authn/duo-authn-flow.xml" />
                 <entry key="authn/MFA" value="../system/flows/authn/mfa-authn-flow.xml" />
                 <entry key="authn/Function" value="../system/flows/authn/function-authn-flow.xml" />
-                <entry key="authn/OpenIdConnect" value="../system/flows/authn/openidconnect-authn-flow.xml" />
+                <entry key="authn/OpenIDConnect" value="../system/flows/authn/openidconnect-authn-flow.xml" />
             
           
                 <!-- Master flow for subject c14n. -->

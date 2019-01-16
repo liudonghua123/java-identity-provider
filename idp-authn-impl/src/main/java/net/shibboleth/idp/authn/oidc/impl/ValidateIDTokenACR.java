@@ -16,7 +16,7 @@ import com.nimbusds.openid.connect.sdk.claims.ACR;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 /**
@@ -25,11 +25,11 @@ import net.shibboleth.utilities.java.support.primitive.StringSupport;
  * @event {@link net.shibboleth.idp.authn.AuthnEventIds#NO_CREDENTIALS}
  */
 @SuppressWarnings("rawtypes")
-public class ValidateOIDCIDTokenACR extends AbstractAuthenticationAction {
+public class ValidateIDTokenACR extends AbstractAuthenticationAction {
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateOIDCIDTokenACR.class);
+    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenACR.class);
 
     /** {@inheritDoc} */
     @Override
@@ -37,9 +37,9 @@ public class ValidateOIDCIDTokenACR extends AbstractAuthenticationAction {
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
 
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
@@ -50,7 +50,7 @@ public class ValidateOIDCIDTokenACR extends AbstractAuthenticationAction {
         // If the acr Claim was requested, the Client SHOULD check that the
         // asserted Claim Value is appropriate. The meaning and processing
         // of acr Claim Values is out of scope for this specification.
-        final List<ACR> acrs = suCtx.getAcrs();
+        final List<ACR> acrs = oidcCtx.getAcrs();
         if (acrs != null && acrs.size() > 0) {
             if (log.isTraceEnabled()) {
                 for (int i = 0; i < acrs.size(); i++) {
@@ -59,7 +59,7 @@ public class ValidateOIDCIDTokenACR extends AbstractAuthenticationAction {
             }
             final String acr;
             try {
-                acr = suCtx.getIDToken().getJWTClaimsSet().getStringClaim("acr");
+                acr = oidcCtx.getIDToken().getJWTClaimsSet().getStringClaim("acr");
             } catch (ParseException e) {
                 log.error("{} Error parsing id token", getLogPrefix());
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);

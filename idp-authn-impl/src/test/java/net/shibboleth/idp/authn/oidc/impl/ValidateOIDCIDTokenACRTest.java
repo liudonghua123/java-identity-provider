@@ -21,18 +21,18 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
-import net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenACR;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
+import net.shibboleth.idp.authn.oidc.impl.ValidateIDTokenACR;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
 /**
- * Unit tests for {@link ValidateOIDCIDTokenACR}.
+ * Unit tests for {@link ValidateIDTokenACR}.
  */
 public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
 
     /** The action to be tested. */
-    private ValidateOIDCIDTokenACR action;
+    private ValidateIDTokenACR action;
 
     /** The ACR value. */
     private String acr;
@@ -41,7 +41,7 @@ public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
     @BeforeMethod
     public void setUp() throws Exception {
         super.setUp();
-        action = new ValidateOIDCIDTokenACR();
+        action = new ValidateIDTokenACR();
         acr = "mockAcr";
     }
 
@@ -57,7 +57,7 @@ public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
     public void testNoAcr() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        authCtx.addSubcontext(new OpenIdConnectContext());
+        authCtx.addSubcontext(new OpenIDConnectContext());
         Assert.assertNull(action.execute(src));
     }
 
@@ -70,9 +70,9 @@ public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
         action.initialize();
         final List<ACR> acrs = new ArrayList<>();
         acrs.add(new ACR(acr));
-        final OpenIdConnectContext suCtx = buildContextWithACR(acrs, null);
+        final OpenIDConnectContext oidcCtx = buildContextWithACR(acrs, null);
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -86,9 +86,9 @@ public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
         action.initialize();
         final List<ACR> acrs = new ArrayList<>();
         acrs.add(new ACR(acr));
-        final OpenIdConnectContext suCtx = buildContextWithACR(acrs, "{ \"mock\" : \"mock\" }");
+        final OpenIDConnectContext oidcCtx = buildContextWithACR(acrs, "{ \"mock\" : \"mock\" }");
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -102,9 +102,9 @@ public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
         action.initialize();
         final List<ACR> acrs = new ArrayList<>();
         acrs.add(new ACR(acr));
-        final OpenIdConnectContext suCtx = buildContextWithACR(acrs, "{ \"acr\" : \"invalid\" }");
+        final OpenIDConnectContext oidcCtx = buildContextWithACR(acrs, "{ \"acr\" : \"invalid\" }");
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -118,9 +118,9 @@ public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
         action.initialize();
         final List<ACR> acrs = new ArrayList<>();
         acrs.add(new ACR(acr));
-        final OpenIdConnectContext suCtx = buildContextWithACR(acrs, "{ \"acr\" : \"" + acr + "\" }");
+        final OpenIDConnectContext oidcCtx = buildContextWithACR(acrs, "{ \"acr\" : \"" + acr + "\" }");
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         Assert.assertNull(action.execute(src));
     }
 
@@ -135,24 +135,24 @@ public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
         acrs.add(new ACR(acr));
         acrs.add(new ACR("second"));
         acrs.add(new ACR("third"));
-        final OpenIdConnectContext suCtx = buildContextWithACR(acrs, "{ \"acr\" : \"" + acr + "\" }");
+        final OpenIDConnectContext oidcCtx = buildContextWithACR(acrs, "{ \"acr\" : \"" + acr + "\" }");
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         Assert.assertNull(action.execute(src));
     }
 
     /**
-     * Helper for building {@link OpenIdConnectContext}.
+     * Helper for building {@link OpenIDConnectContext}.
      * 
      * @param acrs
      * @param jwt
      * @return
      * @throws Exception
      */
-    protected OpenIdConnectContext buildContextWithACR(final List<ACR> acrs, final String jwt)
+    protected OpenIDConnectContext buildContextWithACR(final List<ACR> acrs, final String jwt)
             throws Exception {
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
-        suCtx.setAcrs(acrs);
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
+        oidcCtx.setAcrs(acrs);
         final OIDCTokenResponse oidcTokenResponse = Mockito.mock(OIDCTokenResponse.class);
         final JWT idToken = Mockito.mock(JWT.class);
         if (jwt == null) {
@@ -163,7 +163,7 @@ public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
         }
         final OIDCTokens oidcTokens = new OIDCTokens(idToken, new BearerAccessToken(), new RefreshToken());
         Mockito.when(oidcTokenResponse.getOIDCTokens()).thenReturn(oidcTokens);
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        return suCtx;
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        return oidcCtx;
     }
 }

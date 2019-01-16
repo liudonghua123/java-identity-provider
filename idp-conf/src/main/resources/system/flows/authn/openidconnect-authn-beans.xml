@@ -28,10 +28,10 @@
 	</bean>
 
 	<bean id="SetOIDCInformation" class="net.shibboleth.idp.authn.oidc.impl.SetOIDCInformation">
-		<property name="clientId" value="%{idp.oidc.clientid:none}" />
+		<property name="clientID" value="%{idp.oidc.clientID:none}" />
 		<property name="clientSecret" value="%{idp.oidc.clientSecret:none}" />
 		<property name="providerMetadataLocation" value="%{idp.oidc.providerConfigurationDocument:none}" />
-		<property name="redirectURI" value="%{idp.oidc.redirectUri:none}" />
+		<property name="redirectURI" value="%{idp.oidc.redirectURI:none}" />
 		<property name="scope" value="%{idp.oidc.scope:none}"/>
 			
 		<!-- <property name="responseType" value="id_token token"/> -->
@@ -41,23 +41,23 @@
 		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCAuthenticationResponse"
 		p:httpServletRequest-ref="shibboleth.HttpServletRequest" />
 
-	<bean id="ValidateOIDCIDTokenACR" class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenACR" />
+	<bean id="ValidateIDTokenACR" class="net.shibboleth.idp.authn.oidc.impl.ValidateIDTokenACR" />
 
-	<bean id="ValidateOIDCIDTokenAudience" class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenAudience" />
+	<bean id="ValidateIDTokenAudience" class="net.shibboleth.idp.authn.oidc.impl.ValidateIDTokenAudience" />
 
-	<bean id="ValidateOIDCIDTokenAuthenticationTime"
-		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenAuthenticationTime" />
+	<bean id="ValidateIDTokenAuthenticationTime"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateIDTokenAuthenticationTime" />
 
-	<bean id="ValidateOIDCIDTokenAuthorizedParty"
-		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenAuthorizedParty" />
+	<bean id="ValidateIDTokenAuthorizedParty"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateIDTokenAuthorizedParty" />
 
-	<bean id="ValidateOIDCIDTokenExpirationTime"
-		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenExpirationTime" />
+	<bean id="ValidateIDTokenExpirationTime"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateIDTokenExpirationTime" />
 
-	<bean id="ValidateOIDCIDTokenIssuer" class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenIssuer" />
+	<bean id="ValidateIDTokenIssuer" class="net.shibboleth.idp.authn.oidc.impl.ValidateIDTokenIssuer" />
 
-	<bean id="ValidateOIDCIDTokenSignature"
-		class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCIDTokenSignature" />
+	<bean id="ValidateIDTokenSignature"
+		class="net.shibboleth.idp.authn.oidc.impl.ValidateIDTokenSignature" />
 
 	<bean id="ValidateOIDCAuthentication" class="net.shibboleth.idp.authn.oidc.impl.ValidateOIDCAuthentication" scope="prototype" />
 

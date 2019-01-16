@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.utilities.java.support.annotation.Duration;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonNegative;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
@@ -27,11 +27,11 @@ import org.slf4j.LoggerFactory;
  * @event {@link net.shibboleth.idp.authn.AuthnEventIds#NO_CREDENTIALS}
  */
 @SuppressWarnings("rawtypes")
-public class ValidateOIDCIDTokenAuthenticationTime extends AbstractAuthenticationAction {
+public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAction {
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateOIDCIDTokenAuthenticationTime.class);
+    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAuthenticationTime.class);
 
     /**
      * Clock skew - milliseconds before a lower time bound, or after an upper time bound, to consider still acceptable
@@ -52,7 +52,7 @@ public class ValidateOIDCIDTokenAuthenticationTime extends AbstractAuthenticatio
     /**
      * Constructor.
      */
-    public ValidateOIDCIDTokenAuthenticationTime() {
+    public ValidateIDTokenAuthenticationTime() {
         super();
         setClockSkew(60 * 3 * 1000);
         setAuthnLifetime(30 * 1000);
@@ -110,9 +110,9 @@ public class ValidateOIDCIDTokenAuthenticationTime extends AbstractAuthenticatio
             return;
         }
         // If we have forced authentication, we will check for authentication age
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
@@ -120,7 +120,7 @@ public class ValidateOIDCIDTokenAuthenticationTime extends AbstractAuthenticatio
         }
         final Date authTimeDate;
         try {
-            authTimeDate = suCtx.getIDToken().getJWTClaimsSet().getDateClaim("auth_time");
+            authTimeDate = oidcCtx.getIDToken().getJWTClaimsSet().getDateClaim("auth_time");
         } catch (ParseException e) {
             log.error("{} Error parsing id token", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);

@@ -16,23 +16,23 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
 /**
- * Unit tests for {@link ValidateOIDCIDTokenAuthenticationTime}.
+ * Unit tests for {@link ValidateIDTokenAuthenticationTime}.
  */
-public class ValidateOIDCIDTokenAuthenticationTimeTest extends AbstractOIDCIDTokenTest {
+public class ValidateIDTokenAuthenticationTimeTest extends AbstractOIDCIDTokenTest {
 
     /** The action to be tested. */
-    private ValidateOIDCIDTokenAuthenticationTime action;
+    private ValidateIDTokenAuthenticationTime action;
 
     /** {@inheritDoc} */
     @BeforeMethod
     public void setUp() throws Exception {
         super.setUp();
-        action = new ValidateOIDCIDTokenAuthenticationTime();
+        action = new ValidateIDTokenAuthenticationTime();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
         // turn force authn on by default, as otherwise action is not run
         authCtx.setForceAuthn(true);
@@ -65,8 +65,8 @@ public class ValidateOIDCIDTokenAuthenticationTimeTest extends AbstractOIDCIDTok
     public void testNullAuthTime() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
-        suCtx.setOidcTokenResponse(buildOidcTokenResponse(null));
+        final OpenIDConnectContext oidcCtx = authCtx.getSubcontext(OpenIDConnectContext.class, true);
+        oidcCtx.setOidcTokenResponse(buildOidcTokenResponse(null));
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -80,8 +80,8 @@ public class ValidateOIDCIDTokenAuthenticationTimeTest extends AbstractOIDCIDTok
     public void testFutureAuthTime() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
-        suCtx.setOidcTokenResponse(buildOidcTokenResponse(
+        final OpenIDConnectContext oidcCtx = authCtx.getSubcontext(OpenIDConnectContext.class, true);
+        oidcCtx.setOidcTokenResponse(buildOidcTokenResponse(
                 new DateTime().plusSeconds((int) (action.getAuthnLifetime() + action.getClockSkew() + 1000)).toDate()));
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
@@ -96,8 +96,8 @@ public class ValidateOIDCIDTokenAuthenticationTimeTest extends AbstractOIDCIDTok
     public void testExpiredAuthTime() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
-        suCtx.setOidcTokenResponse(
+        final OpenIDConnectContext oidcCtx = authCtx.getSubcontext(OpenIDConnectContext.class, true);
+        oidcCtx.setOidcTokenResponse(
                 buildOidcTokenResponse(new DateTime().minusSeconds((int) action.getClockSkew() + 1000).toDate()));
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
@@ -112,8 +112,8 @@ public class ValidateOIDCIDTokenAuthenticationTimeTest extends AbstractOIDCIDTok
     public void testValidAuthTime() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
-        suCtx.setOidcTokenResponse(buildOidcTokenResponse(new DateTime().toDate()));
+        final OpenIDConnectContext oidcCtx = authCtx.getSubcontext(OpenIDConnectContext.class, true);
+        oidcCtx.setOidcTokenResponse(buildOidcTokenResponse(new DateTime().toDate()));
         Assert.assertNull(action.execute(src));
     }
 

@@ -146,23 +146,23 @@
     
     <!--  Servlet used to initiate an OIDC external authentication flow -->
     <servlet> 
-    	<servlet-name>OpenIdConnectStartServlet</servlet-name> 
-    	<servlet-class>net.shibboleth.idp.authn.oidc.impl.OpenIdConnectStartServlet</servlet-class> 
+    	<servlet-name>OpenIDConnectStartServlet</servlet-name> 
+    	<servlet-class>net.shibboleth.idp.authn.oidc.impl.OpenIDConnectStartServlet</servlet-class> 
     	<load-on-startup>4</load-on-startup>
 	</servlet>
 	<servlet-mapping> 
-		<servlet-name>OpenIdConnectStartServlet</servlet-name> 
-		<url-pattern>/Authn/OpenIdConnectStart</url-pattern>
+		<servlet-name>OpenIDConnectStartServlet</servlet-name> 
+		<url-pattern>/Authn/OpenIDConnectStart</url-pattern>
      </servlet-mapping>
      <!--  Servlet used to consume the OAuth response of an OIDC external authentication flow -->
 	<servlet> 
-		<servlet-name>OpenIdConnectEndServlet</servlet-name> 
-		<servlet-class>net.shibboleth.idp.authn.oidc.impl.OpenIdConnectEndServlet</servlet-class> 
+		<servlet-name>OpenIDConnectEndServlet</servlet-name> 
+		<servlet-class>net.shibboleth.idp.authn.oidc.impl.OpenIDConnectEndServlet</servlet-class> 
 		<load-on-startup>4</load-on-startup>
 	</servlet>
 	<servlet-mapping> 
-		<servlet-name>OpenIdConnectEndServlet</servlet-name> 
-		<url-pattern>/Authn/OpenIdConnectEnd</url-pattern>
+		<servlet-name>OpenIDConnectEndServlet</servlet-name> 
+		<url-pattern>/Authn/OpenIDConnectEnd</url-pattern>
      </servlet-mapping>
 
     <!-- Send request for the EntityID to the SAML metadata echoing JSP. -->

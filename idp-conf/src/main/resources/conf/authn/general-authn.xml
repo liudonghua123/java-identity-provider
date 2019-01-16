@@ -61,7 +61,7 @@
 
         <bean id="authn/Function" parent="shibboleth.AuthenticationFlow" />
         
-        <bean id="authn/OpenIdConnect" parent="shibboleth.AuthenticationFlow"
+        <bean id="authn/OpenIDConnect" parent="shibboleth.AuthenticationFlow"
             p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true"/>
             
 

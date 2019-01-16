@@ -46,15 +46,15 @@ import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.impl.ExternalAuthenticationImpl;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 
 /**
- * Unit tests for {@link OpenIdConnectStartServlet}.
+ * Unit tests for {@link OpenIDConnectStartServlet}.
  */
-public class OpenIdConnectStartServletTest {
+public class OpenIDConnectStartServletTest {
 
     /** The servlet to be tested. */
-    OpenIdConnectStartServlet servlet;
+    OpenIDConnectStartServlet servlet;
 
     /** The conversation key. */
     String conversationKey;
@@ -66,7 +66,7 @@ public class OpenIdConnectStartServletTest {
      */
     @BeforeTest
     public void initTests() throws Exception {
-        servlet = new OpenIdConnectStartServlet();
+        servlet = new OpenIDConnectStartServlet();
         MockServletConfig mockConfig = new MockServletConfig();
         servlet.init(mockConfig);
         conversationKey = "mockKey";
@@ -138,7 +138,7 @@ public class OpenIdConnectStartServletTest {
     }
 
     /**
-     * Run servlet without {@link OpenIdConnectContext}.
+     * Run servlet without {@link OpenIDConnectContext}.
      * 
      * @throws Exception
      */
@@ -170,8 +170,8 @@ public class OpenIdConnectStartServletTest {
         final AuthenticationFlowDescriptor flow = new AuthenticationFlowDescriptor();
         flow.setId("mock");
         authnCtx.setAttemptedFlow(flow);
-        final OpenIdConnectContext suOidcCtx =
-                authnCtx.getSubcontext(OpenIdConnectContext.class, true);
+        final OpenIDConnectContext suOidcCtx =
+                authnCtx.getSubcontext(OpenIDConnectContext.class, true);
         final String redirectUri = "https://mock.example.org";
         suOidcCtx.setAuthenticationRequestURI(new URI(redirectUri));
         httpRequest.getSession().setAttribute(ExternalAuthentication.CONVERSATION_KEY + conversationKey,
@@ -180,9 +180,9 @@ public class OpenIdConnectStartServletTest {
         Assert.assertFalse(runService(servlet, httpRequest, httpResponse));
         Assert.assertEquals(httpResponse.getRedirectedUrl(), redirectUri);
         Assert.assertNotNull(
-                httpRequest.getSession().getAttribute(OpenIdConnectStartServlet.SESSION_ATTR_SUCTX));
+                httpRequest.getSession().getAttribute(OpenIDConnectStartServlet.SESSION_ATTR_SUCTX));
         Assert.assertTrue(httpRequest.getSession().getAttribute(
-                OpenIdConnectStartServlet.SESSION_ATTR_SUCTX) instanceof OpenIdConnectContext);
+                OpenIDConnectStartServlet.SESSION_ATTR_SUCTX) instanceof OpenIDConnectContext);
     }
 
     /**

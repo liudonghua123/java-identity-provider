@@ -15,7 +15,7 @@ import javax.servlet.http.HttpSession;
 
 import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.slf4j.Logger;
@@ -28,17 +28,17 @@ import org.slf4j.LoggerFactory;
  * Extracts Social identity and places it in a request attribute to be used by the IdP's external authentication
  * interface.
  */
-public class OpenIdConnectEndServlet extends HttpServlet {
+public class OpenIDConnectEndServlet extends HttpServlet {
 
     /** Serial UID. */
     private static final long serialVersionUID = -3162157736238514852L;
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(OpenIdConnectEndServlet.class);
+    private final Logger log = LoggerFactory.getLogger(OpenIDConnectEndServlet.class);
 
     /** Constructor. */
-    public OpenIdConnectEndServlet() {
+    public OpenIDConnectEndServlet() {
     }
 
     /** {@inheritDoc} */
@@ -58,21 +58,21 @@ public class OpenIdConnectEndServlet extends HttpServlet {
                 throw new ExternalAuthenticationException("No session exist, this URL shouldn't be called directly!");
             }
             final String key = StringSupport.trimOrNull((String) httpRequest.getSession()
-                    .getAttribute(OpenIdConnectStartServlet.SESSION_ATTR_FLOWKEY));
+                    .getAttribute(OpenIDConnectStartServlet.SESSION_ATTR_FLOWKEY));
             if (key == null) {
                 throw new ExternalAuthenticationException(
-                        "Could not find value for " + OpenIdConnectStartServlet.SESSION_ATTR_FLOWKEY);
+                        "Could not find value for " + OpenIDConnectStartServlet.SESSION_ATTR_FLOWKEY);
             }
-            final OpenIdConnectContext openIdConnectContext =
-                    (OpenIdConnectContext) httpRequest.getSession()
-                            .getAttribute(OpenIdConnectStartServlet.SESSION_ATTR_SUCTX);
-            if (openIdConnectContext == null) {
+            final OpenIDConnectContext openIDConnectContext =
+                    (OpenIDConnectContext) httpRequest.getSession()
+                            .getAttribute(OpenIDConnectStartServlet.SESSION_ATTR_SUCTX);
+            if (openIDConnectContext == null) {
                 throw new ExternalAuthenticationException(
-                        "Could not find value for " + OpenIdConnectStartServlet.SESSION_ATTR_SUCTX);
+                        "Could not find value for " + OpenIDConnectStartServlet.SESSION_ATTR_SUCTX);
             }
             log.debug("Attempting URL {}?{}", httpRequest.getRequestURL(), httpRequest.getQueryString());
             try {
-                openIdConnectContext.setAuthenticationResponseURI(httpRequest);
+                openIDConnectContext.setAuthenticationResponseURI(httpRequest);
             } catch (URISyntaxException e) {
                 throw new ExternalAuthenticationException("Could not parse response URI", e);
             }

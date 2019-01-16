@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
@@ -30,7 +30,7 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 
 /**
- * An action that calls the token endpoint and populates the information to {@link OpenIdConnectContext}.
+ * An action that calls the token endpoint and populates the information to {@link OpenIDConnectContext}.
  * 
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
@@ -49,20 +49,20 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
     final ProfileRequestContext profileRequestContext, @Nonnull
     final AuthenticationContext authenticationContext) {
         log.trace("Entering");
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
             return;
         }
-        if (suCtx.getIDToken() != null) {
+        if (oidcCtx.getIDToken() != null) {
             log.debug("id token exists already, no need to fetch it from token endpoint");
             log.trace("Leaving");
             return;
         }
-        final AuthenticationSuccessResponse response = suCtx.getAuthenticationSuccessResponse();
+        final AuthenticationSuccessResponse response = oidcCtx.getAuthenticationSuccessResponse();
         if (response == null) {
             log.info("{} No oidc authentication success response", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
@@ -70,12 +70,12 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
             return;
         }
         final AuthorizationCode code = response.getAuthorizationCode();
-        final AuthorizationGrant codeGrant = new AuthorizationCodeGrant(code, suCtx.getRedirectURI());
-        final ClientAuthentication clientAuth = new ClientSecretBasic(suCtx.getClientID(), suCtx.getClientSecret());
+        final AuthorizationGrant codeGrant = new AuthorizationCodeGrant(code, oidcCtx.getRedirectURI());
+        final ClientAuthentication clientAuth = new ClientSecretBasic(oidcCtx.getClientID(), oidcCtx.getClientSecret());
         log.debug("{} Using the following token endpoint URI: {}", getLogPrefix(),
-                suCtx.getoIDCProviderMetadata().getTokenEndpointURI());
+                oidcCtx.getoIDCProviderMetadata().getTokenEndpointURI());
         final TokenRequest tokenRequest =
-                new TokenRequest(suCtx.getoIDCProviderMetadata().getTokenEndpointURI(), clientAuth, codeGrant);
+                new TokenRequest(oidcCtx.getoIDCProviderMetadata().getTokenEndpointURI(), clientAuth, codeGrant);
         final OIDCTokenResponse oidcTokenResponse;
         try {
             final TokenResponse tokenResponse = OIDCTokenResponseParser.parse(tokenRequest.toHTTPRequest().send());
@@ -88,7 +88,7 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
                     log.trace("Leaving");
                     return;
                 } else {
-                    suCtx.setOidcTokenResponse(oidcTokenResponse);
+                    oidcCtx.setOidcTokenResponse(oidcTokenResponse);
                     log.debug("Storing oidc token response to context: {}",
                             oidcTokenResponse.toJSONObject().toJSONString());
                 }

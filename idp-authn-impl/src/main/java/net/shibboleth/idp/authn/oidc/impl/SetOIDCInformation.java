@@ -18,7 +18,7 @@ import net.minidev.json.JSONObject;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 
 import org.opensaml.messaging.context.navigate.ChildContextLookup;
 import org.opensaml.profile.action.ActionSupport;
@@ -60,7 +60,7 @@ import net.shibboleth.idp.profile.context.RelyingPartyContext;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
 /**
- * An action that sets oidc information to {@link OpenIdConnectContext} and attaches it to
+ * An action that sets oidc information to {@link OpenIDConnectContext} and attaches it to
  * {@link AuthenticationContext}.
  */
 @SuppressWarnings("rawtypes")
@@ -181,9 +181,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oauth2ClientId Oauth2 Client ID
      */
-    public void setClientId(String oauth2ClientId) {
+    public void setClientID(String oauth2ClientID) {
         log.trace("Entering & Leaving");
-        this.clientID = new ClientID(oauth2ClientId);
+        this.clientID = new ClientID(oauth2ClientID);
     }
 
     /**
@@ -317,18 +317,18 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     /**
      * Returns the first found string value for attribute.
      * 
-     * @param suCtx to look attributes for
+     * @param oidcCtx to look attributes for
      * @param name of the attribute
      * @return attribute value if found, null otherwise
      */
-    private String attributeToString(@Nonnull final OpenIdConnectContext suCtx, String name) {
+    private String attributeToString(@Nonnull final OpenIDConnectContext oidcCtx, String name) {
         log.trace("Entering");
-        if (suCtx.getResolvedIdPAttributes() == null) {
+        if (oidcCtx.getResolvedIdPAttributes() == null) {
             log.warn("Attribute context not available");
             log.trace("Leaving");
             return null;
         }
-        IdPAttribute attribute = suCtx.getResolvedIdPAttributes().get(name);
+        IdPAttribute attribute = oidcCtx.getResolvedIdPAttributes().get(name);
         if (attribute == null || attribute.getValues().size() == 0) {
             log.debug("attribute " + name + " not found or has no values");
             log.trace("Leaving");
@@ -348,10 +348,10 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     /**
      * Constructs the id token.
      * 
-     * @param suCtx to look values for
+     * @param oidcCtx to look values for
      * @return id token.
      */
-    private JSONObject buildIDToken(@Nonnull final OpenIdConnectContext suCtx) {
+    private JSONObject buildIDToken(@Nonnull final OpenIDConnectContext oidcCtx) {
         log.trace("Entering");
         JSONObject idToken = new JSONObject();
         for (Map.Entry<String, String> entry : requestClaims.entrySet()) {
@@ -364,7 +364,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
                 continue;
             }
             log.debug("locating attribute for " + value);
-            String attrValue = attributeToString(suCtx, value);
+            String attrValue = attributeToString(oidcCtx, value);
             if (attrValue != null) {
                 // 2. attribute value
                 log.debug("Setting claim " + claim + " to value " + attrValue);
@@ -393,12 +393,12 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * Creates request object. If signing key is present adds also state and iat claims and then signs it.
      * 
      * 
-     * @param suCtx for accessing attributes.
+     * @param oidcCtx for accessing attributes.
      * @param state to be added to request object.
      * @return request object
      * @throws Exception if attribute context is not available or parsing/signing fails.
      */
-    private JWT getRequestObject(@Nonnull final OpenIdConnectContext suCtx, State state) throws Exception {
+    private JWT getRequestObject(@Nonnull final OpenIDConnectContext oidcCtx, State state) throws Exception {
         log.trace("Entering");
 
         if (requestClaims == null || requestClaims.size() == 0) {
@@ -416,7 +416,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
             request.put("iat", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
         }
         // Build the id token as instructed.
-        JSONObject idToken = buildIDToken(suCtx);
+        JSONObject idToken = buildIDToken(oidcCtx);
         JSONObject claims = new JSONObject();
         claims.put("id_token", idToken);
         request.put("claims", claims);
@@ -440,27 +440,27 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
 
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class, true);
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class, true);
         // We initialize the context
         // If request is passive we override default prompt value
         Prompt ovrPrompt = authenticationContext.isPassive() ? new Prompt(Type.NONE) : prompt;
-        suCtx.setPrompt(ovrPrompt);
-        suCtx.setAcrs(acrs);
-        suCtx.setClientID(clientID);
-        suCtx.setClientSecret(clientSecret);
-        suCtx.setDisplay(display);
-        suCtx.setoIDCProviderMetadata(oIDCProviderMetadata);
-        suCtx.setRedirectURI(redirectURI);
+        oidcCtx.setPrompt(ovrPrompt);
+        oidcCtx.setAcrs(acrs);
+        oidcCtx.setClientID(clientID);
+        oidcCtx.setClientSecret(clientSecret);
+        oidcCtx.setDisplay(display);
+        oidcCtx.setoIDCProviderMetadata(oIDCProviderMetadata);
+        oidcCtx.setRedirectURI(redirectURI);
         State state = new State();
-        suCtx.setState(state);
+        oidcCtx.setState(state);
         Nonce nonce = new Nonce();
-        suCtx.setNonce(nonce);
+        oidcCtx.setNonce(nonce);
 
         JWT requestObject = null;
         try {
             // must be called as a last step
-            requestObject = getRequestObject(suCtx, state);
+            requestObject = getRequestObject(oidcCtx, state);
         } catch (Exception e) {
             // TODO: better error id
             log.error("{} unable to create request object", getLogPrefix());
@@ -473,13 +473,13 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
             // TODO: Currently the underlying library doesn't accept value 0, so
             // we set it to 1
             final int maxAge = 1;
-            suCtx.setAuthenticationRequestURI(
+            oidcCtx.setAuthenticationRequestURI(
                     new AuthenticationRequest.Builder(responseType, scope, clientID, redirectURI)
                             .endpointURI(oIDCProviderMetadata.getAuthorizationEndpointURI()).display(display)
                             .acrValues(acrs).requestObject(requestObject).responseMode(ResponseMode.QUERY)
                             .maxAge(maxAge).prompt(ovrPrompt).state(state).nonce(nonce).build().toURI());
         } else {
-            suCtx.setAuthenticationRequestURI(
+            oidcCtx.setAuthenticationRequestURI(
                     new AuthenticationRequest.Builder(responseType, scope, clientID, redirectURI)
                             .endpointURI(oIDCProviderMetadata.getAuthorizationEndpointURI()).display(display)
                             .acrValues(acrs).requestObject(requestObject).responseMode(ResponseMode.QUERY)

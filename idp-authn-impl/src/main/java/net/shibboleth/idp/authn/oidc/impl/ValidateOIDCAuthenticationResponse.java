@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import net.shibboleth.idp.authn.AbstractExtractionAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.opensaml.profile.action.ActionSupport;
@@ -22,7 +22,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 /**
- * An action that creates a {@link OpenIdConnectContext}, and attaches it to the
+ * An action that creates a {@link OpenIDConnectContext}, and attaches it to the
  * {@link AuthenticationContext}.
  * 
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
@@ -47,25 +47,25 @@ public class ValidateOIDCAuthenticationResponse extends AbstractExtractionAction
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
 
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.info("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
             return;
         }
 
-        if (suCtx.getAuthenticationResponseURI() == null) {
+        if (oidcCtx.getAuthenticationResponseURI() == null) {
             log.info("{} response uri not set", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
             return;
         }
-        log.debug("Validating response {}", suCtx.getAuthenticationResponseURI().toString());
+        log.debug("Validating response {}", oidcCtx.getAuthenticationResponseURI().toString());
         AuthenticationResponse response = null;
         try {
-            response = AuthenticationResponseParser.parse(suCtx.getAuthenticationResponseURI());
+            response = AuthenticationResponseParser.parse(oidcCtx.getAuthenticationResponseURI());
         } catch (ParseException e) {
             log.info("{} response parsing failed", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
@@ -88,15 +88,15 @@ public class ValidateOIDCAuthenticationResponse extends AbstractExtractionAction
         }
         AuthenticationSuccessResponse successResponse = (AuthenticationSuccessResponse) response;
         // implicit and hybrid flows return id token in response.
-        suCtx.setIDToken(successResponse.getIDToken());
-        State state = suCtx.getState();
+        oidcCtx.setIDToken(successResponse.getIDToken());
+        State state = oidcCtx.getState();
         if (state == null || !state.equals(successResponse.getState())) {
             log.info("{} state mismatch:", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
         }
 
-        suCtx.setAuthenticationSuccessResponse(successResponse);
+        oidcCtx.setAuthenticationSuccessResponse(successResponse);
         log.trace("Leaving");
         return;
     }

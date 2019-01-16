@@ -18,23 +18,23 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
 /**
- * Unit tests for {@link ValidateOIDCIDTokenAuthorizedParty}.
+ * Unit tests for {@link ValidateIDTokenAuthorizedParty}.
  */
-public class ValidateOIDCIDTokenAuthorizedPartyTest extends AbstractOIDCIDTokenTest {
+public class ValidateIDTokenAuthorizedPartyTest extends AbstractOIDCIDTokenTest {
 
     /** The action to be tested. */
-    private ValidateOIDCIDTokenAuthorizedParty action;
+    private ValidateIDTokenAuthorizedParty action;
 
     /** {@inheritDoc} */
     @BeforeMethod
     public void setUp() throws Exception {
         super.setUp();
-        action = new ValidateOIDCIDTokenAuthorizedParty();
+        action = new ValidateIDTokenAuthorizedParty();
     }
 
     /** {@inheritDoc} */
@@ -51,10 +51,10 @@ public class ValidateOIDCIDTokenAuthorizedPartyTest extends AbstractOIDCIDTokenT
     public void testSingleAudience() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
+        final OpenIDConnectContext oidcCtx = authCtx.getSubcontext(OpenIDConnectContext.class, true);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(DEFAULT_ISSUER);
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        suCtx.setClientID(new ClientID(DEFAULT_CLIENT_ID));
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        oidcCtx.setClientID(new ClientID(DEFAULT_CLIENT_ID));
         final Event event = action.execute(src);
         Assert.assertNull(event);
     }
@@ -68,15 +68,15 @@ public class ValidateOIDCIDTokenAuthorizedPartyTest extends AbstractOIDCIDTokenT
     public void testNotAuthorized() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
+        final OpenIDConnectContext oidcCtx = authCtx.getSubcontext(OpenIDConnectContext.class, true);
         final List<String> audience = new ArrayList<>();
         audience.add(DEFAULT_CLIENT_ID);
         audience.add("anotherOne");
         final Map<String, Object> claims = new HashMap<>();
         claims.put("azp", DEFAULT_CLIENT_ID);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(null, DEFAULT_ISSUER, audience, claims);
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        suCtx.setClientID(new ClientID(DEFAULT_CLIENT_ID + "invalid"));
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        oidcCtx.setClientID(new ClientID(DEFAULT_CLIENT_ID + "invalid"));
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -90,15 +90,15 @@ public class ValidateOIDCIDTokenAuthorizedPartyTest extends AbstractOIDCIDTokenT
     public void testAuthorized() throws Exception {
         action.initialize();
         final AuthenticationContext authCtx = prc.getSubcontext(AuthenticationContext.class, false);
-        final OpenIdConnectContext suCtx = authCtx.getSubcontext(OpenIdConnectContext.class, true);
+        final OpenIDConnectContext oidcCtx = authCtx.getSubcontext(OpenIDConnectContext.class, true);
         final List<String> audience = new ArrayList<>();
         audience.add(DEFAULT_CLIENT_ID);
         audience.add("anotherOne");
         final Map<String, Object> claims = new HashMap<>();
         claims.put("azp", DEFAULT_CLIENT_ID);
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(null, DEFAULT_ISSUER, audience, claims);
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        suCtx.setClientID(new ClientID(DEFAULT_CLIENT_ID));
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        oidcCtx.setClientID(new ClientID(DEFAULT_CLIENT_ID));
         Assert.assertNull(action.execute(src));
     }
 }

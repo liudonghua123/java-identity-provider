@@ -19,7 +19,7 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 
@@ -76,9 +76,9 @@ public class ValidateOIDCAuthenticationTest extends AbstractOIDCIDTokenTest {
     public void testNoOidcResponse() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -90,12 +90,12 @@ public class ValidateOIDCAuthenticationTest extends AbstractOIDCIDTokenTest {
     public void testNoOidcTokens() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final OIDCTokenResponse oidcTokenResponse = Mockito.mock(OIDCTokenResponse.class);
         Mockito.when(oidcTokenResponse.getOIDCTokens()).thenReturn(null);
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -107,16 +107,16 @@ public class ValidateOIDCAuthenticationTest extends AbstractOIDCIDTokenTest {
     public void testNoSubject() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final OIDCTokenResponse oidcTokenResponse = Mockito.mock(OIDCTokenResponse.class);
         final JWT idToken = Mockito.mock(JWT.class);
         final JWTClaimsSet claimSet = JWTClaimsSet.parse("{ \"mock\" : \"mock\" }");
         Mockito.when(idToken.getJWTClaimsSet()).thenReturn(claimSet);
         final OIDCTokens oidcTokens = new OIDCTokens(idToken, new BearerAccessToken(), new RefreshToken());
         Mockito.when(oidcTokenResponse.getOIDCTokens()).thenReturn(oidcTokens);
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
         final Event event = action.execute(src);
         ActionTestingSupport.assertEvent(event, AuthnEventIds.NO_CREDENTIALS);
     }
@@ -128,11 +128,11 @@ public class ValidateOIDCAuthenticationTest extends AbstractOIDCIDTokenTest {
     public void testValid() throws Exception {
         final AbstractProfileAction<?, ?> action = getAction();
         action.initialize();
-        final OpenIdConnectContext suCtx = new OpenIdConnectContext();
+        final OpenIDConnectContext oidcCtx = new OpenIDConnectContext();
         prc.getSubcontext(AuthenticationContext.class, false).setAttemptedFlow(authenticationFlows.get(0));
         final OIDCTokenResponse oidcTokenResponse = getOidcTokenResponse(new DateTime().minusSeconds(1).toDate());
-        suCtx.setOidcTokenResponse(oidcTokenResponse);
-        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(suCtx);
+        oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+        prc.getSubcontext(AuthenticationContext.class, false).addSubcontext(oidcCtx);
         final Event event = action.execute(src);
         Assert.assertNull(event);
     }

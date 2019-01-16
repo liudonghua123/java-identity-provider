@@ -16,7 +16,7 @@ import net.minidev.json.JSONObject;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
@@ -60,11 +60,11 @@ import com.nimbusds.jwt.SignedJWT;
  *      </pre>
  */
 @SuppressWarnings("rawtypes")
-public class ValidateOIDCIDTokenSignature extends AbstractAuthenticationAction {
+public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateOIDCIDTokenSignature.class);
+    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenSignature.class);
 
 
 
@@ -74,9 +74,9 @@ public class ValidateOIDCIDTokenSignature extends AbstractAuthenticationAction {
     final ProfileRequestContext profileRequestContext, @Nonnull
     final AuthenticationContext authenticationContext) {
         log.trace("Entering");
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
@@ -84,7 +84,7 @@ public class ValidateOIDCIDTokenSignature extends AbstractAuthenticationAction {
         }
         SignedJWT signedJWT = null;
         try {
-            signedJWT = SignedJWT.parse(suCtx.getIDToken().serialize());
+            signedJWT = SignedJWT.parse(oidcCtx.getIDToken().serialize());
         } catch (ParseException e) {
             log.error("{} Error when forming signed JWT", getLogPrefix(), e);
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
@@ -93,7 +93,7 @@ public class ValidateOIDCIDTokenSignature extends AbstractAuthenticationAction {
         }
         RSAPublicKey providerKey = null;
         try {
-            JSONObject key = getProviderRSAJWK(suCtx.getoIDCProviderMetadata().getJWKSetURI().toURL().openStream(),
+            JSONObject key = getProviderRSAJWK(oidcCtx.getoIDCProviderMetadata().getJWKSetURI().toURL().openStream(),
                     signedJWT.getHeader().getKeyID());
             if (key == null) {
                 log.error("{} Not able to find key to verify signature", getLogPrefix());

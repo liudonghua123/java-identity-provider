@@ -14,8 +14,8 @@
 
     
     <!-- new more webflow based oidc -->
-    <bean id="shibboleth.authn.OpenIdConnect.externalAuthnPath" class="java.lang.String"
-        c:_0="contextRelative:/Authn/OpenIdConnectStart">
+    <bean id="shibboleth.authn.OpenIDConnect.externalAuthnPath" class="java.lang.String"
+        c:_0="contextRelative:/Authn/OpenIDConnectStart">
     </bean>
     
     <!-- Populate RP UI info from metadata? -->

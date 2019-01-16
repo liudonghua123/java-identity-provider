@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import net.shibboleth.idp.authn.oidc.context.OpenIdConnectContext;
+import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
@@ -22,20 +22,20 @@ import org.slf4j.LoggerFactory;
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
  */
 @SuppressWarnings("rawtypes")
-public class ValidateOIDCIDTokenAuthorizedParty extends AbstractAuthenticationAction {
+public class ValidateIDTokenAuthorizedParty extends AbstractAuthenticationAction {
 
     /** Class logger. */
     @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateOIDCIDTokenAuthorizedParty.class);
+    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAuthorizedParty.class);
 
     /** {@inheritDoc} */
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
         log.trace("Entering");
-        final OpenIdConnectContext suCtx =
-                authenticationContext.getSubcontext(OpenIdConnectContext.class);
-        if (suCtx == null) {
+        final OpenIDConnectContext oidcCtx =
+                authenticationContext.getSubcontext(OpenIDConnectContext.class);
+        if (oidcCtx == null) {
             log.error("{} Not able to find su oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             log.trace("Leaving");
@@ -47,9 +47,9 @@ public class ValidateOIDCIDTokenAuthorizedParty extends AbstractAuthenticationAc
         // If an azp (authorized party) Claim is present, the Client SHOULD
         // verify that its client_id is the Claim Value.
         try {
-            if (suCtx.getIDToken().getJWTClaimsSet().getAudience().size() > 1) {
-                final String azp = suCtx.getIDToken().getJWTClaimsSet().getStringClaim("azp");
-                if (!suCtx.getClientID().getValue().equals(azp)) {
+            if (oidcCtx.getIDToken().getJWTClaimsSet().getAudience().size() > 1) {
+                final String azp = oidcCtx.getIDToken().getJWTClaimsSet().getStringClaim("azp");
+                if (!oidcCtx.getClientID().getValue().equals(azp)) {
                     log.error("{} multiple audiences, client is not the azp", getLogPrefix());
                     ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
                     log.trace("Leaving");

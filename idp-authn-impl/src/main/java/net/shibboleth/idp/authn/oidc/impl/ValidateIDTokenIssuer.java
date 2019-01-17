@@ -65,14 +65,13 @@ public class ValidateIDTokenIssuer extends AbstractAuthenticationAction {
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
 
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find su oidc context", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            log.error("{} Not able to find oidc context", getLogPrefix());
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
 
@@ -83,18 +82,16 @@ public class ValidateIDTokenIssuer extends AbstractAuthenticationAction {
         try {
             if (!issuer.equals(oidcCtx.getIDToken().getJWTClaimsSet().getIssuer())) {
                 log.error("{} issuer mismatch", getLogPrefix());
-                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                log.trace("Leaving");
+                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);               
                 return;
             }
 
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             log.error("{} unable to parse oidc token", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
-        log.trace("Leaving");
+        
         return;
     }
 }

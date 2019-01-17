@@ -48,13 +48,12 @@ public class ValidateIDTokenAuthorizedParty extends AbstractAuthenticationAction
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find su oidc context", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            log.error("{} Not able to find oidc context", getLogPrefix());
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
 
@@ -67,18 +66,15 @@ public class ValidateIDTokenAuthorizedParty extends AbstractAuthenticationAction
                 final String azp = oidcCtx.getIDToken().getJWTClaimsSet().getStringClaim("azp");
                 if (!oidcCtx.getClientID().getValue().equals(azp)) {
                     log.error("{} multiple audiences, client is not the azp", getLogPrefix());
-                    ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                    log.trace("Leaving");
+                    ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                   
                     return;
                 }
             }
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             log.error("{} Error parsing id token", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
-        }
-        log.trace("Leaving");
+        }       
         return;
     }
 

@@ -89,57 +89,50 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
     protected void doExecute(@Nonnull
     final ProfileRequestContext profileRequestContext, @Nonnull
     final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find su oidc context", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            log.error("{} Not able to find oidc context", getLogPrefix());
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
         SignedJWT signedJWT = null;
         try {
             signedJWT = SignedJWT.parse(oidcCtx.getIDToken().serialize());
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             log.error("{} Error when forming signed JWT", getLogPrefix(), e);
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
         RSAPublicKey providerKey = null;
         try {
-            JSONObject key = getProviderRSAJWK(oidcCtx.getoIDCProviderMetadata().getJWKSetURI().toURL().openStream(),
-                    signedJWT.getHeader().getKeyID());
+            final JSONObject key = getProviderRSAJWK(oidcCtx.getoIDCProviderMetadata().getJWKSetURI()
+                    .toURL().openStream(),signedJWT.getHeader().getKeyID());
             if (key == null) {
                 log.error("{} Not able to find key to verify signature", getLogPrefix());
-                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                log.trace("Leaving");
+                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                
                 return;
             }
             providerKey = RSAKey.parse(key).toRSAPublicKey();
-        } catch (IOException | java.text.ParseException | JOSEException e) {
+        } catch (final IOException | java.text.ParseException | JOSEException e) {
             log.error("{} Error when parsing key to verify signature", getLogPrefix(), e);
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
-        RSASSAVerifier verifier = new RSASSAVerifier(providerKey);
+        final RSASSAVerifier verifier = new RSASSAVerifier(providerKey);
         try {
             if (!signedJWT.verify(verifier)) {
                 log.error("{} JWT signature verification failed", getLogPrefix());
-                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                log.trace("Leaving");
+                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);               
                 return;
             }
-        } catch (JOSEException e) {
+        } catch (final JOSEException e) {
             log.error("{} JWT signature verification not performed", getLogPrefix(), e);
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
-        log.debug("ID Token signature verified");
-        log.trace("Leaving");
+        log.debug("{} ID Token signature verified",getLogPrefix());        
         return;
     }
 
@@ -154,31 +147,28 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
      */
     @Nullable
     private JSONObject getProviderRSAJWK(final InputStream is, final String kid) throws ParseException, IOException {
-        log.trace("Entering");
+        
         if (kid == null) {
             log.warn("No kid defined in the JWT, no kid check can be performed!");
         }
 
-        StringWriter writer = new StringWriter();
+        final StringWriter writer = new StringWriter();
         CharStreams.copy(new InputStreamReader(is, Charsets.UTF_8), writer);
 
-        JSONObject json = JSONObjectUtils.parse(writer.toString());
-        JSONArray keyList = (JSONArray) json.get("keys");
-        if (keyList == null) {
-            log.trace("Leaving");
+        final JSONObject json = JSONObjectUtils.parse(writer.toString());
+        final JSONArray keyList = (JSONArray) json.get("keys");
+        if (keyList == null) {            
             return null;
         }
-        for (Object key : keyList) {
-            JSONObject k = (JSONObject) key;
+        for (final Object key : keyList) {
+            final JSONObject k = (JSONObject) key;
             if ("sig".equals(k.get("use")) && "RSA".equals(k.get("kty"))) {
                 if (kid == null || kid.equals(k.get("kid"))) {
-                    log.debug("verification key " + k.toString());
-                    log.trace("Leaving");
+                    log.debug("verification key " + k.toString());                    
                     return k;
                 }
             }
-        }
-        log.trace("Leaving");
+        }        
         return null;
     }
 

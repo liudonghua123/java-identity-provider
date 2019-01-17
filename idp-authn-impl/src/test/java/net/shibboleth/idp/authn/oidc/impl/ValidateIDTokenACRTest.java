@@ -45,7 +45,7 @@ import net.shibboleth.idp.profile.ActionTestingSupport;
 /**
  * Unit tests for {@link ValidateIDTokenACR}.
  */
-public class ValidateOIDCIDTokenACRTest extends AbstractOIDCIDTokenTest {
+public class ValidateIDTokenACRTest extends AbstractOIDCIDTokenTest {
 
     /** The action to be tested. */
     private ValidateIDTokenACR action;

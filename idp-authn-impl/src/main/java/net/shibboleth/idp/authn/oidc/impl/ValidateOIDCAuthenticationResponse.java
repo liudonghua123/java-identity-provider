@@ -61,59 +61,55 @@ public class ValidateOIDCAuthenticationResponse extends AbstractExtractionAction
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
 
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.info("{} Not able to find su oidc context", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            log.info("{} Not able to find oidc context", getLogPrefix());
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
 
         if (oidcCtx.getAuthenticationResponseURI() == null) {
             log.info("{} response uri not set", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
         log.debug("Validating response {}", oidcCtx.getAuthenticationResponseURI().toString());
         AuthenticationResponse response = null;
         try {
             response = AuthenticationResponseParser.parse(oidcCtx.getAuthenticationResponseURI());
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             log.info("{} response parsing failed", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
         if (!response.indicatesSuccess()) {
-            log.trace("Leaving");
-            AuthenticationErrorResponse errorResponse = (AuthenticationErrorResponse) response;
+            
+            final AuthenticationErrorResponse errorResponse = (AuthenticationErrorResponse) response;
             String error = errorResponse.getErrorObject().getCode();
-            String errorDescription = errorResponse.getErrorObject().getDescription();
+            final String errorDescription = errorResponse.getErrorObject().getDescription();
             if (StringSupport.trimOrNull(errorDescription) != null) {
                 error += " : " + errorDescription;
             }
-            log.trace("Leaving");
+           
             log.info("{} response indicated error: {}", getLogPrefix(), error);
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
-        AuthenticationSuccessResponse successResponse = (AuthenticationSuccessResponse) response;
+        final AuthenticationSuccessResponse successResponse = (AuthenticationSuccessResponse) response;
         // implicit and hybrid flows return id token in response.
         oidcCtx.setIDToken(successResponse.getIDToken());
-        State state = oidcCtx.getState();
+        final State state = oidcCtx.getState();
         if (state == null || !state.equals(successResponse.getState())) {
             log.info("{} state mismatch:", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            
         }
 
         oidcCtx.setAuthenticationSuccessResponse(successResponse);
-        log.trace("Leaving");
+        
         return;
     }
 

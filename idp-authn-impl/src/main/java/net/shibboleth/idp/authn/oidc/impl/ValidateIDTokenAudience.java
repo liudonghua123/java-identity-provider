@@ -47,20 +47,18 @@ public class ValidateIDTokenAudience extends AbstractAuthenticationAction {
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
 
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find su oidc context", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            log.error("{} Not able to find oidc context", getLogPrefix());
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);           
             return;
         }
         if (oidcCtx.getIDToken() == null) {
             log.error("{} Not able to find id token", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
         // The Client MUST validate that the aud (audience) Claim contains
@@ -73,17 +71,14 @@ public class ValidateIDTokenAudience extends AbstractAuthenticationAction {
         try {
             if (!oidcCtx.getIDToken().getJWTClaimsSet().getAudience().contains(oidcCtx.getClientID().getValue())) {
                 log.error("{} client is not the intended audience", getLogPrefix());
-                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                log.trace("Leaving");
+                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                
                 return;
             }
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             log.error("{} Error parsing id token", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
-        }
-        log.trace("Leaving");
+        }       
         return;
     }
 

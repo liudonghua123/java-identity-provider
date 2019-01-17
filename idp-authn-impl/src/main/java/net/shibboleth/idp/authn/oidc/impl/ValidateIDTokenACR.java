@@ -51,14 +51,14 @@ public class ValidateIDTokenACR extends AbstractAuthenticationAction {
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
 
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find su oidc context", getLogPrefix());
+            log.error("{} Not able to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            
             return;
         }
 
@@ -76,26 +76,23 @@ public class ValidateIDTokenACR extends AbstractAuthenticationAction {
             final String acr;
             try {
                 acr = oidcCtx.getIDToken().getJWTClaimsSet().getStringClaim("acr");
-            } catch (ParseException e) {
+            } catch (final ParseException e) {
                 log.error("{} Error parsing id token", getLogPrefix());
-                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                log.trace("Leaving");
+                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                
                 return;
             }
             if (StringSupport.trimOrNull(acr) == null) {
                 log.error("{} acr requested but not received", getLogPrefix());
-                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                log.trace("Leaving");
+                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                
                 return;
             }
             if (!acrs.contains(new ACR(acr))) {
                 log.error("{} acr received does not match requested:" + acr, getLogPrefix());
-                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                log.trace("Leaving");
+                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                
                 return;
             }
         }
-        log.trace("Leaving");
+        
         return;
     }
 }

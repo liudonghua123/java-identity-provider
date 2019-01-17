@@ -67,7 +67,7 @@ public class OpenIDConnectEndServlet extends HttpServlet {
     @Override
     protected void service(final HttpServletRequest httpRequest, final HttpServletResponse httpResponse)
             throws ServletException, IOException {
-        log.trace("Entering");
+       
         try {
             final HttpSession session = httpRequest.getSession();
             if (session == null) {
@@ -89,15 +89,14 @@ public class OpenIDConnectEndServlet extends HttpServlet {
             log.debug("Attempting URL {}?{}", httpRequest.getRequestURL(), httpRequest.getQueryString());
             try {
                 openIDConnectContext.setAuthenticationResponseURI(httpRequest);
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 throw new ExternalAuthenticationException("Could not parse response URI", e);
             }
             ExternalAuthentication.finishExternalAuthentication(key, httpRequest, httpResponse);
-        } catch (ExternalAuthenticationException e) {
-            log.error("Could not finish the external authentication", e);
-            log.trace("Leaving");
+        } catch (final ExternalAuthenticationException e) {
+            log.error("Could not finish the external authentication", e);          
             throw new ServletException("Error finishing the external authentication", e);
         }
-        log.trace("Leaving");
+        
     }
 }

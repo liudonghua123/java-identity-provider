@@ -72,7 +72,7 @@ public class OpenIDConnectStartServlet extends HttpServlet {
     @Override
     protected void service(final HttpServletRequest httpRequest, final HttpServletResponse httpResponse)
             throws ServletException, IOException {
-        log.trace("Entering");
+       
         try {
             final String key = ExternalAuthentication.startExternalAuthentication(httpRequest);
             httpRequest.getSession().setAttribute(SESSION_ATTR_FLOWKEY, key);
@@ -92,16 +92,15 @@ public class OpenIDConnectStartServlet extends HttpServlet {
                             .getSubcontext(OpenIDConnectContext.class);
             if (openIDConnectContext == null) {
                 throw new ExternalAuthenticationException(
-                        "Could not find SocialUserOpenIdConnectContext from the request");
+                        "Could not find OpenIdConnectContext from the request");
             }
             httpRequest.getSession().setAttribute(SESSION_ATTR_SUCTX, openIDConnectContext);
             log.debug("Redirecting user browser to {}", openIDConnectContext.getAuthenticationRequestURI());
             httpResponse.sendRedirect(openIDConnectContext.getAuthenticationRequestURI().toString());
-        } catch (ExternalAuthenticationException e) {
-            log.error("Error processing external authentication request", e);
-            log.trace("Leaving");
+        } catch (final ExternalAuthenticationException e) {
+            log.error("Error processing external authentication request", e);           
             throw new ServletException("Error processing external authentication request", e);
         }
-        log.trace("Leaving");
+       
     }
 }

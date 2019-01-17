@@ -118,7 +118,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param idPAttributes resolved attributes
      */
-    public void setResolvedIdPAttributes(Map<String, IdPAttribute> idPAttributes) {
+    public void setResolvedIdPAttributes(final Map<String, IdPAttribute> idPAttributes) {
         this.resolvedIdPAttributes = idPAttributes;
     }
 
@@ -136,7 +136,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param token from op.
      */
-    public void setIDToken(JWT token) {
+    public void setIDToken(final JWT token) {
         this.idToken = token;
     }
 
@@ -154,7 +154,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param uri of the client.
      */
-    public void setRedirectURI(URI uri) {
+    public void setRedirectURI(final URI uri) {
         this.redirectURI = uri;
     }
 
@@ -172,7 +172,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param id Oauth2 Client ID
      */
-    public void setClientID(ClientID id) {
+    public void setClientID(final ClientID id) {
         this.clientID = id;
     }
 
@@ -181,7 +181,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param secret of the client
      */
-    public void setClientSecret(Secret secret) {
+    public void setClientSecret(final Secret secret) {
         this.clientSecret = secret;
     }
 
@@ -199,7 +199,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param scp scope of the request
      */
-    public void setScope(Scope scp) {
+    public void setScope(final Scope scp) {
         this.scope = scp;
     }
 
@@ -217,7 +217,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param prmpt used for for forming authentication request
      */
-    public void setPrompt(Prompt prmpt) {
+    public void setPrompt(final Prompt prmpt) {
         this.prompt = prmpt;
     }
 
@@ -235,7 +235,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param acrList values used for forming authentication request
      */
-    public void setAcrs(List<ACR> acrList) {
+    public void setAcrs(final List<ACR> acrList) {
         this.acrs = acrList;
     }
 
@@ -253,7 +253,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param dspl value for forming authentication request.
      */
-    public void setDisplay(Display dspl) {
+    public void setDisplay(final Display dspl) {
         this.display = dspl;
     }
 
@@ -271,7 +271,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param oIDCPrvdrMtdt op metadata.
      */
-    public void setoIDCProviderMetadata(OIDCProviderMetadata oIDCPrvdrMtdt) {
+    public void setoIDCProviderMetadata(final OIDCProviderMetadata oIDCPrvdrMtdt) {
         this.oIDCProviderMetadata = oIDCPrvdrMtdt;
     }
 
@@ -281,7 +281,6 @@ public class OpenIDConnectContext extends BaseContext {
      * @return request URI for authentication
      */
     public URI getAuthenticationRequestURI() {
-        log.trace("Entering & Leaving");
         return authenticationRequestURI;
     }
 
@@ -290,11 +289,9 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param request to be used for authentication
      */
-    public void setAuthenticationRequestURI(URI request) {
-        log.trace("Entering");
-        log.debug("Setting auth request redirect to " + request.toString());
+    public void setAuthenticationRequestURI(final URI request) {
         this.authenticationRequestURI = request;
-        log.trace("Leaving");
+
     }
 
     /**
@@ -303,7 +300,6 @@ public class OpenIDConnectContext extends BaseContext {
      * @return token response
      */
     public OIDCTokenResponse getOidcTokenResponse() {
-        log.trace("Entering & Leaving");
         return oidcTknResponse;
     }
 
@@ -312,13 +308,12 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param oidcTokenResponse response from provider
      */
-    public void setOidcTokenResponse(OIDCTokenResponse oidcTokenResponse) {
-        log.trace("Entering");
+    public void setOidcTokenResponse(final OIDCTokenResponse oidcTokenResponse) {
         this.oidcTknResponse = oidcTokenResponse;
         if (oidcTokenResponse != null && oidcTokenResponse.getOIDCTokens() != null) {
             this.idToken = oidcTokenResponse.getOIDCTokens().getIDToken();
         }
-        log.trace("Leaving");
+
     }
 
     /**
@@ -335,7 +330,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param stateParam parameter
      */
-    public void setState(State stateParam) {
+    public void setState(final State stateParam) {
         this.state = stateParam;
     }
 
@@ -353,7 +348,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param newNonce nonce parameter
      */
-    public void setNonce(Nonce newNonce) {
+    public void setNonce(final Nonce newNonce) {
         this.nonce = newNonce;
     }
 
@@ -363,7 +358,6 @@ public class OpenIDConnectContext extends BaseContext {
      * @return authentication success response.
      */
     public AuthenticationSuccessResponse getAuthenticationSuccessResponse() {
-        log.trace("Entering & Leaving");
         return authSuccessResponse;
     }
 
@@ -372,10 +366,9 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param authenticationSuccessResponse response from ther provider
      */
-    public void setAuthenticationSuccessResponse(AuthenticationSuccessResponse authenticationSuccessResponse) {
-        log.trace("Entering");
+    public void setAuthenticationSuccessResponse(final AuthenticationSuccessResponse authenticationSuccessResponse) {
         this.authSuccessResponse = authenticationSuccessResponse;
-        log.trace("Leaving");
+
     }
 
     /**
@@ -384,7 +377,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @return authentication response URI
      */
     public URI getAuthenticationResponseURI() {
-        log.trace("Entering & Leaving");
+
         return authenticationResponseURI;
     }
 
@@ -395,13 +388,12 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @throws URISyntaxException if request has malformed URL and/or query parameters
      */
-    public void setAuthenticationResponseURI(HttpServletRequest authenticationResponseHttpRequest)
+    public void setAuthenticationResponseURI(final HttpServletRequest authenticationResponseHttpRequest)
             throws URISyntaxException {
-        log.trace("Entering");
-        String temp = authenticationResponseHttpRequest.getRequestURL() + "?"
+
+        final String temp = authenticationResponseHttpRequest.getRequestURL() + "?"
                 + authenticationResponseHttpRequest.getQueryString();
         this.authenticationResponseURI = new URI(temp);
-        log.trace("Leaving");
 
     }
 

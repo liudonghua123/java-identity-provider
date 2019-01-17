@@ -61,35 +61,31 @@ public class ValidateIDTokenExpirationTime extends AbstractAuthenticationAction 
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
 
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find su oidc context", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            log.error("{} Not able to find oidc context", getLogPrefix());
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
 
         // Check time
         // The current time MUST be before the time represented by the exp
-        Date currentDate = new Date();
+        final Date currentDate = new Date();
         try {
-            Date expDate = oidcCtx.getIDToken().getJWTClaimsSet().getExpirationTime();
+            final Date expDate = oidcCtx.getIDToken().getJWTClaimsSet().getExpirationTime();
             if (currentDate.after(expDate)) {
                 log.error("{} Current date {} is past exp date {}", getLogPrefix(), currentDate, expDate);
-                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-                log.trace("Leaving");
+                ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                
                 return;
             }
-        } catch (java.text.ParseException e) {
+        } catch (final java.text.ParseException e) {
             log.error("{} Error parsing id token", getLogPrefix(), e);
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
-        }
-        log.trace("Leaving");
+        }        
         return;
     }
 

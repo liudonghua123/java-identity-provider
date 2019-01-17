@@ -135,10 +135,10 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
 
     /** Constructor. */
     public SetOIDCInformation() {
-        log.trace("Entering");
+        
         attributeContextLookupStrategy = Functions.compose(new ChildContextLookup<>(AttributeContext.class),
                 new ChildContextLookup<ProfileRequestContext, RelyingPartyContext>(RelyingPartyContext.class));
-        log.trace("Leaving");
+        
         
     }
 
@@ -147,7 +147,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param key signing key
      */
-    public void setPrivKey(PrivateKey key) {
+    public void setPrivKey(final PrivateKey key) {
         this.signPrvKey = key;
     }
 
@@ -156,7 +156,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param algorithm used for signing
      */
-    public void setJwsAlgorithm(JWSAlgorithm algorithm) {
+    public void setJwsAlgorithm(final JWSAlgorithm algorithm) {
         this.jwsAlgorithm = algorithm;
     }
 
@@ -165,7 +165,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param id for the key.
      */
-    public void setKeyID(String id) {
+    public void setKeyID(final String id) {
         this.keyID = id;
     }
 
@@ -177,7 +177,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param claims map of requested claims
      */
-    public void setRequestClaims(Map<String, String> claims) {
+    public void setRequestClaims(final Map<String, String> claims) {
         this.requestClaims = claims;
     }
 
@@ -187,18 +187,17 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param type space-delimited list of one or more authorization response types.
      * @throws ParseException if response type cannot be parsed
      */
-    public void setResponseType(String type) throws ParseException {
-        log.trace("Entering & Leaving");
+    public void setResponseType(final String type) throws ParseException {
+       
         this.responseType = ResponseType.parse(type);
     }
 
     /**
      * Setter for Oauth2 client id.
      * 
-     * @param oauth2ClientId Oauth2 Client ID
+     * @param oauth2ClientID Oauth2 Client ID
      */
-    public void setClientID(String oauth2ClientID) {
-        log.trace("Entering & Leaving");
+    public void setClientID(final String oauth2ClientID) {        
         this.clientID = new ClientID(oauth2ClientID);
     }
 
@@ -207,8 +206,8 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oauth2ClientSecret Oauth2 Client Secret
      */
-    public void setClientSecret(String oauth2ClientSecret) {
-        log.trace("Entering & Leaving");
+    public void setClientSecret(final String oauth2ClientSecret) {
+        
         this.clientSecret = new Secret(oauth2ClientSecret);
     }
 
@@ -218,7 +217,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param redirect OAuth2 redirect uri
      */
 
-    public void setRedirectURI(URI redirect) {
+    public void setRedirectURI(final URI redirect) {
         this.redirectURI = redirect;
     }
 
@@ -230,18 +229,18 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @throws IOException if metadataLocation cannot be read
      * @throws ParseException if metadataLocation has wrong content
      */
-    public void setProviderMetadataLocation(String metadataLocation)
+    public void setProviderMetadataLocation(final String metadataLocation)
             throws URISyntaxException, IOException, ParseException {
-        log.trace("Entering");
-        URI issuerURI = new URI(metadataLocation);
-        URL providerConfigurationURL = issuerURI.resolve(".well-known/openid-configuration").toURL();
-        InputStream stream = providerConfigurationURL.openStream();
+        
+        final URI issuerURI = new URI(metadataLocation);
+        final URL providerConfigurationURL = issuerURI.resolve(".well-known/openid-configuration").toURL();
+        final InputStream stream = providerConfigurationURL.openStream();
         String providerInfo = null;
         try (java.util.Scanner s = new java.util.Scanner(stream)) {
             providerInfo = s.useDelimiter("\\A").hasNext() ? s.next() : "";
         }
         oIDCProviderMetadata = OIDCProviderMetadata.parse(providerInfo);
-        log.trace("Leaving");
+        
     }
 
     /**
@@ -249,9 +248,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oidcScopes OpenId Scope values
      */
-    public void setScope(List<String> oidcScopes) {
-        log.trace("Entering");
-        for (String oidcScope : oidcScopes) {
+    public void setScope(final List<String> oidcScopes) {
+        
+        for (final String oidcScope : oidcScopes) {
             switch (oidcScope.toUpperCase()) {
                 case "ADDRESS":
                     this.scope.add(OIDCScopeValue.ADDRESS);
@@ -271,7 +270,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
                 default:
             }
         }
-        log.trace("Leaving");
+        
     }
 
     /**
@@ -279,10 +278,8 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oidcPrompt OpenId Prompt values
      */
-    public void setPrompt(String oidcPrompt) {
-        log.trace("Entering");
-        this.prompt = new Prompt(oidcPrompt);
-        log.trace("Leaving");
+    public void setPrompt(final String oidcPrompt) {        
+        this.prompt = new Prompt(oidcPrompt);        
     }
 
     /**
@@ -290,16 +287,16 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oidcAcrs OpenId ACR values
      */
-    public void setAcr(List<String> oidcAcrs) {
-        log.trace("Entering");
-        for (String oidcAcr : oidcAcrs) {
-            ACR acr = new ACR(oidcAcr);
+    public void setAcr(final List<String> oidcAcrs) {
+       
+        for (final String oidcAcr : oidcAcrs) {
+            final ACR acr = new ACR(oidcAcr);
             if (this.acrs == null) {
                 this.acrs = new ArrayList<ACR>();
             }
             this.acrs.add(acr);
         }
-        log.trace("Leaving");
+        
     }
 
     /**
@@ -307,14 +304,14 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oidcDisplay OpenId Display values
      */
-    public void setDisplay(String oidcDisplay) {
-        log.trace("Entering");
+    public void setDisplay(final String oidcDisplay) {
+        
         try {
             this.display = Display.parse(oidcDisplay);
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             log.error("Could not set display value", e);
         }
-        log.trace("Leaving");
+        
     }
 
     /**
@@ -324,10 +321,10 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      */
     public void setAttributeContextLookupStrategy(
             @Nonnull final Function<ProfileRequestContext, AttributeContext> strategy) {
-        log.trace("Entering");
+        
         attributeContextLookupStrategy =
                 Constraint.isNotNull(strategy, "AttributeContext lookup strategy cannot be null");
-        log.trace("Leaving");
+        
     }
 
     /**
@@ -337,27 +334,23 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param name of the attribute
      * @return attribute value if found, null otherwise
      */
-    private String attributeToString(@Nonnull final OpenIDConnectContext oidcCtx, String name) {
-        log.trace("Entering");
+    private String attributeToString(@Nonnull final OpenIDConnectContext oidcCtx, final String name) {
+        
         if (oidcCtx.getResolvedIdPAttributes() == null) {
-            log.warn("Attribute context not available");
-            log.trace("Leaving");
+            log.warn("Attribute context not available");            
             return null;
         }
-        IdPAttribute attribute = oidcCtx.getResolvedIdPAttributes().get(name);
+        final IdPAttribute attribute = oidcCtx.getResolvedIdPAttributes().get(name);
         if (attribute == null || attribute.getValues().size() == 0) {
-            log.debug("attribute " + name + " not found or has no values");
-            log.trace("Leaving");
+            log.debug("attribute " + name + " not found or has no values");            
             return null;
         }
-        for (IdPAttributeValue attrValue : attribute.getValues()) {
-            if (attrValue instanceof StringAttributeValue) {
-                log.trace("Leaving");
+        for (final IdPAttributeValue attrValue : attribute.getValues()) {
+            if (attrValue instanceof StringAttributeValue) {               
                 // We set the value
                 return attrValue.getDisplayValue();
             }
-        }
-        log.trace("Leaving");
+        }        
         return null;
     }
 
@@ -368,11 +361,11 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @return id token.
      */
     private JSONObject buildIDToken(@Nonnull final OpenIDConnectContext oidcCtx) {
-        log.trace("Entering");
-        JSONObject idToken = new JSONObject();
-        for (Map.Entry<String, String> entry : requestClaims.entrySet()) {
-            String value = entry.getValue();
-            String claim = entry.getKey();
+        
+        final JSONObject idToken = new JSONObject();
+        for (final Map.Entry<String, String> entry : requestClaims.entrySet()) {
+            final String value = entry.getValue();
+            final String claim = entry.getKey();
             if (value == null) {
                 // 1. null value
                 log.debug("Setting claim " + claim + " to null");
@@ -380,7 +373,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
                 continue;
             }
             log.debug("locating attribute for " + value);
-            String attrValue = attributeToString(oidcCtx, value);
+            final String attrValue = attributeToString(oidcCtx, value);
             if (attrValue != null) {
                 // 2. attribute value
                 log.debug("Setting claim " + claim + " to value " + attrValue);
@@ -389,7 +382,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
             }
             if ("essential".equals(value)) {
                 // 3. essential value
-                JSONObject obj = new JSONObject();
+                final JSONObject obj = new JSONObject();
                 obj.put("essential", true);
                 log.debug("Setting claim " + claim + " to value " + obj.toJSONString());
                 idToken.put(claim, obj);
@@ -399,7 +392,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
             log.debug("Setting claim " + claim + " to value " + value);
             idToken.put(claim, value);
         }
-        log.trace("Leaving");
+        
         return idToken;
     }
 
@@ -414,14 +407,13 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @return request object
      * @throws Exception if attribute context is not available or parsing/signing fails.
      */
-    private JWT getRequestObject(@Nonnull final OpenIDConnectContext oidcCtx, State state) throws Exception {
-        log.trace("Entering");
+    private JWT getRequestObject(@Nonnull final OpenIDConnectContext oidcCtx, final State state) throws Exception {
+        
 
-        if (requestClaims == null || requestClaims.size() == 0) {
-            log.trace("Leaving");
+        if (requestClaims == null || requestClaims.size() == 0) {            
             return null;
         }
-        JSONObject request = new JSONObject();
+        final JSONObject request = new JSONObject();
         request.put("client_id", clientID.getValue());
         request.put("response_type", responseType.toString());
         if (signPrvKey != null) {
@@ -432,12 +424,12 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
             request.put("iat", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
         }
         // Build the id token as instructed.
-        JSONObject idToken = buildIDToken(oidcCtx);
-        JSONObject claims = new JSONObject();
+        final JSONObject idToken = buildIDToken(oidcCtx);
+        final JSONObject claims = new JSONObject();
         claims.put("id_token", idToken);
         request.put("claims", claims);
-        log.debug("Request object without signature " + request.toJSONString());
-        JWTClaimsSet claimsRequest = JWTClaimsSet.parse(request);
+        log.debug("Request object without signature "+getLogPrefix() + request.toJSONString());
+        final JWTClaimsSet claimsRequest = JWTClaimsSet.parse(request);
         JWT requestObject = null;
         if (signPrvKey != null) {
             requestObject = new SignedJWT(new JWSHeader.Builder(jwsAlgorithm).keyID(keyID).build(), claimsRequest);
@@ -445,8 +437,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
             log.debug("created request object: " + requestObject.getParsedString());
         } else {
             requestObject = new PlainJWT(new PlainHeader(), claimsRequest);
-        }
-        log.trace("Leaving");
+        }        
         return requestObject;
     }
 
@@ -454,13 +445,13 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
 
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class, true);
         // We initialize the context
         // If request is passive we override default prompt value
-        Prompt ovrPrompt = authenticationContext.isPassive() ? new Prompt(Type.NONE) : prompt;
+        final Prompt ovrPrompt = authenticationContext.isPassive() ? new Prompt(Type.NONE) : prompt;
         oidcCtx.setPrompt(ovrPrompt);
         oidcCtx.setAcrs(acrs);
         oidcCtx.setClientID(clientID);
@@ -468,20 +459,20 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
         oidcCtx.setDisplay(display);
         oidcCtx.setoIDCProviderMetadata(oIDCProviderMetadata);
         oidcCtx.setRedirectURI(redirectURI);
-        State state = new State();
+        final State state = new State();
         oidcCtx.setState(state);
-        Nonce nonce = new Nonce();
+        final Nonce nonce = new Nonce();
         oidcCtx.setNonce(nonce);
 
         JWT requestObject = null;
         try {
             // must be called as a last step
             requestObject = getRequestObject(oidcCtx, state);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // TODO: better error id
             log.error("{} unable to create request object", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+           
             return;
         }
         if (authenticationContext.isForceAuthn()) {
@@ -501,7 +492,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
                             .acrValues(acrs).requestObject(requestObject).responseMode(ResponseMode.QUERY)
                             .prompt(ovrPrompt).state(state).nonce(nonce).build().toURI());
         }
-        log.trace("Leaving");
+       
         return;
     }
 

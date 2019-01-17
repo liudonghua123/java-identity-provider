@@ -119,34 +119,32 @@ public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAct
     @Override
     protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext,
             @Nonnull final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
 
         if (!authenticationContext.isForceAuthn()) {
-            log.trace("Leaving");
+           
             return;
         }
         // If we have forced authentication, we will check for authentication age
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find su oidc context", getLogPrefix());
+            log.error("{} Not able to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            
             return;
         }
         final Date authTimeDate;
         try {
             authTimeDate = oidcCtx.getIDToken().getJWTClaimsSet().getDateClaim("auth_time");
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             log.error("{} Error parsing id token", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
         if (authTimeDate == null) {
             log.error("{} max age set but no auth_time received", getLogPrefix());
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
         final DateTime authTime = new DateTime(authTimeDate);
@@ -159,8 +157,7 @@ public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAct
         if (authTime.isAfter(latestValid)) {
             log.warn("{} Authentication time was not yet valid: time was {}, latest valid is: {}", getLogPrefix(),
                     authTime, latestValid);
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);           
             return;
         }
 
@@ -168,11 +165,10 @@ public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAct
         if (expiration.isBefore(now)) {
             log.warn("{} Authentication time was expired: time was '{}', expired at: '{}', current time: '{}'",
                     getLogPrefix(), authTime, expiration, now);
-            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
-        log.trace("Leaving");
+        
     }
 
 }

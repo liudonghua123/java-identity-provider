@@ -64,25 +64,25 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
     protected void doExecute(@Nonnull
     final ProfileRequestContext profileRequestContext, @Nonnull
     final AuthenticationContext authenticationContext) {
-        log.trace("Entering");
+        
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find su oidc context", getLogPrefix());
+            log.error("{} Not able to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+            
             return;
         }
         if (oidcCtx.getIDToken() != null) {
             log.debug("id token exists already, no need to fetch it from token endpoint");
-            log.trace("Leaving");
+            
             return;
         }
         final AuthenticationSuccessResponse response = oidcCtx.getAuthenticationSuccessResponse();
         if (response == null) {
             log.info("{} No oidc authentication success response", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
-            log.trace("Leaving");
+           
             return;
         }
         final AuthorizationCode code = response.getAuthorizationCode();
@@ -101,7 +101,7 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
                 if (!oidcTokenResponse.indicatesSuccess()) {
                     log.warn("{} Token response does not indicate success", getLogPrefix());
                     ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.INVALID_CREDENTIALS);
-                    log.trace("Leaving");
+                    
                     return;
                 } else {
                     oidcCtx.setOidcTokenResponse(oidcTokenResponse);
@@ -117,13 +117,13 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
                 return;
             }
 
-        } catch (SerializeException | IOException | ParseException e) {
+        } catch (final SerializeException | IOException | ParseException e) {
             log.error("{} token response failed", getLogPrefix(), e);
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.INVALID_CREDENTIALS);
-            log.trace("Leaving");
+           
             return;
         }
 
-        log.trace("Leaving");
+       
     }
 }

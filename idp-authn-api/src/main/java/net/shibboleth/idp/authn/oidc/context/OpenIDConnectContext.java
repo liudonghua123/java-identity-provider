@@ -119,7 +119,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param idPAttributes resolved attributes
      */
     public void setResolvedIdPAttributes(final Map<String, IdPAttribute> idPAttributes) {
-        this.resolvedIdPAttributes = idPAttributes;
+        resolvedIdPAttributes = idPAttributes;
     }
 
     /**
@@ -137,7 +137,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param token from op.
      */
     public void setIDToken(final JWT token) {
-        this.idToken = token;
+        idToken = token;
     }
 
     /**
@@ -155,7 +155,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param uri of the client.
      */
     public void setRedirectURI(final URI uri) {
-        this.redirectURI = uri;
+        redirectURI = uri;
     }
 
     /**
@@ -173,7 +173,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param id Oauth2 Client ID
      */
     public void setClientID(final ClientID id) {
-        this.clientID = id;
+        clientID = id;
     }
 
     /**
@@ -182,7 +182,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param secret of the client
      */
     public void setClientSecret(final Secret secret) {
-        this.clientSecret = secret;
+        clientSecret = secret;
     }
 
     /**
@@ -200,7 +200,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param scp scope of the request
      */
     public void setScope(final Scope scp) {
-        this.scope = scp;
+        scope = scp;
     }
 
     /**
@@ -218,7 +218,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param prmpt used for for forming authentication request
      */
     public void setPrompt(final Prompt prmpt) {
-        this.prompt = prmpt;
+        prompt = prmpt;
     }
 
     /**
@@ -236,7 +236,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param acrList values used for forming authentication request
      */
     public void setAcrs(final List<ACR> acrList) {
-        this.acrs = acrList;
+        acrs = acrList;
     }
 
     /**
@@ -254,7 +254,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param dspl value for forming authentication request.
      */
     public void setDisplay(final Display dspl) {
-        this.display = dspl;
+        display = dspl;
     }
 
     /**
@@ -272,7 +272,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param oIDCPrvdrMtdt op metadata.
      */
     public void setoIDCProviderMetadata(final OIDCProviderMetadata oIDCPrvdrMtdt) {
-        this.oIDCProviderMetadata = oIDCPrvdrMtdt;
+        oIDCProviderMetadata = oIDCPrvdrMtdt;
     }
 
     /**
@@ -290,7 +290,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param request to be used for authentication
      */
     public void setAuthenticationRequestURI(final URI request) {
-        this.authenticationRequestURI = request;
+        authenticationRequestURI = request;
 
     }
 
@@ -309,9 +309,9 @@ public class OpenIDConnectContext extends BaseContext {
      * @param oidcTokenResponse response from provider
      */
     public void setOidcTokenResponse(final OIDCTokenResponse oidcTokenResponse) {
-        this.oidcTknResponse = oidcTokenResponse;
+        oidcTknResponse = oidcTokenResponse;
         if (oidcTokenResponse != null && oidcTokenResponse.getOIDCTokens() != null) {
-            this.idToken = oidcTokenResponse.getOIDCTokens().getIDToken();
+            idToken = oidcTokenResponse.getOIDCTokens().getIDToken();
         }
 
     }
@@ -331,7 +331,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param stateParam parameter
      */
     public void setState(final State stateParam) {
-        this.state = stateParam;
+        state = stateParam;
     }
 
     /**
@@ -349,7 +349,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param newNonce nonce parameter
      */
     public void setNonce(final Nonce newNonce) {
-        this.nonce = newNonce;
+        nonce = newNonce;
     }
 
     /**
@@ -367,7 +367,7 @@ public class OpenIDConnectContext extends BaseContext {
      * @param authenticationSuccessResponse response from ther provider
      */
     public void setAuthenticationSuccessResponse(final AuthenticationSuccessResponse authenticationSuccessResponse) {
-        this.authSuccessResponse = authenticationSuccessResponse;
+        authSuccessResponse = authenticationSuccessResponse;
 
     }
 
@@ -393,7 +393,7 @@ public class OpenIDConnectContext extends BaseContext {
 
         final String temp = authenticationResponseHttpRequest.getRequestURL() + "?"
                 + authenticationResponseHttpRequest.getQueryString();
-        this.authenticationResponseURI = new URI(temp);
+        authenticationResponseURI = new URI(temp);
 
     }
 

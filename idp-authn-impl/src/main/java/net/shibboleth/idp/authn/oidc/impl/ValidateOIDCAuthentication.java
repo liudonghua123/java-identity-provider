@@ -72,7 +72,7 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
      * @param avoid true if additional principals should be avoided.
      */
     public void setAvoidMultiplePrincipal(final boolean avoid) {
-        this.avoidMultiplePrincipal = avoid;
+        avoidMultiplePrincipal = avoid;
     }
 
     /** {@inheritDoc} */

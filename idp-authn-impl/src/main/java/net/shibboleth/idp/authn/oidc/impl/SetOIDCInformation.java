@@ -148,7 +148,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param key signing key
      */
     public void setPrivKey(final PrivateKey key) {
-        this.signPrvKey = key;
+        signPrvKey = key;
     }
 
     /**
@@ -157,7 +157,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param algorithm used for signing
      */
     public void setJwsAlgorithm(final JWSAlgorithm algorithm) {
-        this.jwsAlgorithm = algorithm;
+        jwsAlgorithm = algorithm;
     }
 
     /**
@@ -166,7 +166,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param id for the key.
      */
     public void setKeyID(final String id) {
-        this.keyID = id;
+        keyID = id;
     }
 
     /**
@@ -178,7 +178,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param claims map of requested claims
      */
     public void setRequestClaims(final Map<String, String> claims) {
-        this.requestClaims = claims;
+        requestClaims = claims;
     }
 
     /**
@@ -189,7 +189,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      */
     public void setResponseType(final String type) throws ParseException {
        
-        this.responseType = ResponseType.parse(type);
+        responseType = ResponseType.parse(type);
     }
 
     /**
@@ -198,7 +198,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param oauth2ClientID Oauth2 Client ID
      */
     public void setClientID(final String oauth2ClientID) {        
-        this.clientID = new ClientID(oauth2ClientID);
+        clientID = new ClientID(oauth2ClientID);
     }
 
     /**
@@ -206,9 +206,8 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oauth2ClientSecret Oauth2 Client Secret
      */
-    public void setClientSecret(final String oauth2ClientSecret) {
-        
-        this.clientSecret = new Secret(oauth2ClientSecret);
+    public void setClientSecret(final String oauth2ClientSecret) {        
+        clientSecret = new Secret(oauth2ClientSecret);
     }
 
     /**
@@ -218,7 +217,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      */
 
     public void setRedirectURI(final URI redirect) {
-        this.redirectURI = redirect;
+        redirectURI = redirect;
     }
 
     /**
@@ -253,19 +252,19 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
         for (final String oidcScope : oidcScopes) {
             switch (oidcScope.toUpperCase()) {
                 case "ADDRESS":
-                    this.scope.add(OIDCScopeValue.ADDRESS);
+                    scope.add(OIDCScopeValue.ADDRESS);
                     break;
                 case "EMAIL":
-                    this.scope.add(OIDCScopeValue.EMAIL);
+                    scope.add(OIDCScopeValue.EMAIL);
                     break;
                 case "OFFLINE_ACCESS":
-                    this.scope.add(OIDCScopeValue.OFFLINE_ACCESS);
+                    scope.add(OIDCScopeValue.OFFLINE_ACCESS);
                     break;
                 case "PHONE":
-                    this.scope.add(OIDCScopeValue.PHONE);
+                    scope.add(OIDCScopeValue.PHONE);
                     break;
                 case "PROFILE":
-                    this.scope.add(OIDCScopeValue.PROFILE);
+                    scope.add(OIDCScopeValue.PROFILE);
                     break;
                 default:
             }
@@ -279,7 +278,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param oidcPrompt OpenId Prompt values
      */
     public void setPrompt(final String oidcPrompt) {        
-        this.prompt = new Prompt(oidcPrompt);        
+        prompt = new Prompt(oidcPrompt);        
     }
 
     /**
@@ -291,10 +290,10 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
        
         for (final String oidcAcr : oidcAcrs) {
             final ACR acr = new ACR(oidcAcr);
-            if (this.acrs == null) {
-                this.acrs = new ArrayList<ACR>();
+            if (acrs == null) {
+                acrs = new ArrayList<ACR>();
             }
-            this.acrs.add(acr);
+            acrs.add(acr);
         }
         
     }
@@ -307,7 +306,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     public void setDisplay(final String oidcDisplay) {
         
         try {
-            this.display = Display.parse(oidcDisplay);
+            display = Display.parse(oidcDisplay);
         } catch (final ParseException e) {
             log.error("Could not set display value", e);
         }

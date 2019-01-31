@@ -58,8 +58,7 @@ import org.slf4j.LoggerFactory;
 public class ValidateIDTokenIssuer extends AbstractAuthenticationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenIssuer.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateIDTokenIssuer.class);
 
     /** {@inheritDoc} */
     @Override

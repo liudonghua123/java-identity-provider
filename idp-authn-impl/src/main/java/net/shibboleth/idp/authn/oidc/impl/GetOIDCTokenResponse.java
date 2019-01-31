@@ -56,14 +56,12 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 public class GetOIDCTokenResponse extends AbstractExtractionAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(GetOIDCTokenResponse.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(GetOIDCTokenResponse.class);
 
     /** {@inheritDoc} */
     @Override
-    protected void doExecute(@Nonnull
-    final ProfileRequestContext profileRequestContext, @Nonnull
-    final AuthenticationContext authenticationContext) {
+    protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext, 
+            @Nonnull final AuthenticationContext authenticationContext) {
         
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
@@ -79,6 +77,7 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
             return;
         }
         final AuthenticationSuccessResponse response = oidcCtx.getAuthenticationSuccessResponse();
+        
         if (response == null) {
             log.info("{} No oidc authentication success response", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
@@ -86,7 +85,9 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
             return;
         }
         final AuthorizationCode code = response.getAuthorizationCode();
+        //TODO P.S. code could be null, should not be.
         final AuthorizationGrant codeGrant = new AuthorizationCodeGrant(code, oidcCtx.getRedirectURI());
+        //TODO P.S. neither should be null, both could be (although not after SetOIDCInformation initilises the context)
         final ClientAuthentication clientAuth = new ClientSecretBasic(oidcCtx.getClientID(), oidcCtx.getClientSecret());
         log.debug("{} Using the following token endpoint URI: {}", getLogPrefix(),
                 oidcCtx.getoIDCProviderMetadata().getTokenEndpointURI());

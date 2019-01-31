@@ -54,8 +54,7 @@ import org.slf4j.LoggerFactory;
 public class ValidateIDTokenExpirationTime extends AbstractAuthenticationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenExpirationTime.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateIDTokenExpirationTime.class);
 
     /** {@inheritDoc} */
     @Override

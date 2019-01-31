@@ -54,8 +54,7 @@ public class ValidateOIDCAuthenticationResponse extends AbstractExtractionAction
      */
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateOIDCAuthenticationResponse.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateOIDCAuthenticationResponse.class);
 
     /** {@inheritDoc} */
     @Override

@@ -42,21 +42,20 @@ import org.slf4j.LoggerFactory;
 public class OpenIDConnectStartServlet extends HttpServlet {
 
     /** Prefix for the session attribute ids. */
-    public static final String SESSION_ATTR_PREFIX =
+    @Nonnull public static final String SESSION_ATTR_PREFIX =
             "net.shibboleth.idp.authn.oidc.impl.SocialUserOpenIdConnectStartServlet.";
 
     /** Session attribute id for flow conversation key. */
-    public static final String SESSION_ATTR_FLOWKEY = SESSION_ATTR_PREFIX + "key";
+    @Nonnull public static final String SESSION_ATTR_FLOWKEY = SESSION_ATTR_PREFIX + "key";
 
     /** Session attribute id for {@link OpenIDConnectContext}. */
-    public static final String SESSION_ATTR_SUCTX = SESSION_ATTR_PREFIX + "socialUserOpenIdConnectContext";
+    @Nonnull public static final String SESSION_ATTR_SUCTX = SESSION_ATTR_PREFIX + "socialUserOpenIdConnectContext";
 
     /** Serial UID. */
     private static final long serialVersionUID = -3162157736238514852L;
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(OpenIDConnectStartServlet.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(OpenIDConnectStartServlet.class);
 
     /** Constructor. */
     public OpenIDConnectStartServlet() {
@@ -64,14 +63,14 @@ public class OpenIDConnectStartServlet extends HttpServlet {
 
     /** {@inheritDoc} */
     @Override
-    public void init(final ServletConfig config) throws ServletException {
+    public void init(@Nonnull final ServletConfig config) throws ServletException {
         super.init(config);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void service(final HttpServletRequest httpRequest, final HttpServletResponse httpResponse)
-            throws ServletException, IOException {
+    protected void service(@Nonnull final HttpServletRequest httpRequest, 
+            @Nonnull final HttpServletResponse httpResponse) throws ServletException, IOException {
        
         try {
             final String key = ExternalAuthentication.startExternalAuthentication(httpRequest);

@@ -23,19 +23,29 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import net.shibboleth.idp.attribute.IdPAttribute;
+import net.shibboleth.utilities.java.support.annotation.constraint.Live;
+import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
+import net.shibboleth.utilities.java.support.annotation.constraint.NotLive;
+import net.shibboleth.utilities.java.support.annotation.constraint.Unmodifiable;
+import net.shibboleth.utilities.java.support.logic.Constraint;
 
 import org.opensaml.messaging.context.BaseContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 import com.nimbusds.openid.connect.sdk.Display;
 import com.nimbusds.openid.connect.sdk.Nonce;
@@ -50,66 +60,64 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 public class OpenIDConnectContext extends BaseContext {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(OpenIDConnectContext.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(OpenIDConnectContext.class);
 
     /** Client Id. */
-    @Nonnull
-    private ClientID clientID;
+    @Nullable private ClientID clientID;
 
     /** Client Secret. */
-    @Nonnull
-    private Secret clientSecret;
+    @Nullable private Secret clientSecret;
 
     /** Scope. */
-    @Nonnull
-    private Scope scope;
+    @Nullable private Scope scope;
 
     /** OIDC Prompt. */
-    private Prompt prompt;
+    @Nullable private Prompt prompt;
 
-    /** OIDC Authentication Class Reference values. */
-    private List<ACR> acrs;
+    /** OIDC Authentication Class Reference values. Can be null if not required.*/
+    @Nullable @NonnullElements private List<ACR> acrs;
 
     /** OIDC Display. */
-    private Display display;
+    @Nullable private Display display;
 
     /** OIDC provider metadata. */
-    private OIDCProviderMetadata oIDCProviderMetadata;
+    @Nullable private OIDCProviderMetadata oIDCProviderMetadata;
 
     /** oidc authentication request. */
-    private URI authenticationRequestURI;
+    @Nullable private URI authenticationRequestURI;
 
     /** oidc authentication response URI. */
-    private URI authenticationResponseURI;
+    @Nullable private URI authenticationResponseURI;
 
     /** oidc authentication success response. */
-    private AuthenticationSuccessResponse authSuccessResponse;
+    @Nullable private AuthenticationSuccessResponse authSuccessResponse;
 
     /** oidc token response. */
-    private OIDCTokenResponse oidcTknResponse;
+    @Nullable private OIDCTokenResponse oidcTknResponse;
 
     /** State parameter. */
-    private State state;
+    @Nullable private State state;
 
     /** Nonce parameter. */
-    private Nonce nonce;
+    @Nullable private Nonce nonce;
 
     /** Redirect URI. */
-    private URI redirectURI;
+    @Nullable private URI redirectURI;
 
     /** ID Token. */
-    private JWT idToken;
+    @Nullable private JWT idToken;
 
     /** Resolved attributes. */
-    private Map<String, IdPAttribute> resolvedIdPAttributes;
+    //TODO Resolved Attributes never get added to the Context.
+    @Nullable private Map<String, IdPAttribute> resolvedIdPAttributes;
+    
 
     /**
      * Get the resolved attributes.
      * 
      * @return resolved attributes, may be null.
      */
-    public Map<String, IdPAttribute> getResolvedIdPAttributes() {
+    @Nullable @Live public Map<String, IdPAttribute> getResolvedIdPAttributes() {
         return resolvedIdPAttributes;
     }
 
@@ -118,7 +126,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param idPAttributes resolved attributes
      */
-    public void setResolvedIdPAttributes(final Map<String, IdPAttribute> idPAttributes) {
+    public void setResolvedIdPAttributes(@Nullable final Map<String, IdPAttribute> idPAttributes) {
         resolvedIdPAttributes = idPAttributes;
     }
 
@@ -127,7 +135,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return id token or null if not set.
      */
-    public JWT getIDToken() {
+    @Nullable public JWT getIDToken() {
         return idToken;
     }
 
@@ -136,7 +144,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param token from op.
      */
-    public void setIDToken(final JWT token) {
+    public void setIDToken(@Nullable final JWT token) {
         idToken = token;
     }
 
@@ -145,17 +153,19 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return redirect uri
      */
-    public URI getRedirectURI() {
+    @Nullable public URI getRedirectURI() {
         return redirectURI;
     }
 
     /**
-     * Get the redirect uri of the client.
+     * Set the redirect URI of the client. Redirect URI must not be 
+     * <code>null</code>, and is required for authorisation code flows 
+     * (see OpenID Connect Core 1.0 section 3.1.2.1). 
      * 
      * @param uri of the client.
      */
-    public void setRedirectURI(final URI uri) {
-        redirectURI = uri;
+    public void setRedirectURI(@Nonnull final URI uri) {
+        redirectURI = Constraint.isNotNull(uri, "Redirect URI cannot be null");
     }
 
     /**
@@ -163,7 +173,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return client id.
      */
-    public ClientID getClientID() {
+    @Nullable public ClientID getClientID() {
         return clientID;
     }
 
@@ -172,8 +182,8 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param id Oauth2 Client ID
      */
-    public void setClientID(final ClientID id) {
-        clientID = id;
+    public void setClientID(@Nonnull final ClientID id) {
+        clientID = Constraint.isNotNull(id, "Client ID cannot be null");
     }
 
     /**
@@ -181,8 +191,17 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param secret of the client
      */
-    public void setClientSecret(final Secret secret) {
-        clientSecret = secret;
+    public void setClientSecret(@Nonnull final Secret secret) {
+        clientSecret = Constraint.isNotNull(secret, "Client secret cannot be null");
+    }
+    
+    /**
+     * Get client secret.
+     * 
+     * @return client secret.
+     */
+    @Nullable public Secret getClientSecret() {
+        return clientSecret;
     }
 
     /**
@@ -199,8 +218,8 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param scp scope of the request
      */
-    public void setScope(final Scope scp) {
-        scope = scp;
+    public void setScope(@Nonnull final Scope scp) {
+        scope = Constraint.isNotNull(scp, "Scope cannot be null");
     }
 
     /**
@@ -208,35 +227,43 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return prompt
      */
-    public Prompt getPrompt() {
+    @Nullable public Prompt getPrompt() {
         return prompt;
     }
 
     /**
-     * Get the value for prompt used for forming authentication request.
+     * Set the value for prompt used for forming authentication request.
      * 
      * @param prmpt used for for forming authentication request
      */
-    public void setPrompt(final Prompt prmpt) {
+    public void setPrompt(@Nullable final Prompt prmpt) {
         prompt = prmpt;
     }
 
     /**
-     * Get the values for acr used for forming authentication request.
+     * Get the values for acr used for forming authentication request. 
+     * <code>null</code> if not set.
      * 
      * @return acrs
      */
-    public List<ACR> getAcrs() {
-        return acrs;
+    @Nullable @NonnullElements @Unmodifiable @NotLive public List<ACR> getAcrs() {
+       return acrs;
     }
 
     /**
-     * Set the values for acr used for forming authentication request.
+     * Set the values for acr used for forming authentication request. Allows for a null {@link List} 
+     * if no ACRs are defined in order to maintain direct compatibility with the 
+     * Nimbus {@link AuthenticationRequest} builder.
      * 
      * @param acrList values used for forming authentication request
      */
-    public void setAcrs(final List<ACR> acrList) {
-        acrs = acrList;
+    public void setAcrs(@Nullable @NonnullElements final List<ACR> acrList) {
+        if (acrList!=null) {
+            ImmutableList.copyOf(Collections2.filter(acrList, Predicates.notNull()));
+        } else {
+            acrs = null;           
+        }
+
     }
 
     /**
@@ -244,7 +271,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return display
      */
-    public Display getDisplay() {
+    @Nullable public Display getDisplay() {
         return display;
     }
 
@@ -253,7 +280,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param dspl value for forming authentication request.
      */
-    public void setDisplay(final Display dspl) {
+    public void setDisplay(@Nullable final Display dspl) {
         display = dspl;
     }
 
@@ -262,7 +289,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return op metadata
      */
-    public OIDCProviderMetadata getoIDCProviderMetadata() {
+    @Nullable public OIDCProviderMetadata getoIDCProviderMetadata() {
         return oIDCProviderMetadata;
     }
 
@@ -271,8 +298,8 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param oIDCPrvdrMtdt op metadata.
      */
-    public void setoIDCProviderMetadata(final OIDCProviderMetadata oIDCPrvdrMtdt) {
-        oIDCProviderMetadata = oIDCPrvdrMtdt;
+    public void setoIDCProviderMetadata(@Nonnull final OIDCProviderMetadata oIDCPrvdrMtdt) {
+        oIDCProviderMetadata = Constraint.isNotNull(oIDCPrvdrMtdt, "OpenID Connect metadata location cannot be null ");
     }
 
     /**
@@ -280,7 +307,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return request URI for authentication
      */
-    public URI getAuthenticationRequestURI() {
+    @Nullable public URI getAuthenticationRequestURI() {
         return authenticationRequestURI;
     }
 
@@ -289,8 +316,9 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param request to be used for authentication
      */
-    public void setAuthenticationRequestURI(final URI request) {
-        authenticationRequestURI = request;
+    public void setAuthenticationRequestURI(@Nonnull final URI request) {
+        authenticationRequestURI = Constraint.isNotNull(request, 
+                "Authentication Request URI request can not be null");      
 
     }
 
@@ -299,7 +327,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return token response
      */
-    public OIDCTokenResponse getOidcTokenResponse() {
+    @Nullable public OIDCTokenResponse getOidcTokenResponse() {
         return oidcTknResponse;
     }
 
@@ -308,7 +336,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param oidcTokenResponse response from provider
      */
-    public void setOidcTokenResponse(final OIDCTokenResponse oidcTokenResponse) {
+    public void setOidcTokenResponse(@Nullable final OIDCTokenResponse oidcTokenResponse) {
         oidcTknResponse = oidcTokenResponse;
         if (oidcTokenResponse != null && oidcTokenResponse.getOIDCTokens() != null) {
             idToken = oidcTokenResponse.getOIDCTokens().getIDToken();
@@ -321,7 +349,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return state parameter
      */
-    public State getState() {
+    @Nullable public State getState() {
         return state;
     }
 
@@ -330,7 +358,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param stateParam parameter
      */
-    public void setState(final State stateParam) {
+    public void setState(@Nullable final State stateParam) {
         state = stateParam;
     }
 
@@ -339,7 +367,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return nonce parameter.
      */
-    public Nonce getNonce() {
+    @Nullable public Nonce getNonce() {
         return nonce;
     }
 
@@ -348,7 +376,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param newNonce nonce parameter
      */
-    public void setNonce(final Nonce newNonce) {
+    public void setNonce(@Nullable final Nonce newNonce) {
         nonce = newNonce;
     }
 
@@ -357,7 +385,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return authentication success response.
      */
-    public AuthenticationSuccessResponse getAuthenticationSuccessResponse() {
+    @Nullable public AuthenticationSuccessResponse getAuthenticationSuccessResponse() {
         return authSuccessResponse;
     }
 
@@ -366,8 +394,10 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @param authenticationSuccessResponse response from ther provider
      */
-    public void setAuthenticationSuccessResponse(final AuthenticationSuccessResponse authenticationSuccessResponse) {
-        authSuccessResponse = authenticationSuccessResponse;
+    public void setAuthenticationSuccessResponse(
+            @Nonnull final AuthenticationSuccessResponse authenticationSuccessResponse) {
+        authSuccessResponse = Constraint.isNotNull(authenticationSuccessResponse, 
+                "AuthenticationSuccessResponse can not be null");      
 
     }
 
@@ -376,8 +406,7 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @return authentication response URI
      */
-    public URI getAuthenticationResponseURI() {
-
+    @Nullable public URI getAuthenticationResponseURI() {
         return authenticationResponseURI;
     }
 
@@ -388,22 +417,18 @@ public class OpenIDConnectContext extends BaseContext {
      * 
      * @throws URISyntaxException if request has malformed URL and/or query parameters
      */
-    public void setAuthenticationResponseURI(final HttpServletRequest authenticationResponseHttpRequest)
+    public void setAuthenticationResponseURI(@Nonnull final HttpServletRequest authenticationResponseHttpRequest)
             throws URISyntaxException {
 
+        //This will NPE anyway if null.
+        Constraint.isNotNull(authenticationResponseHttpRequest, "Authentication response http request can not be null");
+        
         final String temp = authenticationResponseHttpRequest.getRequestURL() + "?"
                 + authenticationResponseHttpRequest.getQueryString();
         authenticationResponseURI = new URI(temp);
 
     }
 
-    /**
-     * Get client secret.
-     * 
-     * @return client secret.
-     */
-    public Secret getClientSecret() {
-        return clientSecret;
-    }
+  
 
 }

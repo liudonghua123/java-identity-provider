@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.security.auth.Subject;
 
 import net.shibboleth.idp.attribute.IdPAttribute;
@@ -34,6 +35,7 @@ import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.authn.principal.IdPAttributePrincipal;
 import net.shibboleth.idp.authn.principal.UsernamePrincipal;
+import net.shibboleth.utilities.java.support.annotation.constraint.Live;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.opensaml.profile.action.ActionSupport;
@@ -54,17 +56,16 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 public class ValidateOIDCAuthentication extends AbstractValidationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateOIDCAuthentication.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateOIDCAuthentication.class);
 
     /** Avoid creating multiple principals. */
-    private boolean avoidMultiplePrincipal;
+    @Nonnull private boolean avoidMultiplePrincipal;
 
     /** the subject received from id token. */
-    private String oidcSubject;
+    @Nullable private String oidcSubject;
 
     /** The JWT Claim Set of the ID Token acquired from the token endpoint. */
-    private JWTClaimsSet jwtClaims;
+    @Nullable private JWTClaimsSet jwtClaims;
 
     /**
      * In MFA use case prior authentication may have created a usernameprincipal already with value not matching to MFA.
@@ -77,9 +78,8 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
 
     /** {@inheritDoc} */
     @Override
-    protected boolean doPreExecute(@Nonnull
-    final ProfileRequestContext profileRequestContext, @Nonnull
-    final AuthenticationContext authenticationContext) {
+    protected boolean doPreExecute(@Nonnull final ProfileRequestContext profileRequestContext, 
+            @Nonnull final AuthenticationContext authenticationContext) {
 
         if (!super.doPreExecute(profileRequestContext, authenticationContext)) {
             return false;
@@ -99,6 +99,7 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
             return false;
         }
         try {
+            //TODO P.S. this will fail if not decrypted JWE. 
             oidcSubject = StringSupport.trimOrNull(oidcCtx.getIDToken().getJWTClaimsSet().getSubject());
             jwtClaims = oidcCtx.getIDToken().getJWTClaimsSet();
         } catch (final ParseException e) {
@@ -117,9 +118,8 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
 
     /** {@inheritDoc} */
     @Override
-    protected void doExecute(@Nonnull
-    final ProfileRequestContext profileRequestContext, @Nonnull
-    final AuthenticationContext authenticationContext) {
+    protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext, 
+            @Nonnull final AuthenticationContext authenticationContext) {
         
         buildAuthenticationResult(profileRequestContext, authenticationContext);
         return;
@@ -138,7 +138,8 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
      * 
      * @return a list of standard OIDC claims as {@link IdPAttributePrincipal}s.
      */
-    @Nonnull
+    @Nonnull 
+    @Live
     private List<IdPAttributePrincipal> buildIdPAttributePrincipalsFromStandardClaims() {
 
         final List<IdPAttributePrincipal> claimPrincipals = new ArrayList<>();
@@ -179,10 +180,10 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
     }
 
     @Override
-    protected Subject populateSubject(final Subject subject) {    
+    protected Subject populateSubject(@Nonnull final Subject subject) {    
         
         if (avoidMultiplePrincipal && subject.getPrincipals().size() > 0) {
-            log.debug("{} Subject contains already principal, not populated", getLogPrefix());
+            log.debug("{} Subject already contains principal, not populated", getLogPrefix());
 
         } else {
 

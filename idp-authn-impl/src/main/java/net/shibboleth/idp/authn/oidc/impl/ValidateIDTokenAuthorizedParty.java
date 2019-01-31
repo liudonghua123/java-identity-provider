@@ -41,8 +41,7 @@ import org.slf4j.LoggerFactory;
 public class ValidateIDTokenAuthorizedParty extends AbstractAuthenticationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAuthorizedParty.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAuthorizedParty.class);
 
     /** {@inheritDoc} */
     @Override

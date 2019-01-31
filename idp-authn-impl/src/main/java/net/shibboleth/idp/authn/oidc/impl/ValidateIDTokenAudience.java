@@ -40,8 +40,7 @@ import org.slf4j.LoggerFactory;
 public class ValidateIDTokenAudience extends AbstractAuthenticationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAudience.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAudience.class);
 
     /** {@inheritDoc} */
     @Override
@@ -69,6 +68,7 @@ public class ValidateIDTokenAudience extends AbstractAuthenticationAction {
         // audience, or if it contains additional audiences not trusted by
         // the Client.
         try {
+            //TODO P.S. getClientID could be null, although not after SetOIDCInformation has run.
             if (!oidcCtx.getIDToken().getJWTClaimsSet().getAudience().contains(oidcCtx.getClientID().getValue())) {
                 log.error("{} client is not the intended audience", getLogPrefix());
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                

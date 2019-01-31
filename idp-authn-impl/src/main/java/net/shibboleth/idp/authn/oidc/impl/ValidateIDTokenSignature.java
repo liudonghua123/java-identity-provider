@@ -33,16 +33,11 @@ import net.shibboleth.idp.authn.AbstractAuthenticationAction;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
-import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
-import net.shibboleth.utilities.java.support.component.ComponentSupport;
-import net.shibboleth.utilities.java.support.logic.Constraint;
 
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
@@ -79,16 +74,12 @@ import com.nimbusds.jwt.SignedJWT;
 public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenSignature.class);
-
-
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateIDTokenSignature.class);
 
     /** {@inheritDoc} */
     @Override
-    protected void doExecute(@Nonnull
-    final ProfileRequestContext profileRequestContext, @Nonnull
-    final AuthenticationContext authenticationContext) {
+    protected void doExecute(@Nonnull final ProfileRequestContext profileRequestContext, 
+            @Nonnull final AuthenticationContext authenticationContext) {
         
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
@@ -99,6 +90,7 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
         }
         SignedJWT signedJWT = null;
         try {
+            //TODO P.S. oidcCtx.getIDToken() could be null.
             signedJWT = SignedJWT.parse(oidcCtx.getIDToken().serialize());
         } catch (final ParseException e) {
             log.error("{} Error when forming signed JWT", getLogPrefix(), e);
@@ -146,7 +138,8 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
      * @throws IOException if something unexpected happens.
      */
     @Nullable
-    private JSONObject getProviderRSAJWK(final InputStream is, final String kid) throws ParseException, IOException {
+    private JSONObject getProviderRSAJWK(@Nonnull final InputStream is, @Nullable final String kid) 
+            throws ParseException, IOException {
         
         if (kid == null) {
             log.warn("No kid defined in the JWT, no kid check can be performed!");

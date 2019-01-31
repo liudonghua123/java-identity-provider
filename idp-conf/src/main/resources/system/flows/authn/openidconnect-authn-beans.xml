@@ -28,11 +28,11 @@
 	</bean>
 
 	<bean id="SetOIDCInformation" class="net.shibboleth.idp.authn.oidc.impl.SetOIDCInformation">
-		<property name="clientID" value="%{idp.oidc.clientID:none}" />
-		<property name="clientSecret" value="%{idp.oidc.clientSecret:none}" />
-		<property name="providerMetadataLocation" value="%{idp.oidc.providerConfigurationDocument:none}" />
-		<property name="redirectURI" value="%{idp.oidc.redirectURI:none}" />
-		<property name="scope" value="%{idp.oidc.scope:none}"/>
+		<property name="clientID" value="%{idp.oidc.clientID}" />
+		<property name="clientSecret" value="%{idp.oidc.clientSecret}" />
+		<property name="providerMetadataLocation" value="%{idp.oidc.providerConfigurationDocument}" />
+		<property name="redirectURI" value="%{idp.oidc.redirectURI}" />
+		<property name="scope" value="%{idp.oidc.scope}"/>
 			
 		<!-- <property name="responseType" value="id_token token"/> -->
 	</bean>

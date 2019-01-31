@@ -44,8 +44,7 @@ import net.shibboleth.utilities.java.support.primitive.StringSupport;
 public class ValidateIDTokenACR extends AbstractAuthenticationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenACR.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateIDTokenACR.class);
 
     /** {@inheritDoc} */
     @Override
@@ -66,8 +65,10 @@ public class ValidateIDTokenACR extends AbstractAuthenticationAction {
         // If the acr Claim was requested, the Client SHOULD check that the
         // asserted Claim Value is appropriate. The meaning and processing
         // of acr Claim Values is out of scope for this specification.
+        //TODO P.S. this does nothing useful. 
+        
         final List<ACR> acrs = oidcCtx.getAcrs();
-        if (acrs != null && acrs.size() > 0) {
+        if (acrs != null && !acrs.isEmpty()) {
             if (log.isTraceEnabled()) {
                 for (int i = 0; i < acrs.size(); i++) {
                     log.trace("{} ACR index {} is {}", getLogPrefix(), i, acrs.get(i));
@@ -75,6 +76,7 @@ public class ValidateIDTokenACR extends AbstractAuthenticationAction {
             }
             final String acr;
             try {
+                //TODO P.S. this chould be null.
                 acr = oidcCtx.getIDToken().getJWTClaimsSet().getStringClaim("acr");
             } catch (final ParseException e) {
                 log.error("{} Error parsing id token", getLogPrefix());

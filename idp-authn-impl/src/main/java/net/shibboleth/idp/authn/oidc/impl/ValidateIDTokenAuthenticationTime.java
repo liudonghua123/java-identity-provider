@@ -46,24 +46,19 @@ import org.slf4j.LoggerFactory;
 public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAuthenticationTime.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateIDTokenAuthenticationTime.class);
 
     /**
      * Clock skew - milliseconds before a lower time bound, or after an upper time bound, to consider still acceptable
      * Default value: 3 minutes.
      */
-    @Duration
-    @NonNegative
-    private long clockSkew;
+    @Duration @NonNegative private long clockSkew;
 
     /**
      * Amount of time in milliseconds for which a forced authentication is valid after it is issued. Default value: 30
      * seconds.
      */
-    @Duration
-    @NonNegative
-    private long authnLifetime;
+    @Duration @NonNegative private long authnLifetime;
 
     /**
      * Constructor.
@@ -79,7 +74,7 @@ public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAct
      * 
      * @return the clock skew
      */
-    @NonNegative
+    @Duration @NonNegative
     public long getClockSkew() {
         return clockSkew;
     }
@@ -99,7 +94,7 @@ public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAct
      * 
      * @return amount of time, in milliseconds, for which a forced authentication is valid
      */
-    @NonNegative
+    @Duration @NonNegative
     public long getAuthnLifetime() {
         return authnLifetime;
     }

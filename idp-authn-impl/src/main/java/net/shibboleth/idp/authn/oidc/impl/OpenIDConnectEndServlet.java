@@ -50,8 +50,7 @@ public class OpenIDConnectEndServlet extends HttpServlet {
     private static final long serialVersionUID = -3162157736238514852L;
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(OpenIDConnectEndServlet.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(OpenIDConnectEndServlet.class);
 
     /** Constructor. */
     public OpenIDConnectEndServlet() {
@@ -65,8 +64,8 @@ public class OpenIDConnectEndServlet extends HttpServlet {
 
     /** {@inheritDoc} */
     @Override
-    protected void service(final HttpServletRequest httpRequest, final HttpServletResponse httpResponse)
-            throws ServletException, IOException {
+    protected void service(@Nonnull final HttpServletRequest httpRequest,
+            @Nonnull final HttpServletResponse httpResponse) throws ServletException, IOException {
        
         try {
             final HttpSession session = httpRequest.getSession();

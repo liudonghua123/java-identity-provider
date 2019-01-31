@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.minidev.json.JSONObject;
 import net.shibboleth.idp.authn.AbstractAuthenticationAction;
@@ -73,7 +74,11 @@ import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.context.AttributeContext;
 import net.shibboleth.idp.profile.context.RelyingPartyContext;
+import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
+import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
+import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
+import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 /**
  * An action that sets oidc information to {@link OpenIDConnectContext} and attaches it to
@@ -83,55 +88,49 @@ import net.shibboleth.utilities.java.support.logic.Constraint;
 public class SetOIDCInformation extends AbstractAuthenticationAction {
 
     /** Class logger. */
-    @Nonnull
-    private final Logger log = LoggerFactory.getLogger(SetOIDCInformation.class);
+    @Nonnull private final Logger log = LoggerFactory.getLogger(SetOIDCInformation.class);
 
     /** Context to look attributes for. */
-    @Nonnull
-    private Function<ProfileRequestContext, AttributeContext> attributeContextLookupStrategy;
+    @Nonnull private Function<ProfileRequestContext, AttributeContext> attributeContextLookupStrategy;
 
     /** Redirect URI. */
-    private URI redirectURI;
+    @Nonnull private URI redirectURI;
 
     /** Client Id. */
-    @Nonnull
-    private ClientID clientID;
+    @Nonnull private ClientID clientID;
 
     /** Client Secret. */
-    @Nonnull
-    private Secret clientSecret;
+    @Nonnull private Secret clientSecret;
 
     /** Response type, default is code flow. */
-    @Nonnull
-    private ResponseType responseType = new ResponseType(ResponseType.Value.CODE);
+    @Nonnull private ResponseType responseType = new ResponseType(ResponseType.Value.CODE);
 
     /** Scope. */
-    @Nonnull
-    private Scope scope = new Scope(OIDCScopeValue.OPENID);
+    @Nonnull private Scope scope = new Scope(OIDCScopeValue.OPENID);
 
     /** OIDC Prompt. */
-    private Prompt prompt;
+    @Nullable private Prompt prompt;
 
     /** OIDC Authentication Class Reference values. */
-    private List<ACR> acrs;
+    @Nullable @NonnullElements private List<ACR> acrs;
 
     /** OIDC Display. */
-    private Display display;
+    @Nullable private Display display;
 
     /** Private key for signing request object. */
-    private PrivateKey signPrvKey;
+    @Nullable private PrivateKey signPrvKey;
 
     /** Algorithm used for signing the request object. */
-    private JWSAlgorithm jwsAlgorithm = JWSAlgorithm.RS256;
+    @Nonnull private JWSAlgorithm jwsAlgorithm = JWSAlgorithm.RS256;
 
     /** key id for key used for signing the request object. */
-    private String keyID = "id";
+    @Nonnull private String keyID = "id";
 
     /** Request object claims. */
-    private Map<String, String> requestClaims;
+    @Nullable private Map<String, String> requestClaims;
 
     /** OIDC provider metadata. */
-    private OIDCProviderMetadata oIDCProviderMetadata;
+    @Nonnull private OIDCProviderMetadata oIDCProviderMetadata;
 
     /** Constructor. */
     public SetOIDCInformation() {
@@ -147,17 +146,20 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param key signing key
      */
-    public void setPrivKey(final PrivateKey key) {
+    public void setPrivKey(@Nullable final PrivateKey key) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);     
         signPrvKey = key;
     }
 
     /**
-     * Set the RSA algorithm used for signing. Default is RS256.
+     * Set the RSA algorithm used for signing the request object. Default is RS256.
      * 
      * @param algorithm used for signing
      */
-    public void setJwsAlgorithm(final JWSAlgorithm algorithm) {
-        jwsAlgorithm = algorithm;
+    public void setJwsAlgorithm(@Nonnull final JWSAlgorithm algorithm) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);   
+        jwsAlgorithm = Constraint.isNotNull(algorithm,"OpenID Connect JWS Request algorithm can not be null");
+       
     }
 
     /**
@@ -165,19 +167,22 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param id for the key.
      */
-    public void setKeyID(final String id) {
-        keyID = id;
+    public void setKeyID(@Nonnull @NotEmpty final String id) {        
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);        
+        keyID =Constraint.isNotNull(StringSupport.trimOrNull(id), "OpenID Connect key ID cannot be null");       
     }
 
     /**
      * 
-     * Request object is created only if this mapping is set. Key of the mapping is the name of the requested claim.
-     * Value of requested claim is a) value of matching attribute if such is found, otherwise b) {"essential":true} if
-     * mapped value is "essential", otherwise c) the mapped value. Mapped value may be null.
+     * Request object is created only if this mapping is not <code>null</code>. Key of the mapping is the 
+     * name of the requested claim. Value of requested claim is a) value of matching attribute if such 
+     * is found, otherwise b) {"essential":true} if mapped value is "essential", otherwise c) the mapped 
+     * value. Mapped value may be null.
      * 
      * @param claims map of requested claims
      */
-    public void setRequestClaims(final Map<String, String> claims) {
+    public void setRequestClaims(@Nullable final Map<String, String> claims) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         requestClaims = claims;
     }
 
@@ -187,8 +192,10 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param type space-delimited list of one or more authorization response types.
      * @throws ParseException if response type cannot be parsed
      */
-    public void setResponseType(final String type) throws ParseException {
-       
+    public void setResponseType(@Nonnull @NotEmpty final String type) throws ParseException {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        Constraint.isNotNull(StringSupport.trimOrNull(type), "OpenID Connect response type cannot be null or empty");
+        
         responseType = ResponseType.parse(type);
     }
 
@@ -197,7 +204,12 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oauth2ClientID Oauth2 Client ID
      */
-    public void setClientID(final String oauth2ClientID) {        
+    public void setClientID(@Nonnull @NotEmpty final String oauth2ClientID) {  
+        
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        Constraint.isNotNull(StringSupport.trimOrNull(oauth2ClientID), 
+                "OpenID Connect client ID cannot be null or empty");
+               
         clientID = new ClientID(oauth2ClientID);
     }
 
@@ -206,18 +218,28 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oauth2ClientSecret Oauth2 Client Secret
      */
-    public void setClientSecret(final String oauth2ClientSecret) {        
+    public void setClientSecret(@Nonnull @NotEmpty final String oauth2ClientSecret) {       
+        
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        Constraint.isNotNull(StringSupport.trimOrNull(oauth2ClientSecret), 
+                "OpenID Connect client secret cannot be null or empty");
+               
         clientSecret = new Secret(oauth2ClientSecret);
     }
 
     /**
-     * Setter for OAuth2 redirect uri for provider to return to.
+     * Setter for OAuth2 redirect uri for provider to return to. The constructed URI should not be empty.
      * 
      * @param redirect OAuth2 redirect uri
      */
 
-    public void setRedirectURI(final URI redirect) {
+    public void setRedirectURI(@Nonnull @NotEmpty final URI redirect) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        Constraint.isNotNull(redirect, "OpenID Connect redirect URI cannot be null");
+        Constraint.isNotEmpty(redirect.toString(), "OpenID Connect redirect URI cannot be empty");
+        
         redirectURI = redirect;
+
     }
 
     /**
@@ -228,8 +250,12 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @throws IOException if metadataLocation cannot be read
      * @throws ParseException if metadataLocation has wrong content
      */
-    public void setProviderMetadataLocation(final String metadataLocation)
+    public void setProviderMetadataLocation(@Nonnull @NotEmpty final String metadataLocation)
             throws URISyntaxException, IOException, ParseException {
+
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        Constraint.isNotNull(StringSupport.trimOrNull(metadataLocation), 
+                "OpenID Connect metadata location cannot be null or empty");
         
         final URI issuerURI = new URI(metadataLocation);
         final URL providerConfigurationURL = issuerURI.resolve(".well-known/openid-configuration").toURL();
@@ -247,7 +273,13 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oidcScopes OpenId Scope values
      */
-    public void setScope(final List<String> oidcScopes) {
+    public void setScope(@Nullable final List<String> oidcScopes) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        
+        //As the OPENID scope is always set. New scopes can be null.
+        if (oidcScopes==null) {
+            return;
+        }
         
         for (final String oidcScope : oidcScopes) {
             switch (oidcScope.toUpperCase()) {
@@ -277,23 +309,31 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oidcPrompt OpenId Prompt values
      */
-    public void setPrompt(final String oidcPrompt) {        
+    public void setPrompt(@Nullable final String oidcPrompt) {    
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        
         prompt = new Prompt(oidcPrompt);        
     }
 
     /**
-     * Setter for OpenId ACR values.
+     * Setter for OpenId Authentication Context Class Reference (ACR) values.
      * 
      * @param oidcAcrs OpenId ACR values
      */
-    public void setAcr(final List<String> oidcAcrs) {
-       
-        for (final String oidcAcr : oidcAcrs) {
-            final ACR acr = new ACR(oidcAcr);
-            if (acrs == null) {
-                acrs = new ArrayList<ACR>();
+    public void setAcr(@Nullable @NonnullElements final List<String> oidcAcrs) {     
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        
+        if (null != oidcAcrs) {
+            for (final String oidcAcr : oidcAcrs) {
+                final ACR acr = new ACR(oidcAcr);
+                
+                if (acrs == null) {
+                    acrs = new ArrayList<ACR>();
+                }
+                if (acr!=null) {
+                    acrs.add(acr);
+                }
             }
-            acrs.add(acr);
         }
         
     }
@@ -303,12 +343,15 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * 
      * @param oidcDisplay OpenId Display values
      */
-    public void setDisplay(final String oidcDisplay) {
+    public void setDisplay(@Nullable final String oidcDisplay) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         
-        try {
-            display = Display.parse(oidcDisplay);
-        } catch (final ParseException e) {
-            log.error("Could not set display value", e);
+        if (null != display) {
+             try {
+                 display = Display.parse(oidcDisplay);
+             } catch (final ParseException e) {
+                 log.error("{} Could not set display value",getLogPrefix(), e);
+             }
         }
         
     }
@@ -320,6 +363,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      */
     public void setAttributeContextLookupStrategy(
             @Nonnull final Function<ProfileRequestContext, AttributeContext> strategy) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         
         attributeContextLookupStrategy =
                 Constraint.isNotNull(strategy, "AttributeContext lookup strategy cannot be null");
@@ -333,7 +377,8 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param name of the attribute
      * @return attribute value if found, null otherwise
      */
-    private String attributeToString(@Nonnull final OpenIDConnectContext oidcCtx, final String name) {
+    @Nullable private String attributeToString(@Nonnull final OpenIDConnectContext oidcCtx, 
+            @Nullable final String name) {
         
         if (oidcCtx.getResolvedIdPAttributes() == null) {
             log.warn("Attribute context not available");            
@@ -359,7 +404,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @param oidcCtx to look values for
      * @return id token.
      */
-    private JSONObject buildIDToken(@Nonnull final OpenIDConnectContext oidcCtx) {
+    @Nonnull private JSONObject buildIDToken(@Nonnull final OpenIDConnectContext oidcCtx) {
         
         final JSONObject idToken = new JSONObject();
         for (final Map.Entry<String, String> entry : requestClaims.entrySet()) {
@@ -406,7 +451,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
      * @return request object
      * @throws Exception if attribute context is not available or parsing/signing fails.
      */
-    private JWT getRequestObject(@Nonnull final OpenIDConnectContext oidcCtx, final State state) throws Exception {
+    //TODO Spec matchup (5.5.  Requesting Claims using the "claims" Request Parameter)
+    @Nullable private JWT getRequestObject(@Nonnull final OpenIDConnectContext oidcCtx, @Nonnull final State state) 
+            throws Exception {
         
 
         if (requestClaims == null || requestClaims.size() == 0) {            

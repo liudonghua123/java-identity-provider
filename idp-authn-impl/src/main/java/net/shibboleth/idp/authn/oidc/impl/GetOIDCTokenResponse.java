@@ -46,13 +46,21 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 
 /**
- * An action that calls the token endpoint and populates the information to {@link OpenIDConnectContext}.
+ * An action that exchanges the OAuth 2.0 authorization code inside the {@link OpenIDConnectContext} for
+ * an id_token from the OpenID Connect Provider's Token Endpoint. The ID Token is placed inside the 
+ * {@link OpenIDConnectContext}.
  * 
+ * 
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @post If getIDToken() !=null the method returns immediately. Otherwise, if the token endpoint returns an 
+ * {@link OIDCTokenResponse} whose indicatesSuccess()==true, the token is attached to the {@link OpenIDConnectContext}.
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
- * @event {@link AuthnEventIds#INVALID_AUTHN_CTX}
+ * @event {@link AuthnEventIds#INVALID_CREDENTIALS}
+ * 
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
 public class GetOIDCTokenResponse extends AbstractExtractionAction {
 
     /** Class logger. */
@@ -66,20 +74,20 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find oidc context", getLogPrefix());
+            log.error("{} Unable to find OIDC context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             
             return;
         }
         if (oidcCtx.getIDToken() != null) {
-            log.debug("id token exists already, no need to fetch it from token endpoint");
+            log.debug("id_token already exists, nothing to fetch from token endpoint");
             
             return;
         }
         final AuthenticationSuccessResponse response = oidcCtx.getAuthenticationSuccessResponse();
         
         if (response == null) {
-            log.info("{} No oidc authentication success response", getLogPrefix());
+            log.info("{} Authentication success response not found in OpenIDConnectContext", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
            
             return;
@@ -89,8 +97,10 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
         final AuthorizationGrant codeGrant = new AuthorizationCodeGrant(code, oidcCtx.getRedirectURI());
         //TODO P.S. neither should be null, both could be (although not after SetOIDCInformation initilises the context)
         final ClientAuthentication clientAuth = new ClientSecretBasic(oidcCtx.getClientID(), oidcCtx.getClientSecret());
-        log.debug("{} Using the following token endpoint URI: {}", getLogPrefix(),
+        
+        log.trace("{} Using the following OIDC token endpoint URI: {}", getLogPrefix(),
                 oidcCtx.getoIDCProviderMetadata().getTokenEndpointURI());
+        
         final TokenRequest tokenRequest =
                 new TokenRequest(oidcCtx.getoIDCProviderMetadata().getTokenEndpointURI(), clientAuth, codeGrant);
         final OIDCTokenResponse oidcTokenResponse;
@@ -98,20 +108,13 @@ public class GetOIDCTokenResponse extends AbstractExtractionAction {
             final TokenResponse tokenResponse = OIDCTokenResponseParser.parse(tokenRequest.toHTTPRequest().send());
             // TokenResponse can only be TokenErrorResponse or OIDCTokenResponse
             if (tokenResponse instanceof OIDCTokenResponse) {
-                oidcTokenResponse = (OIDCTokenResponse) tokenResponse;
-                if (!oidcTokenResponse.indicatesSuccess()) {
-                    log.warn("{} Token response does not indicate success", getLogPrefix());
-                    ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.INVALID_CREDENTIALS);
-                    
-                    return;
-                } else {
-                    oidcCtx.setOidcTokenResponse(oidcTokenResponse);
-                    log.debug("Storing oidc token response to context: {}",
-                            oidcTokenResponse.toJSONObject().toJSONString());
-                }
+                
+                oidcTokenResponse = (OIDCTokenResponse) tokenResponse;                
+                oidcCtx.setOidcTokenResponse(oidcTokenResponse);
+                
             } else {
                 final TokenErrorResponse errorResponse = (TokenErrorResponse) tokenResponse;
-                log.warn("{} Error in getting token, response error is {}", getLogPrefix(),
+                log.warn("{} Error in retrieving id_token, response error is {}", getLogPrefix(),
                         errorResponse.getErrorObject());
                 // should map error object OAuth2 Error types to new or existing event ids.
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.INVALID_CREDENTIALS);

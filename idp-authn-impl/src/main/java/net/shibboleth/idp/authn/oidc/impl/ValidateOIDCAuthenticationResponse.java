@@ -38,13 +38,21 @@ import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.AuthenticationSuccessResponse;
 
 /**
- * An action that creates a {@link OpenIDConnectContext}, and attaches it to the
- * {@link AuthenticationContext}.
+ * An action that extracts the id_token from the query parameters of a successful response from
+ * an OpenID Connect provider. The id_token is attached to the {@link OpenIDConnectContext}.  
+ *  
+ * <p>Also checks the state returned by the provider matches that which was sent to the provider</p>
  * 
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @pre <pre>OpenIdConnectContext.getAuthenticationResponseURI() != null</pre>
+ * @post If {@link AuthenticationResponse#indicatesSuccess()} == true, the extracted id_token
+ * is extracted and placed into the existing {@link OpenIDConnectContext}.
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
+ * 
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
 public class ValidateOIDCAuthenticationResponse extends AbstractExtractionAction {
 
     /*
@@ -65,22 +73,22 @@ public class ValidateOIDCAuthenticationResponse extends AbstractExtractionAction
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.info("{} Not able to find oidc context", getLogPrefix());
+            log.info("{} Unable to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
 
         if (oidcCtx.getAuthenticationResponseURI() == null) {
-            log.info("{} response uri not set", getLogPrefix());
+            log.info("{} Response URI not set", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
-        log.debug("Validating response {}", oidcCtx.getAuthenticationResponseURI().toString());
+        log.debug("Validating OIDC response {}", oidcCtx.getAuthenticationResponseURI().toString());
         AuthenticationResponse response = null;
         try {
             response = AuthenticationResponseParser.parse(oidcCtx.getAuthenticationResponseURI());
         } catch (final ParseException e) {
-            log.info("{} response parsing failed", getLogPrefix());
+            log.info("{} Response parsing failed", getLogPrefix(),e);
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
@@ -102,7 +110,7 @@ public class ValidateOIDCAuthenticationResponse extends AbstractExtractionAction
         oidcCtx.setIDToken(successResponse.getIDToken());
         final State state = oidcCtx.getState();
         if (state == null || !state.equals(successResponse.getState())) {
-            log.info("{} state mismatch:", getLogPrefix());
+            log.info("{} OIDC flow state mismatch:", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             
         }

@@ -32,25 +32,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An action that verifies Expiration Time of ID Token.
+ * An action that verifies the expiration time (exp) of an id_token. If the expiration time has past
+ * the id_token must not be accepted.
+ * 
+ * <p>Some clock skew could be specified, but is not in this implementation</p>
+ * 
+ * <p>Expiration time of the id_token is required. If not present, AuthnEventIds#NO_CREDENTIALS is returned</p>
  * 
  *
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
- * @pre
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @pre <pre>OpenIdConnectContext.getOidcTokenResponse() != null</pre>
  * 
- *      <pre>
- *      AuthenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class, false) != null
- *      </pre>
- * 
- *      AND
- * 
- *      <pre>
- *      SocialUserOpenIdConnectContext.getOidcTokenResponse() != null
- *      </pre>
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
-// TODO: Add preconditions to doc (suCtx.getOidcTokenResponse() etc)
 public class ValidateIDTokenExpirationTime extends AbstractAuthenticationAction {
 
     /** Class logger. */
@@ -65,13 +62,12 @@ public class ValidateIDTokenExpirationTime extends AbstractAuthenticationAction 
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find oidc context", getLogPrefix());
+            log.error("{} Unable to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
 
-        // Check time
-        // The current time MUST be before the time represented by the exp
+        // The current time MUST be before the time represented by the expiration time of the token
         final Date currentDate = new Date();
         try {
             final Date expDate = oidcCtx.getIDToken().getJWTClaimsSet().getExpirationTime();
@@ -80,7 +76,7 @@ public class ValidateIDTokenExpirationTime extends AbstractAuthenticationAction 
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                
                 return;
             }
-        } catch (final java.text.ParseException e) {
+        } catch (final java.text.ParseException | NullPointerException e) {
             log.error("{} Error parsing id token", getLogPrefix(), e);
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;

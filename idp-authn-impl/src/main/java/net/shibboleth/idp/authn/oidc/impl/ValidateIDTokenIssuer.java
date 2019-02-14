@@ -32,29 +32,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An action that verifies Issuer of ID Token.
+ * An action that verifies the issuer (iss) of the id_token exactly matches that of the configured 
+ * OpenID Connect Provider.
  * 
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
- * @event {@link AuthnEventIds#NO_CREDENTIALS}
- * @pre
+ * @event {@link AuthnEventIds#NO_CREDENTIALS} 
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @pre <pre>OpenIdConnectContext.getOidcTokenResponse() != null</pre>
+ * @pre <pre>OpenIdConnectContext.getoIDCProviderMetadata() != null</pre>
  * 
- *      <pre>
- *      AuthenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class, false) != null
- *      </pre>
- * 
- *      AND
- * 
- *      <pre>
- *      SocialUserOpenIdConnectContext.getOidcTokenResponse() != null
- *      </pre>
- * 
- *      AND
- * 
- *      <pre>
- *      SocialUserOpenIdConnectContext.getoIDCProviderMetadata() != null
- *      </pre>
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
 public class ValidateIDTokenIssuer extends AbstractAuthenticationAction {
 
     /** Class logger. */
@@ -69,24 +58,22 @@ public class ValidateIDTokenIssuer extends AbstractAuthenticationAction {
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find oidc context", getLogPrefix());
+            log.error("{} Unable to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
 
         final String issuer = oidcCtx.getoIDCProviderMetadata().getIssuer().getValue();
-        // The Issuer Identifier for the OpenID Provider (which is typically
-        // obtained during Discovery) MUST exactly match the value of the
-        // iss (issuer) Claim.
+
         try {
             if (!issuer.equals(oidcCtx.getIDToken().getJWTClaimsSet().getIssuer())) {
-                log.error("{} issuer mismatch", getLogPrefix());
+                log.error("{} Issuer mismatch", getLogPrefix());
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);               
                 return;
             }
 
         } catch (final ParseException e) {
-            log.error("{} unable to parse oidc token", getLogPrefix());
+            log.error("{} Unable to parse oidc token", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }

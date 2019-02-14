@@ -25,6 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
@@ -36,20 +37,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extracts Social identity and places it in a request attribute to be used by the IdP's external authentication
- * interface.
+ * 
+ * Servlet compatible with the {@link ExternalAuthentication} interface that begins, by HTTP redirect, an 
+ * OpenID Connect authentication request via OAuth 2.0 Authorization Code Flow to an OpenID Connect 
+ * Identity Provider (an OAuth 2.0 Authorization Server that supports OpenID Connect). 
+ * Although other flows could be configured, they shouldn't.
+ * 
+ * <p>As this is part of an OpenID Connect authentication request, the <code>openid</code> scope is required, 
+ * and as such is automatically set by the {@link SetOIDCInformation} action.</p>
+ * 
+ * <p>Adds the {@link OpenIDConnectContext} to the {@link HttpSession} for extraction after the OAuth 2.0 
+ * authorisation code response has been consumed, and control as returned to the IdP.</p>
+ * 
+ * <p>This Servlet is not responsible for consuming the authorization server response, for that
+ * see {@link OpenIDConnectEndServlet}.</p>
+ * 
+ * @since 4.0.0
  */
 public class OpenIDConnectStartServlet extends HttpServlet {
 
     /** Prefix for the session attribute ids. */
     @Nonnull public static final String SESSION_ATTR_PREFIX =
-            "net.shibboleth.idp.authn.oidc.impl.SocialUserOpenIdConnectStartServlet.";
+            "net.shibboleth.idp.authn.oidc.impl.OpenIdConnectStartServlet.";
 
     /** Session attribute id for flow conversation key. */
     @Nonnull public static final String SESSION_ATTR_FLOWKEY = SESSION_ATTR_PREFIX + "key";
 
     /** Session attribute id for {@link OpenIDConnectContext}. */
-    @Nonnull public static final String SESSION_ATTR_SUCTX = SESSION_ATTR_PREFIX + "socialUserOpenIdConnectContext";
+    @Nonnull public static final String SESSION_ATTR_SUCTX = SESSION_ATTR_PREFIX + "openIdConnectContext";
 
     /** Serial UID. */
     private static final long serialVersionUID = -3162157736238514852L;
@@ -84,17 +99,17 @@ public class OpenIDConnectStartServlet extends HttpServlet {
             final AuthenticationContext authenticationContext =
                     (AuthenticationContext) profileRequestContext.getSubcontext(AuthenticationContext.class);
             if (authenticationContext == null) {
-                throw new ExternalAuthenticationException("Could not find AuthenticationContext from the request");
+                throw new ExternalAuthenticationException("Could not get AuthenticationContext from the request");
             }
             final OpenIDConnectContext openIDConnectContext =
                     (OpenIDConnectContext) authenticationContext
                             .getSubcontext(OpenIDConnectContext.class);
             if (openIDConnectContext == null) {
                 throw new ExternalAuthenticationException(
-                        "Could not find OpenIdConnectContext from the request");
+                        "Could not get OpenIdConnectContext from the request");
             }
             httpRequest.getSession().setAttribute(SESSION_ATTR_SUCTX, openIDConnectContext);
-            log.debug("Redirecting user browser to {}", openIDConnectContext.getAuthenticationRequestURI());
+            log.debug("Redirecting http-agent to {}", openIDConnectContext.getAuthenticationRequestURI());
             httpResponse.sendRedirect(openIDConnectContext.getAuthenticationRequestURI().toString());
         } catch (final ExternalAuthenticationException e) {
             log.error("Error processing external authentication request", e);           

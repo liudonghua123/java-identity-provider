@@ -31,12 +31,25 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nimbusds.openid.connect.sdk.validators.IDTokenValidator;
+
 /**
- * An action that verifies Audience of ID Token.
+ * An action that verifies the Audience (aud) claim in the id_token contains the client_id of this
+ * client (as registered at the issuer).  See section 3.1.3.7 of OpenID Connect core 1.0.
  * 
- * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
+ * <p>If one of the list of audiences is untrusted, the token should be rejected - which is 
+ * Currently NOT tested</p>
+ * 
+ * 
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @pre <pre>OpenIDConnectContext.getIDToken() != null</pre>
+ * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID} 
+ * @event {@link net.shibboleth.idp.authn.AuthnEventIds#NO_CREDENTIALS}
+ * 
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
+//TODO P.S should some of these functions be delegated to Nimbus IDTokenValidator?
 public class ValidateIDTokenAudience extends AbstractAuthenticationAction {
 
     /** Class logger. */
@@ -60,13 +73,7 @@ public class ValidateIDTokenAudience extends AbstractAuthenticationAction {
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
-        // The Client MUST validate that the aud (audience) Claim contains
-        // its client_id value registered at the Issuer identified by the
-        // iss (issuer) Claim as an audience. The aud (audience) Claim MAY
-        // contain an array with more than one element. The ID Token MUST be
-        // rejected if the ID Token does not list the Client as a valid
-        // audience, or if it contains additional audiences not trusted by
-        // the Client.
+
         try {
             //TODO P.S. getClientID could be null, although not after SetOIDCInformation has run.
             if (!oidcCtx.getIDToken().getJWTClaimsSet().getAudience().contains(oidcCtx.getClientID().getValue())) {

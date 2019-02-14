@@ -81,8 +81,17 @@ import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 /**
- * An action that sets oidc information to {@link OpenIDConnectContext} and attaches it to
- * {@link AuthenticationContext}.
+ * 
+ * An action that populates the {@link AuthenticationContext} with a freshly built {@link OpenIDConnectContext}.
+ * 
+ * <p>A singleton instance of this class can be created and shared between authentication requests.</p>
+ * 
+ * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
+ * @event {@link AuthnEventIds#NO_CREDENTIALS}
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class) != null</pre>
+ * @post The AuthenticationContext is modified as above.
+ * 
+ * @since 4.0.0
  */
 @SuppressWarnings("rawtypes")
 public class SetOIDCInformation extends AbstractAuthenticationAction {
@@ -105,22 +114,29 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     /** Response type, default is code flow. */
     @Nonnull private ResponseType responseType = new ResponseType(ResponseType.Value.CODE);
 
-    /** Scope. */
+    /** Scope. Must contain an openid scope.*/
     @Nonnull private Scope scope = new Scope(OIDCScopeValue.OPENID);
 
-    /** OIDC Prompt. */
+    /**
+     *  OIDC Prompt. Specifies whether the Authorization Server prompts
+     *  the End-User for reauthentication and consent.
+     */
     @Nullable private Prompt prompt;
 
     /** OIDC Authentication Class Reference values. */
     @Nullable @NonnullElements private List<ACR> acrs;
 
-    /** OIDC Display. */
+    /**
+     *  OIDC Display. Value that specifies how the Authorization Server
+     *  displays the authentication and consent user interface pages to the End-User. 
+     */
     @Nullable private Display display;
 
-    /** Private key for signing request object. */
+    /** Private key for signing the request object. */
     @Nullable private PrivateKey signPrvKey;
 
-    /** Algorithm used for signing the request object. */
+    /** Algorithm used for signing the request object. Defaults to the required
+     * singing algorithm of RSA SHA-256*/
     @Nonnull private JWSAlgorithm jwsAlgorithm = JWSAlgorithm.RS256;
 
     /** key id for key used for signing the request object. */
@@ -133,11 +149,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     @Nonnull private OIDCProviderMetadata oIDCProviderMetadata;
 
     /** Constructor. */
-    public SetOIDCInformation() {
-        
+    public SetOIDCInformation() {        
         attributeContextLookupStrategy = Functions.compose(new ChildContextLookup<>(AttributeContext.class),
-                new ChildContextLookup<ProfileRequestContext, RelyingPartyContext>(RelyingPartyContext.class));
-        
+                new ChildContextLookup<ProfileRequestContext, RelyingPartyContext>(RelyingPartyContext.class));        
         
     }
 
@@ -154,7 +168,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     /**
      * Set the RSA algorithm used for signing the request object. Default is RS256.
      * 
-     * @param algorithm used for signing
+     * @param algorithm used for signing, must not be <code>null</code>.
      */
     public void setJwsAlgorithm(@Nonnull final JWSAlgorithm algorithm) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);   
@@ -165,7 +179,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     /**
      * Set the key id of the key.
      * 
-     * @param id for the key.
+     * @param id for the key, must not be <code>null</code>.
      */
     public void setKeyID(@Nonnull @NotEmpty final String id) {        
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);        
@@ -174,10 +188,23 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
 
     /**
      * 
-     * Request object is created only if this mapping is not <code>null</code>. Key of the mapping is the 
-     * name of the requested claim. Value of requested claim is a) value of matching attribute if such 
-     * is found, otherwise b) {"essential":true} if mapped value is "essential", otherwise c) the mapped 
-     * value. Mapped value may be null.
+     * If this is set (i.e. not <code>null</code>) request claims will be built as a
+     * JWT Request Object. See OpenID Connect Core section 6.1. If the <code>signPrvKey</code>
+     * is set, the JWT will also be signed.
+     * 
+     * <p>The key of the mapping is the name of the requested claim. The value of the requested claim
+     * is either:
+     * <ul>
+     * <li>Null, if the claim is being requested in a default manor</li>   
+     * <li><code>{"essential":true}</code> if the value is essential. The default is 
+     * <code>{"essential":false}</code></li>
+     * <li>A specific value for the claim. This value must be a valid value for that claim.</li>
+     * <li>A specific set of values for the claim. These values must be valid value for that claim.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * If used, the OpenID Connect Provider must support it, as specified in the 
+     * <code>request_parameter_supported</code> parameter of the Providers discovery metadata.
      * 
      * @param claims map of requested claims
      */
@@ -187,9 +214,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Sets the response type. Default is code. *
+     * Sets the response type. Default is code. 
      * 
-     * @param type space-delimited list of one or more authorization response types.
+     * @param type space-delimited list of one or more authorization response types. Must not be <code>null</code>.
      * @throws ParseException if response type cannot be parsed
      */
     public void setResponseType(@Nonnull @NotEmpty final String type) throws ParseException {
@@ -202,7 +229,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     /**
      * Setter for Oauth2 client id.
      * 
-     * @param oauth2ClientID Oauth2 Client ID
+     * @param oauth2ClientID Oauth2 Client ID, must not be <code>null</code>.
      */
     public void setClientID(@Nonnull @NotEmpty final String oauth2ClientID) {  
         
@@ -214,9 +241,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Setter for Oauth2 Client secret.
+     * Setter for OAuth2 Client secret.
      * 
-     * @param oauth2ClientSecret Oauth2 Client Secret
+     * @param oauth2ClientSecret OAuth2 Client Secret, must not be <code>null</code>.
      */
     public void setClientSecret(@Nonnull @NotEmpty final String oauth2ClientSecret) {       
         
@@ -228,9 +255,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Setter for OAuth2 redirect uri for provider to return to. The constructed URI should not be empty.
+     * Setter for the OAuth 2.0 redirect URI the OIDC provider will return to. The constructed URI should not be empty.
      * 
-     * @param redirect OAuth2 redirect uri
+     * @param redirect OAuth2 redirect uri, must not be <code>null</code>.
      */
 
     public void setRedirectURI(@Nonnull @NotEmpty final URI redirect) {
@@ -243,10 +270,14 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Setter for OpenId Provider Metadata location.
+     * Setter for OpenId Provider Metadata resource.
      * 
-     * @param metadataLocation OpenId Provider Metadata location
-     * @throws URISyntaxException if metadataLocation is not URI
+     * <p>Constructs a URI from the <code>metadataLocation</code> and attempts to connect, 
+     * stream, and parse its content into an {@link OIDCProviderMetadata} instance.</p>
+     * 
+     * @param metadataLocation OpenId Provider Metadata location, must not be <code>null</code>.
+     * 
+     * @throws URISyntaxException if metadataLocation is not a URI
      * @throws IOException if metadataLocation cannot be read
      * @throws ParseException if metadataLocation has wrong content
      */
@@ -269,9 +300,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Setter for OpenId Scope values.
+     * Setter for OpenId Scope values. New ones are be added to the {@value OIDCScopeValue#OPENID} scope.
      * 
-     * @param oidcScopes OpenId Scope values
+     * @param oidcScopes OpenID Connect Scope values, can be <code>null</code> and will be ignored.
      */
     public void setScope(@Nullable final List<String> oidcScopes) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
@@ -305,9 +336,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Setter for OpenId Prompt value.
+     * Setter for the OpenID Connect Prompt value.
      * 
-     * @param oidcPrompt OpenId Prompt values
+     * @param oidcPrompt  OpenID Connect Prompt value.
      */
     public void setPrompt(@Nullable final String oidcPrompt) {    
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
@@ -316,7 +347,7 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Setter for OpenId Authentication Context Class Reference (ACR) values.
+     * Setter for the OpenID Connect Authentication Context Class Reference (ACR) values.
      * 
      * @param oidcAcrs OpenId ACR values
      */
@@ -339,9 +370,9 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Setter for OpenId Display value.
+     * Setter for the OpenID Connect Display value.
      * 
-     * @param oidcDisplay OpenId Display values
+     * @param oidcDisplay OpenID Connect Display value.
      */
     public void setDisplay(@Nullable final String oidcDisplay) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
@@ -371,11 +402,12 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Returns the first found string value for attribute.
+     * Returns the first {@link StringAttributeValue} value of the {@link IdPAttribute} that has key 
+     * <code>name</code> from the {@link OpenIDConnectContext#getResolvedIdPAttributes()}.
      * 
-     * @param oidcCtx to look attributes for
-     * @param name of the attribute
-     * @return attribute value if found, null otherwise
+     * @param oidcCtx context to get attributes from.
+     * @param name of the attribute to find.
+     * @return attribute value if found, null otherwise.
      */
     @Nullable private String attributeToString(@Nonnull final OpenIDConnectContext oidcCtx, 
             @Nullable final String name) {
@@ -399,10 +431,11 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Constructs the id token.
+     * Build the requested claims into an JSONObject, used by 
+     * {@link #getRequestObject(OpenIDConnectContext, State)}.
      * 
-     * @param oidcCtx to look values for
-     * @return id token.
+     * @param oidcCtx context to extract request claims from.
+     * @return id token as a JSON Object.
      */
     @Nonnull private JSONObject buildIDToken(@Nonnull final OpenIDConnectContext oidcCtx) {
         
@@ -441,17 +474,21 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
     }
 
     /**
-     * Must be called as a last step before constructing request.
      * 
-     * Creates request object. If signing key is present adds also state and iat claims and then signs it.
+     * Construct a JWT claims Request Object (see OpenID Connect core 1.0 section 6) iff claims 
+     * are requested i.e. <code>requestClaims</code> is not <code>null</code>. 
      * 
+     * <p>If the signing key is present, adds also state, iat claims and then signs it.</p>
      * 
-     * @param oidcCtx for accessing attributes.
-     * @param state to be added to request object.
-     * @return request object
+     * <p>Must be called as a last step before constructing the request.</p>
+     *  
+     * 
+     * @param oidcCtx context for accessing attributes.
+     * @param state to be added to the request object.
+     * @return the request object, or null if one is not constructed.
+     * 
      * @throws Exception if attribute context is not available or parsing/signing fails.
      */
-    //TODO Spec matchup (5.5.  Requesting Claims using the "claims" Request Parameter)
     @Nullable private JWT getRequestObject(@Nonnull final OpenIDConnectContext oidcCtx, @Nonnull final State state) 
             throws Exception {
         
@@ -495,8 +532,8 @@ public class SetOIDCInformation extends AbstractAuthenticationAction {
 
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class, true);
-        // We initialize the context
-        // If request is passive we override default prompt value
+        
+        // Initialize the context, if request is passive we override default prompt value
         final Prompt ovrPrompt = authenticationContext.isPassive() ? new Prompt(Type.NONE) : prompt;
         oidcCtx.setPrompt(ovrPrompt);
         oidcCtx.setAcrs(acrs);

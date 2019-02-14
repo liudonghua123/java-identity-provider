@@ -41,8 +41,14 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Extracts Social identity and places it in a request attribute to be used by the IdP's external authentication
- * interface.
+ * Servlet compatible with the @link {@link ExternalAuthentication} interface that consumes the HTTP Request from 
+ * an OpenID Connect provider (OAuth 2.0 authorization endpoint), which was issued in response to the Authorization 
+ * Code request made by the {@link OpenIDConnectStartServlet}. 
+ * <p>
+ * The {@link HttpServletRequest} is placed inside the {@link OpenIDConnectContext} for interrogation later in the flow.
+ * </p>
+ * 
+ * @since 4.0.0
  */
 public class OpenIDConnectEndServlet extends HttpServlet {
 
@@ -70,7 +76,7 @@ public class OpenIDConnectEndServlet extends HttpServlet {
         try {
             final HttpSession session = httpRequest.getSession();
             if (session == null) {
-                throw new ExternalAuthenticationException("No session exist, this URL shouldn't be called directly!");
+                throw new ExternalAuthenticationException("No session exists, this URL shouldn't be called directly");
             }
             final String key = StringSupport.trimOrNull((String) httpRequest.getSession()
                     .getAttribute(OpenIDConnectStartServlet.SESSION_ATTR_FLOWKEY));
@@ -85,7 +91,7 @@ public class OpenIDConnectEndServlet extends HttpServlet {
                 throw new ExternalAuthenticationException(
                         "Could not find value for " + OpenIDConnectStartServlet.SESSION_ATTR_SUCTX);
             }
-            log.debug("Attempting URL {}?{}", httpRequest.getRequestURL(), httpRequest.getQueryString());
+            log.trace("Attempting URL {}?{}", httpRequest.getRequestURL(), httpRequest.getQueryString());
             try {
                 openIDConnectContext.setAuthenticationResponseURI(httpRequest);
             } catch (final URISyntaxException e) {

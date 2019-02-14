@@ -48,29 +48,19 @@ import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jwt.SignedJWT;
 
 /**
- * An action that verifies Signature of ID Token.
+ * An action that verifies the signature of a JWS id_token using the RSA key belonging to the keyID
+ * found in the JOSE Header.
+ * 
+ * <p>The current implementation *requires* the id_token is signed, and *requires* an RSA key type</p>
  * 
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
- * @pre
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @pre <pre>OpenIdConnectContext.getoIDCProviderMetadata() != null</pre>
  * 
- *      <pre>
- *      AuthenticationContext.getSubcontext(SocialUserOpenIdConnectContext.class, false) != null
- *      </pre>
- * 
- *      AND
- * 
- *      <pre>
- *      SocialUserOpenIdConnectContext.getOidcTokenResponse() != null
- *      </pre>
- * 
- *      AND
- * 
- *      <pre>
- *      SocialUserOpenIdConnectContext.getoIDCProviderMetadata() != null
- *      </pre>
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
 public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
 
     /** Class logger. */
@@ -84,7 +74,7 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find oidc context", getLogPrefix());
+            log.error("{} Unable to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
@@ -93,7 +83,7 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
             //TODO P.S. oidcCtx.getIDToken() could be null.
             signedJWT = SignedJWT.parse(oidcCtx.getIDToken().serialize());
         } catch (final ParseException e) {
-            log.error("{} Error when forming signed JWT", getLogPrefix(), e);
+            log.error("{} Error when parsing signed JWT", getLogPrefix(), e);
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
@@ -102,7 +92,7 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
             final JSONObject key = getProviderRSAJWK(oidcCtx.getoIDCProviderMetadata().getJWKSetURI()
                     .toURL().openStream(),signedJWT.getHeader().getKeyID());
             if (key == null) {
-                log.error("{} Not able to find key to verify signature", getLogPrefix());
+                log.error("{} Unable to find key to verify signature", getLogPrefix());
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);                
                 return;
             }
@@ -129,20 +119,21 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
     }
 
     /**
-     * Parse JWK, RSA public key for signature verification, from stream.
+     * Parse JWK and RSA public key from the input stream for signature verification.
      * 
-     * @param is inputstream containing the key
-     * @param kid The key ID to be looked after
-     * @return RSA public key as JSON Object. Null if there is no key
+     * @param is inputstream containing the JWK
+     * @param kid The key ID to be looked up
+     * @return RSA public key as a JSON Object. <code>Null</code> if there is no key
      * @throws ParseException if parsing fails.
      * @throws IOException if something unexpected happens.
      */
+    //TODO could be cached? (or use Nimbus to do this validation as it does cache it). 
     @Nullable
     private JSONObject getProviderRSAJWK(@Nonnull final InputStream is, @Nullable final String kid) 
             throws ParseException, IOException {
         
         if (kid == null) {
-            log.warn("No kid defined in the JWT, no kid check can be performed!");
+            log.warn("No kid defined in the JWT, no signning key can be returned");
         }
 
         final StringWriter writer = new StringWriter();
@@ -156,8 +147,7 @@ public class ValidateIDTokenSignature extends AbstractAuthenticationAction {
         for (final Object key : keyList) {
             final JSONObject k = (JSONObject) key;
             if ("sig".equals(k.get("use")) && "RSA".equals(k.get("kty"))) {
-                if (kid == null || kid.equals(k.get("kid"))) {
-                    log.debug("verification key " + k.toString());                    
+                if (kid == null || kid.equals(k.get("kid"))) {                                   
                     return k;
                 }
             }

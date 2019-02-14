@@ -36,11 +36,19 @@ import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 /**
- * An action that verifies ACR of ID Token.
+ * An action that verifies the Authentication Context Class Reference (ACR) values contained within the 
+ * id_token matches those requested.
  * 
+ * <p>ACR claims are optional</p>
+ * 
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
  * @event {@link net.shibboleth.idp.authn.AuthnEventIds#NO_CREDENTIALS}
+ * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
+ * 
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
+//TODO P.S should some of these functions be delegated to Nimbus IDTokenValidator? 
 public class ValidateIDTokenACR extends AbstractAuthenticationAction {
 
     /** Class logger. */
@@ -55,17 +63,12 @@ public class ValidateIDTokenACR extends AbstractAuthenticationAction {
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find oidc context", getLogPrefix());
+            log.error("{} Unable to find OIDC context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);
             
             return;
         }
 
-        // Check acr
-        // If the acr Claim was requested, the Client SHOULD check that the
-        // asserted Claim Value is appropriate. The meaning and processing
-        // of acr Claim Values is out of scope for this specification.
-        //TODO P.S. this does nothing useful. 
         
         final List<ACR> acrs = oidcCtx.getAcrs();
         if (acrs != null && !acrs.isEmpty()) {
@@ -76,7 +79,7 @@ public class ValidateIDTokenACR extends AbstractAuthenticationAction {
             }
             final String acr;
             try {
-                //TODO P.S. this chould be null.
+                //TODO P.S. this could be null.
                 acr = oidcCtx.getIDToken().getJWTClaimsSet().getStringClaim("acr");
             } catch (final ParseException e) {
                 log.error("{} Error parsing id token", getLogPrefix());

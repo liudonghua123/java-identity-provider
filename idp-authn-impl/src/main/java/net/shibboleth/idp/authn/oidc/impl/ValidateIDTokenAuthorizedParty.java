@@ -32,12 +32,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An action that verifies Authorized Party of ID Token.
+ * An action that verifies the Authorized Party (azp) of an id_token. That is, the party to which
+ * the id_token was issued, or the presenter of the id_token. As the IdP will always be responsible
+ * for presenting the id_token, this value should always be the same client_id as the sole audience (aud).
+ * As such, azp is not strictly required, but is checked if present. 
  * 
+ * <p>The authorized party is one or more case sensitive Strings or URIs.</p>
+ * 
+ * <p>See section 3.1.3.7 of the OpenID Connect core 1.0</p>
+ * 
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @pre <pre>OpenIDConnectContext.getIDToken() != null</pre>
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
+ * 
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
+//Issues of semantics exist here e.g. https://bitbucket.org/openid/connect/issues/973/
+//TODO the code does not match the spec?
 public class ValidateIDTokenAuthorizedParty extends AbstractAuthenticationAction {
 
     /** Class logger. */
@@ -51,15 +64,11 @@ public class ValidateIDTokenAuthorizedParty extends AbstractAuthenticationAction
         final OpenIDConnectContext oidcCtx =
                 authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find oidc context", getLogPrefix());
+            log.error("{} Unable to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;
         }
 
-        // If the ID Token contains multiple audiences, the Client SHOULD
-        // verify that an azp Claim is present.
-        // If an azp (authorized party) Claim is present, the Client SHOULD
-        // verify that its client_id is the Claim Value.
         try {
             if (oidcCtx.getIDToken().getJWTClaimsSet().getAudience().size() > 1) {
                 final String azp = oidcCtx.getIDToken().getJWTClaimsSet().getStringClaim("azp");

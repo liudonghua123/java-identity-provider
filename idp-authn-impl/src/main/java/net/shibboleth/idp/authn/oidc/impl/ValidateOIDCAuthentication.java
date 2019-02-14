@@ -30,12 +30,14 @@ import javax.security.auth.Subject;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.authn.AbstractValidationAction;
+import net.shibboleth.idp.authn.AuthenticationResult;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.oidc.context.OpenIDConnectContext;
 import net.shibboleth.idp.authn.principal.IdPAttributePrincipal;
 import net.shibboleth.idp.authn.principal.UsernamePrincipal;
 import net.shibboleth.utilities.java.support.annotation.constraint.Live;
+import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.opensaml.profile.action.ActionSupport;
@@ -47,10 +49,20 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 
 /**
- * An action that sets username principal and converts any OIDC Standard Claims into {@link IdPAttributePrincipal}s.
+ * An action that builds an {@link AuthenticationResult} from the subject (sub claim) of the OpenID Connect token.
+ * 
+ * <p>Also builds any OpenID Connect Standard claims as {@link IdPAttributePrincipal}s, and sets them
+ *  alongside the subject principal for use during attribute resolution.</p>
+ * 
  * 
  * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID}
  * @event {@link AuthnEventIds#NO_CREDENTIALS}
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @post If AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false).getIDToken()
+ * .getJWTClaimsSet().getSubject()!= null, then an {@link net.shibboleth.idp.authn.AuthenticationResult} 
+ * is saved to the {@link AuthenticationContext}.
+ * 
+ * @since 4.0.0
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class ValidateOIDCAuthentication extends AbstractValidationAction {
@@ -59,7 +71,7 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
     @Nonnull private final Logger log = LoggerFactory.getLogger(ValidateOIDCAuthentication.class);
 
     /** Avoid creating multiple principals. */
-    @Nonnull private boolean avoidMultiplePrincipal;
+    private boolean avoidMultiplePrincipal;
 
     /** the subject received from id token. */
     @Nullable private String oidcSubject;
@@ -73,6 +85,7 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
      * @param avoid true if additional principals should be avoided.
      */
     public void setAvoidMultiplePrincipal(final boolean avoid) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         avoidMultiplePrincipal = avoid;
     }
 
@@ -88,7 +101,7 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
 
         final OpenIDConnectContext oidcCtx = authenticationContext.getSubcontext(OpenIDConnectContext.class);
         if (oidcCtx == null) {
-            log.error("{} Not able to find oidc context", getLogPrefix());
+            log.error("{} Unable to find oidc context", getLogPrefix());
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return false;
         }
@@ -185,9 +198,7 @@ public class ValidateOIDCAuthentication extends AbstractValidationAction {
         if (avoidMultiplePrincipal && subject.getPrincipals().size() > 0) {
             log.debug("{} Subject already contains principal, not populated", getLogPrefix());
 
-        } else {
-
-            log.debug("{} Setting usernameprincipal to {}", getLogPrefix(), oidcSubject);
+        } else {            
             subject.getPrincipals().add(new UsernamePrincipal(oidcSubject));
             subject.getPrincipals().addAll(buildIdPAttributePrincipalsFromStandardClaims());
 

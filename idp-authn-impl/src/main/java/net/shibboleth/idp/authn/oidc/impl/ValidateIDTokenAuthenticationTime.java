@@ -38,11 +38,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An action that verifies Authentication Time of ID Token.
+ * An action that checks if auth_time (when the End-User authentication took place) stored within the id_token
+ * is within a valid expiration window. That is:
+ * <ul>
+ * <li>The auth_time when the End-User authenticated should not be in the future. More specifically, now plus 
+ * some clock skew (default is 3 minutes)</li> * 
+ * <li>The authentication and hence id_token has not expired. More specifically, the expiration time 
+ * (the auth_time plus some clock skew plus the authnLifetime) should be after the current time.<li> 
+ * </ul>
  * 
+ * <p>The auth_time is optional, and needs to be requested by a claim, or using the max_age parameter</p>
+ * 
+ * @pre <pre>ProfileRequestContext.getSubcontext(AuthenticationContext.class, false) != null</pre>
+ * @pre <pre>AuthenticationContext.getSubcontext(OpenIDConnectContext.class, false) != null</pre>
+ * @pre <pre>OpenIDConnectContext.getIDToken() != null</pre>
  * @event {@link net.shibboleth.idp.authn.AuthnEventIds#NO_CREDENTIALS}
+ * @event {@link org.opensaml.profile.action.EventIds#PROCEED_EVENT_ID} 
+ * 
+ * @since 4.0.0
  */
-@SuppressWarnings("rawtypes")
+//TODO P.S should some of these functions be delegated to Nimbus IDTokenValidator?
 public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAction {
 
     /** Class logger. */
@@ -58,6 +73,7 @@ public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAct
      * Amount of time in milliseconds for which a forced authentication is valid after it is issued. Default value: 30
      * seconds.
      */
+    //TODO P.S is this not just messagelifetime.
     @Duration @NonNegative private long authnLifetime;
 
     /**
@@ -148,9 +164,8 @@ public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAct
         final DateTime expiration = authTime.plus(getClockSkew() + getAuthnLifetime());
 
         // Check authentication wasn't performed in the future
-        // Based on org.opensaml.saml.common.binding.security.impl.MessageLifetimeSecurityHandler
         if (authTime.isAfter(latestValid)) {
-            log.warn("{} Authentication time was not yet valid: time was {}, latest valid is: {}", getLogPrefix(),
+            log.warn("{} Authentication time is not yet valid: time was {}, latest valid is: {}", getLogPrefix(),
                     authTime, latestValid);
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);           
             return;
@@ -158,7 +173,7 @@ public class ValidateIDTokenAuthenticationTime extends AbstractAuthenticationAct
 
         // Check authentication time has not expired
         if (expiration.isBefore(now)) {
-            log.warn("{} Authentication time was expired: time was '{}', expired at: '{}', current time: '{}'",
+            log.warn("{} Authentication time has expired: time was '{}', expired at: '{}', current time: '{}'",
                     getLogPrefix(), authTime, expiration, now);
             ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.NO_CREDENTIALS);            
             return;

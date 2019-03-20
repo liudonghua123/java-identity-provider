@@ -313,7 +313,7 @@ public class LDAPDataConnectorParser extends AbstractWarningDataConnectorParser 
                 connectionConfig.addPropertyValue("responseTimeout", 3000);
             }
             final BeanDefinitionBuilder sslConfig = BeanDefinitionBuilder.genericBeanDefinition(SslConfig.class);
-            sslConfig.addPropertyValue("credentialConfig", createCredentialConfig(parserContext));
+            sslConfig.addPropertyValue("credentialConfig", createCredentialConfig(parserContext, useStartTLS));
             connectionConfig.addPropertyValue("sslConfig", sslConfig.getBeanDefinition());
             final BeanDefinitionBuilder connectionInitializer =
                     BeanDefinitionBuilder.genericBeanDefinition(BindConnectionInitializer.class);
@@ -344,11 +344,18 @@ public class LDAPDataConnectorParser extends AbstractWarningDataConnectorParser 
          * Read StartTLS trust and authentication credentials.
          * 
          * @param parserContext bean definition parsing context
+         * @param useStartTLS the value of useStartTls (if specified)
          * @return credential config
          */
-        @Nonnull protected BeanDefinition createCredentialConfig(@Nonnull final ParserContext parserContext) {
+        // CheckStyle: CyclomaticComplexity|MethodLength OFF
+        @Nonnull protected BeanDefinition createCredentialConfig(@Nonnull final ParserContext parserContext,
+                @Nullable final String useStartTLS) {
             final BeanDefinitionBuilder result =
                     BeanDefinitionBuilder.genericBeanDefinition(CredentialConfigFactoryBean.class);
+
+            if (useStartTLS != null) {
+                result.addPropertyValue("useStartTLS", useStartTLS);
+            }
 
             final List<Element> trustElements =
                     ElementSupport.getChildElements(configElement, new QName(DataConnectorNamespaceHandler.NAMESPACE,
@@ -414,7 +421,8 @@ public class LDAPDataConnectorParser extends AbstractWarningDataConnectorParser 
 
             return result.getBeanDefinition();
         }
-        
+        // CheckStyle: CyclomaticComplexity|MethodLength ON
+
         /**
          * Get the textual content of the &lt;FilterTemplate&gt;.
          * 

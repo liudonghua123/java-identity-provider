@@ -24,6 +24,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.ext.spring.factory.AbstractComponentAwareFactoryBean;
+import net.shibboleth.utilities.java.support.primitive.DeprecationSupport;
+import net.shibboleth.utilities.java.support.primitive.DeprecationSupport.ObjectType;
 
 import org.ldaptive.ssl.CredentialConfig;
 import org.ldaptive.ssl.CredentialConfigFactory;
@@ -47,6 +49,9 @@ public class CredentialConfigFactoryBean extends AbstractComponentAwareFactoryBe
     /** Our authentication credential for the LDAP connection. */
     @Nullable private Credential authCredential;
 
+    /** Did the user specify useStartTLS? */
+    private boolean useStartTLS;
+
     /** {@inheritDoc} */
     @Override public Class<?> getObjectType() {
         return CredentialConfig.class;
@@ -55,6 +60,13 @@ public class CredentialConfigFactoryBean extends AbstractComponentAwareFactoryBe
     /** {@inheritDoc} */
     @Override protected CredentialConfig doCreateInstance() throws Exception {
         X509Certificate[] trustCerts = null;
+
+        if (getUseStartTLS() && trustCredential == null) {
+            DeprecationSupport.warnOnce(ObjectType.ATTRIBUTE,
+                    "useStartTLS=\"true\"' without 'trustFile",
+                    null,
+                    "by adding an explicit trustFile");
+        }
 
         if (trustCredential != null) {
             if (trustCredential instanceof X509Credential) {
@@ -83,6 +95,24 @@ public class CredentialConfigFactoryBean extends AbstractComponentAwareFactoryBe
             }
         }
         return CredentialConfigFactory.createX509CredentialConfig(trustCerts, authCert, authKey);
+    }
+
+    /**
+     * Get the useStartTLS setting the Data Connector.
+     *
+     * @return the specified value
+     */
+    @Nullable public boolean  getUseStartTLS() {
+        return useStartTLS;
+    }
+
+    /**
+     * Set the useStartTLS setting the Data Connector.
+     *
+     * @param value the Value specified
+     */
+    public void setUseStartTLS(@Nullable final boolean value) {
+        useStartTLS = value;
     }
 
     /**

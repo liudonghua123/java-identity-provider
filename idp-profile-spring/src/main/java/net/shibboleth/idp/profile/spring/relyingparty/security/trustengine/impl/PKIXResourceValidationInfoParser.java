@@ -20,6 +20,8 @@ package net.shibboleth.idp.profile.spring.relyingparty.security.trustengine.impl
 import javax.xml.namespace.QName;
 
 import net.shibboleth.idp.profile.spring.relyingparty.metadata.AbstractMetadataProviderParser;
+import net.shibboleth.utilities.java.support.primitive.DeprecationSupport;
+import net.shibboleth.utilities.java.support.primitive.DeprecationSupport.ObjectType;
 import net.shibboleth.utilities.java.support.xml.DOMTypeSupport;
 
 import org.slf4j.Logger;
@@ -43,9 +45,6 @@ public class PKIXResourceValidationInfoParser extends AbstractPKIXValidationInfo
     public static final QName TYPE_NAME_RESOURCE = new QName(AbstractMetadataProviderParser.SECURITY_NAMESPACE,
             "PKIXResourceBacked");
 
-    /** log. */
-    private final Logger log = LoggerFactory.getLogger(PKIXResourceValidationInfoParser.class);
-
     /** {@inheritDoc} */
     @Override protected Class<?> getBeanClass(final Element element) {
         return PKIXResourceValidationInfoFactoryBean.class;
@@ -54,8 +53,11 @@ public class PKIXResourceValidationInfoParser extends AbstractPKIXValidationInfo
     /** {@inheritDoc} */
     @Override protected void doParse(final Element element, final BeanDefinitionBuilder builder) {
         if (TYPE_NAME_FILESYSTEM.equals(DOMTypeSupport.getXSIType(element))) {
-            log.warn("Credential type '{}' has been deprecated; use the compatible Credential type '{}'",
-                    TYPE_NAME_FILESYSTEM.getLocalPart(), TYPE_NAME_RESOURCE.getLocalPart());
+            DeprecationSupport.warnOnce(
+                    ObjectType.ELEMENT,
+                    TYPE_NAME_FILESYSTEM.getLocalPart(),
+                    null,
+                    TYPE_NAME_RESOURCE.getLocalPart());
         }
         super.doParse(element, builder);
     }

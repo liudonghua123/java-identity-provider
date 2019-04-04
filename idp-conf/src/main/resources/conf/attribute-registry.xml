@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+                           
+       default-init-method="initialize"
+       default-destroy-method="destroy">
+
+    <bean id="SAML1.Attribute" class="java.lang.Class" factory-method="forName"
+        c:_0="org.opensaml.saml.saml1.core.Attribute" />
+
+    <bean id="SAML2.Attribute" class="java.lang.Class" factory-method="forName"
+        c:_0="org.opensaml.saml.saml2.core.Attribute" />
+        
+    <bean id="SAML2StringTranscoder"
+        class="net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2StringAttributeTranscoder" />
+   
+    <util:map id="shibboleth.DefaultAttributeRegistry">
+    
+        <entry key="uid">
+            <map>
+                <entry>
+                    <key>
+                        <ref>SAML2.Attribute</ref>
+                    </key>
+                    <map>
+                        <entry key="transcoder" ref="SAML2StringTranscoder" />
+                        <entry key="name" value="urn:oid:0.9.2342.19200300.100.1.1" />
+                    </map>
+                </entry>
+            </map>
+        </entry>
+            
+    </util:map>
+
+</beans>

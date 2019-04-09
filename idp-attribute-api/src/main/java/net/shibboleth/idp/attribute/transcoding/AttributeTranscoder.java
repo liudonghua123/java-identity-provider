@@ -29,6 +29,7 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import net.shibboleth.idp.attribute.AttributeDecodingException;
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
+import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 
 /**
  * Transcoders are objects that support both attribute encoding and decoding for bidirectional
@@ -46,6 +47,17 @@ import net.shibboleth.idp.attribute.IdPAttribute;
 @ThreadSafe
 public interface AttributeTranscoder<T> {
 
+    /**
+     * Get the name of the encoded object that would be created by a given set of
+     * instructions.
+     * 
+     * @param properties properties governing the encoding process
+     * 
+     * @return a canonical name for objects produced by this transcoder for the
+     *  given instructions
+     */
+    @Nullable @NotEmpty String getEncodedName(@Nonnull final Properties properties);
+    
     /**
      * Encode the supplied attribute into a protocol specific representation.
      * 

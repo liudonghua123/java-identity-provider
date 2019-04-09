@@ -38,6 +38,12 @@ import net.shibboleth.utilities.java.support.component.IdentifiedComponent;
 @ThreadSafe
 public interface AttributeTranscoderRegistry extends IdentifiedComponent {
     
+    /** Property name for accessing the name of the {@link IdPAttribute} to decode into. */
+    @Nonnull @NotEmpty static final String PROP_ID = "id";
+
+    /** Property name for accessing the class of object supported by a given ruleset. */
+    @Nonnull @NotEmpty static final String PROP_TYPE = "type";
+
     /** Property name for accessing {@link AttributeTranscoder} object to use. */
     @Nonnull @NotEmpty static final String PROP_TRANSCODER = "transcoder";
     
@@ -55,7 +61,6 @@ public interface AttributeTranscoderRegistry extends IdentifiedComponent {
      */
     @Nonnull @NonnullElements @Unmodifiable
     Collection<Properties> getTranscodingProperties(@Nonnull final IdPAttribute from, @Nonnull final Class<?> to);
-    
 
     /**
      * Obtains a set of instructions for decoding an input object into an {@link IdPAttribute}.

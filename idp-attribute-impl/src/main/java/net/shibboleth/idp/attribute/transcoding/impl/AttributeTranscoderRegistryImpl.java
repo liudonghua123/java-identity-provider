@@ -21,27 +21,30 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
 import net.shibboleth.ext.spring.service.AbstractServiceableComponent;
-import net.shibboleth.idp.attribute.AttributeDecoder;
-import net.shibboleth.idp.attribute.AttributeEncoder;
 import net.shibboleth.idp.attribute.IdPAttribute;
+import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
-import net.shibboleth.utilities.java.support.annotation.ParameterName;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
-import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.annotation.constraint.Unmodifiable;
-import net.shibboleth.utilities.java.support.collection.ClassToInstanceMultiMap;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 
 /** Service implementation of the {@link AttributeTranscoderRegistry} interface. */
 @ThreadSafe
@@ -51,25 +54,16 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(AttributeTranscoderRegistryImpl.class);
     
-    /** Registry of encoders for a given attribute ID and type of encoder. */
-    @Nonnull private final Map<String,ClassToInstanceMultiMap<AttributeEncoder>> attributeEncoders;
-
-    /** Registry of decoders for a given object "name" and type of decoder. */
-    @Nonnull private final Map<String,ClassToInstanceMultiMap<AttributeDecoder>> attributeDecoders;
+    /** Registry of transcoding instructions for a given "name" and type of object. */
+    @Nonnull private final Map<String,Multimap<Class<?>,Properties>> transcodingRegistry;
     
-    /** Registry of transcoder types and naming for supported object types. */
-    @Nonnull private final Map<Class<?>,TypeInfo> typeInfoRegistry;
+    /** Registry of naming functions for supported object types. */
+    @Nonnull private final Map<Class<?>,Function<?,String>> namingFunctionRegistry;
 
-    /**
-     * Constructor.
-     * 
-     * @param id ID of this service
-     */
-    public AttributeTranscoderRegistryImpl(@Nonnull @NotEmpty final String id) {
-        setId(id);
-        attributeEncoders = new HashMap<>();
-        attributeDecoders = new HashMap<>();
-        typeInfoRegistry = new HashMap<>();
+    /** Constructor. */
+    public AttributeTranscoderRegistryImpl() {
+        transcodingRegistry = new HashMap<>();
+        namingFunctionRegistry = new HashMap<>();
     }
     
     /** {@inheritDoc} */
@@ -77,111 +71,124 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         return this;
     }
 
-    public void setTypeRegistry(@Nonnull @NonnullElements Map<Class<?>,TypeInfo<?>> registry) {
-        
-    }
-
-    public void setTranscoderRegistry(@Nonnull @NonnullElements Map<String,Collection<?>> registry) {
-        
-    }
-    
-    /** {@inheritDoc} */
-    @Nonnull @NonnullElements @Unmodifiable
-    public <T> Collection<AttributeEncoder<T>> getEncoders(@Nonnull final IdPAttribute from,
-            @Nonnull final Class<T> to) {
-        ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
-        
-        final TypeInfo<T> typeInfo = typeInfoRegistry.get(to);
-        if (typeInfo == null) {
-            log.warn("Unsupported object type: {}", to.getName());
-            return Collections.emptyList();
+    /**
+     * Installs registry of naming functions mapped against the types of objects they support.
+     * 
+     * @param registry map of types to naming functions
+     */
+    public void setNamingRegistry(@Nonnull @NonnullElements final Map<Class<?>,Function<?,String>> registry) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        if (registry == null) {
+            namingFunctionRegistry.clear();
+            return;
         }
         
-        final ClassToInstanceMultiMap<AttributeEncoder> encoders = attributeEncoders.get(from.getId());
-                
-        return encoders != null ? encoders.get(typeInfo.getEncoderType()) : Collections.emptyList();
-    }
-
-    /** {@inheritDoc} */
-    @Nonnull @NonnullElements @Unmodifiable
-    public <T> Collection<AttributeDecoder<T>> getDecoders(@Nonnull final T from) {
-        ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
-        
-        final TypeInfo<T> typeInfo = typeInfoRegistry.get(from.getClass());
-        if (typeInfo == null) {
-            log.warn("Unsupported object type: {}", from.getClass().getName());
-            return Collections.emptyList();
-        }
-        
-        final String id = StringSupport.trimOrNull(typeInfo.getNamingFunction().apply(from));
-        if (id == null) {
-            log.warn("Object of type {} did not have a canonical name", from.getClass().getName());
-            return Collections.emptyList();
-        }
-        
-        final ClassToInstanceMultiMap<AttributeDecoder> decoders = attributeDecoders.get(id);
-        
-        return decoders != null ? decoders.get(typeInfo.getDecoderType()) : Collections.emptyList();
+        registry.forEach((k,v) -> {
+            if (k != null && v != null) {
+                namingFunctionRegistry.put(k, v);
+            }
+        });
     }
 
     /**
-     * Metadata connecting data types to naming functions and codec types.
+     * Install the transcoder mappings en masse.
      * 
-     * @param <T> object type
+     * <p>Each map entry connects an {@link IdPAttribute} name to the rules for transcoding to/from it.</p>
+     * 
+     * @param registry mappings from internal name to transcoding rules
      */
-    public static class TypeInfo<T> {
+    public void setTranscoderRegistry(@Nonnull @NonnullElements final Map<String,Collection<Properties>> registry) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        if (registry == null) {
+            transcodingRegistry.clear();
+            return;
+        }
         
-        /** Function to derive a canonical name. */
-        @Nonnull private final Function<T,String> namingFunction;
-        
-        /** Type of encoder. */
-        @Nonnull private final Class<AttributeEncoder<T>> encoderType;
-        
-        /** Type of decoder. */
-        @Nonnull private final Class<AttributeDecoder<T>> decoderType;
-        
-        /**
-         * Constructor.
-         *
-         * @param naming canonical naming function
-         * @param encoder encoder type
-         * @param decoder decoder type
-         */
-        public TypeInfo(@Nonnull @ParameterName(name="naming") final Function<T,String> naming,
-                @Nonnull @ParameterName(name="encoder") final Class<AttributeEncoder<T>> encoder,
-                @Nonnull @ParameterName(name="decoder") final Class<AttributeDecoder<T>> decoder) {
+        for (final Map.Entry<String,Collection<Properties>> entry : registry.entrySet()) {
             
-            namingFunction = Constraint.isNotNull(naming, "Naming function cannot be null");
-            encoderType = Constraint.isNotNull(encoder, "Encoder type cannot be null");
-            decoderType = Constraint.isNotNull(decoder, "Decoder type cannot be null");
-        }
-        
-        /**
-         * Gets the function deriving a canonical name for an object.
-         * 
-         * @return function deriving a canonical name for an object
-         */
-        @Nonnull public Function<T,String> getNamingFunction() {
-            return namingFunction;
-        }
+            final String internalId = StringSupport.trimOrNull(entry.getKey());
+            if (internalId != null && entry.getValue() != null && !entry.getValue().isEmpty()) {
 
-        /**
-         * Gets the type of encoder supporting an object.
-         * 
-         * @return type of encoder supporting an object
-         */
-        @Nonnull public Class<AttributeEncoder<T>> getEncoderType() {
-            return encoderType;
-        }
+                for (final Properties props : Collections2.filter(entry.getValue(), Predicates.notNull())) {
 
-        /**
-         * Gets the type of decoder supporting an object.
-         * 
-         * @return type of decoder supporting an object
-         */
-        @Nonnull public Class<AttributeDecoder<T>> getDecoderType() {
-            return decoderType;
+                    final Object type = props.get(PROP_TYPE);
+                    final Object transcoder = props.get(PROP_TRANSCODER);
+                    
+                    if (type instanceof Class && transcoder instanceof AttributeTranscoder) {
+                        final String targetName = ((AttributeTranscoder) transcoder).getEncodedName(props);
+                        if (targetName != null) {
+                            
+                            final Properties copy = new Properties();
+                            copy.putAll(props);
+                            
+                            // Install mapping back to IdPAttribute's name.
+                            copy.setProperty(PROP_ID, internalId);
+                            
+                            Multimap<Class<?>,Properties> rulesetsForIdPName = transcodingRegistry.get(internalId);
+                            if (rulesetsForIdPName == null) {
+                                rulesetsForIdPName = ArrayListMultimap.create();
+                                transcodingRegistry.put(internalId, rulesetsForIdPName);
+                            }
+                            
+                            rulesetsForIdPName.put((Class) type, copy);
+
+                            Multimap<Class<?>,Properties> rulesetsForEncodedName = transcodingRegistry.get(targetName);
+                            if (rulesetsForEncodedName == null) {
+                                rulesetsForEncodedName = ArrayListMultimap.create();
+                                transcodingRegistry.put(targetName, rulesetsForEncodedName);
+                            }
+                            
+                            rulesetsForEncodedName.put((Class) type, copy);
+                            
+                        } else {
+                            log.warn("Transcoding rule for {} into type {} did not produce an encoded name",
+                                    internalId, ((Class) type).getName());
+                        }
+                    } else {
+                        log.warn("Transcoding rule for {} missing or invalid {} or {} properties", internalId,
+                                PROP_TYPE, PROP_TRANSCODER);
+                    }
+                }
+            }
         }
     }
+    
+    /** {@inheritDoc} */
+    @Nonnull @NonnullElements @Unmodifiable public Collection<Properties> getTranscodingProperties(
+            @Nonnull final IdPAttribute from, @Nonnull final Class<?> to) {
+        ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
+        Constraint.isNotNull(from, "IdPAttribute cannot be null");
+        Constraint.isNotNull(to, "Target type cannot be null");
+        
+        final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(from.getId());
+        
+        return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(to))
+                : Collections.emptyList();
+    }
 
+    /** {@inheritDoc} */
+    @Nonnull @NonnullElements @Unmodifiable public <T> Collection<Properties> getTranscodingProperties(
+            @Nonnull final T from) {
+        ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
+        Constraint.isNotNull(from, "Input object cannot be null");
+        
+        final Function<?,String> namingFunction = namingFunctionRegistry.get(from.getClass());
+        if (namingFunction != null) {
+            // Don't know if we can work around this cast or not.
+            final String id = ((Function<T,String>) namingFunction).apply(from);
+            if (id != null) {
+                final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(id);
+                
+                return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(from.getClass()))
+                        : Collections.emptyList();
+            } else {
+                log.warn("Object of type {} did not have a canonical name", from.getClass().getName());
+            }
+        } else {
+            log.warn("Unsupported object type: {}", from.getClass().getName());
+        }
+        
+        return Collections.emptyList();
+    }
+    
 }

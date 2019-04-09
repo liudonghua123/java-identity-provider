@@ -17,10 +17,13 @@
 
 package net.shibboleth.idp.saml.attribute.transcoding;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
@@ -64,6 +67,18 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
         }
     }
 
+    
+    /** {@inheritDoc} */
+    @Nullable public String getEncodedName(@Nonnull final Properties properties) {
+        
+        try {
+            // SAML 2 naming should be based on only what needs to be available from the properties alone.
+            return new NamingFunction().apply(buildAttribute(null, null, properties, Collections.emptyList()));
+        } catch (final AttributeEncodingException e) {
+            return null;
+        }
+    }
+    
     /** {@inheritDoc} */
     @Override
     @Nonnull protected Attribute buildAttribute(@Nonnull final ProfileRequestContext profileRequestContext,
@@ -86,6 +101,30 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
         }
         
         return samlAttribute;
+    }
+
+    /**
+     * A function to produce a "canonical" name for a SAML 2.0 {@link Attribute} for transcoding rules.
+     */
+    public static class NamingFunction implements Function<Attribute,String> {
+
+        /** {@inheritDoc} */
+        @Nullable public String apply(@Nullable final Attribute input) {
+            
+            if (input == null || input.getName() == null) {
+                return null;
+            }
+            
+            String format = input.getNameFormat();
+            if (format == null) {
+                format = Attribute.UNSPECIFIED;
+            }
+            
+            final StringBuilder builder = new StringBuilder();
+            builder.append('{').append(format).append('}').append(input.getName());
+            return builder.toString();
+        }
+
     }
 
 }

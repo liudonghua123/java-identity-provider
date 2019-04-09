@@ -70,8 +70,8 @@ public class AttributeTranscoderRegistryTest {
         ruleset1.setProperty("name", "bar");
         
         final Properties ruleset2 = new Properties();
-        ruleset2.put(AttributeTranscoderRegistry.PROP_TYPE, Pair.class);
-        ruleset2.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
+        ruleset2.put(AttributeTranscoderRegistry.PROP_TYPE, "net.shibboleth.utilities.java.support.collection.Pair");
+        ruleset2.put(AttributeTranscoderRegistry.PROP_TRANSCODER, "net.shibboleth.idp.attribute.transcoding.impl.PairTranscoder");
         ruleset2.setProperty("name", "baz");
         
         mappings.put("foo", Arrays.asList(ruleset1, ruleset2));
@@ -281,7 +281,7 @@ public class AttributeTranscoderRegistryTest {
         Assert.assertTrue(attributes.get(1).getValues().isEmpty());
     }
     
-    private static class PairTranscoder extends AbstractAttributeTranscoder<Pair<String,Object>> {
+    public class PairTranscoder extends AbstractAttributeTranscoder<Pair<String,Object>> {
 
         /** {@inheritDoc} */
         public String getEncodedName(Properties properties) {

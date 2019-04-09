@@ -17,6 +17,7 @@
 
 package net.shibboleth.idp.attribute.transcoding.impl;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
+import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.annotation.constraint.Unmodifiable;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
@@ -110,44 +112,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             if (internalId != null && entry.getValue() != null && !entry.getValue().isEmpty()) {
 
                 for (final Properties props : Collections2.filter(entry.getValue(), Predicates.notNull())) {
-
-                    final Object type = props.get(PROP_TYPE);
-                    final Object transcoder = props.get(PROP_TRANSCODER);
-                    
-                    if (type instanceof Class && transcoder instanceof AttributeTranscoder) {
-                        final String targetName = ((AttributeTranscoder) transcoder).getEncodedName(props);
-                        if (targetName != null) {
-                            
-                            final Properties copy = new Properties();
-                            copy.putAll(props);
-                            
-                            // Install mapping back to IdPAttribute's name.
-                            copy.setProperty(PROP_ID, internalId);
-                            
-                            Multimap<Class<?>,Properties> rulesetsForIdPName = transcodingRegistry.get(internalId);
-                            if (rulesetsForIdPName == null) {
-                                rulesetsForIdPName = ArrayListMultimap.create();
-                                transcodingRegistry.put(internalId, rulesetsForIdPName);
-                            }
-                            
-                            rulesetsForIdPName.put((Class) type, copy);
-
-                            Multimap<Class<?>,Properties> rulesetsForEncodedName = transcodingRegistry.get(targetName);
-                            if (rulesetsForEncodedName == null) {
-                                rulesetsForEncodedName = ArrayListMultimap.create();
-                                transcodingRegistry.put(targetName, rulesetsForEncodedName);
-                            }
-                            
-                            rulesetsForEncodedName.put((Class) type, copy);
-                            
-                        } else {
-                            log.warn("Transcoding rule for {} into type {} did not produce an encoded name",
-                                    internalId, ((Class) type).getName());
-                        }
-                    } else {
-                        log.warn("Transcoding rule for {} missing or invalid {} or {} properties", internalId,
-                                PROP_TYPE, PROP_TRANSCODER);
-                    }
+                    addMapping(internalId, props);
                 }
             }
         }
@@ -191,4 +156,79 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         return Collections.emptyList();
     }
     
+    /**
+     * Add a mapping between an {@link IdPAttribute} name and a set of transcoding rules.
+     * 
+     * <p>The rules MUST contain at least:</p>
+     * <ul>
+     *  <li>{@link #PROP_TYPE} - a source/target class for the transcoding rules</li>
+     *  <li>{@link #PROP_TRANSCODER} - an {@link AttributeTranscoder} instance supporting the type</li>
+     * </ul>
+     * 
+     * @param id name of the {@link IdPAttribute} to map to/from
+     * @param ruleset transcoding rules
+     */
+    private void addMapping(@Nonnull @NotEmpty final String id, @Nonnull final Properties ruleset) {
+        Object type = ruleset.get(PROP_TYPE);
+        Object transcoder = ruleset.get(PROP_TRANSCODER);
+        
+        if (type instanceof String) {
+            try {
+                type = Class.forName((String) type);
+            } catch (final ClassNotFoundException e) {
+                log.warn("Target class type {} not found in transcoding rule for {}", type, id);
+                return;
+            }
+        } else if (type == null) {
+            log.warn("Transcoding rule for {} missing {} property", id, PROP_TYPE);
+        }
+        
+        if (transcoder instanceof String) {
+            try {
+                transcoder = Class.forName((String) transcoder).getDeclaredConstructor().newInstance();
+            } catch (final InstantiationException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException
+                    | ClassNotFoundException e) {
+                log.warn("Unable to create AttributeTranscoder of specified type {} in transcoding rule for {}",
+                        transcoder, id, e);
+                return;
+            }
+        } else if (!(transcoder instanceof AttributeTranscoder)) {
+            log.warn("Transcoding rule for {} missing {} property", id, PROP_TRANSCODER);
+        }
+
+        final String targetName = ((AttributeTranscoder) transcoder).getEncodedName(ruleset);
+        if (targetName != null) {
+
+            final Properties copy = new Properties();
+            copy.putAll(ruleset);
+
+            copy.put(PROP_TRANSCODER, transcoder);
+            copy.put(PROP_TYPE, type);
+            
+            // Install mapping back to IdPAttribute's name.
+            copy.setProperty(PROP_ID, id);
+            
+            Multimap<Class<?>,Properties> rulesetsForIdPName = transcodingRegistry.get(id);
+            if (rulesetsForIdPName == null) {
+                rulesetsForIdPName = ArrayListMultimap.create();
+                transcodingRegistry.put(id, rulesetsForIdPName);
+            }
+            
+            rulesetsForIdPName.put((Class) type, copy);
+
+            Multimap<Class<?>,Properties> rulesetsForEncodedName = transcodingRegistry.get(targetName);
+            if (rulesetsForEncodedName == null) {
+                rulesetsForEncodedName = ArrayListMultimap.create();
+                transcodingRegistry.put(targetName, rulesetsForEncodedName);
+            }
+            
+            rulesetsForEncodedName.put((Class) type, copy);
+            
+        } else {
+            log.warn("Transcoding rule for {} into type {} did not produce an encoded name",
+                    id, ((Class) type).getName());
+        }
+    }
+
 }

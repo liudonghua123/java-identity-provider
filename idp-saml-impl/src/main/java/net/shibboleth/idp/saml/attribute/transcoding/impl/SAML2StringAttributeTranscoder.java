@@ -33,6 +33,7 @@ import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTrans
 
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.profile.context.ProfileRequestContext;
+import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AttributeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,8 +71,11 @@ public class SAML2StringAttributeTranscoder extends AbstractSAML2AttributeTransc
     }
 
     /** {@inheritDoc} */
-    @Nullable protected IdPAttributeValue<?> decodeValue(@Nullable final XMLObject object) {
-        return StringAttributeValue.valueOf(getStringValue(object));
+    @Override @Nullable protected IdPAttributeValue<?> decodeValue(
+            @Nonnull final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
+            @Nonnull final Properties properties, @Nullable final XMLObject value) {
+        
+        return value != null ? StringAttributeValue.valueOf(getStringValue(value)) : null;
     }
     
 }

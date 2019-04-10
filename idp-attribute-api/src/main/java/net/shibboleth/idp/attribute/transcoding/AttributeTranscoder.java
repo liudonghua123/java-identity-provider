@@ -48,6 +48,13 @@ import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 public interface AttributeTranscoder<T> {
 
     /**
+     * Get the class representing the type of object supported by this transcoder.
+     * 
+     * @return object type supported
+     */
+    @Nonnull Class<T> getEncodedType();
+    
+    /**
      * Get the name of the encoded object that would be created by a given set of
      * instructions.
      * 
@@ -63,6 +70,7 @@ public interface AttributeTranscoder<T> {
      * 
      * @param profileRequestContext current profile request context
      * @param attribute the attribute to encode
+     * @param to specific type of object to encode
      * @param properties properties governing the encoding process, principally the resulting object's naming
      * 
      * @return the Object the attribute was encoded into
@@ -70,8 +78,8 @@ public interface AttributeTranscoder<T> {
      * @throws AttributeEncodingException if unable to successfully encode attribute
      */
     @Nullable T encode(@Nonnull final ProfileRequestContext profileRequestContext,
-            @Nonnull final IdPAttribute attribute, @Nonnull final Properties properties)
-                    throws AttributeEncodingException;
+            @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends T> to,
+            @Nonnull final Properties properties) throws AttributeEncodingException;
     
     /**
      * Decode the supplied object into a protocol-neutral representation.

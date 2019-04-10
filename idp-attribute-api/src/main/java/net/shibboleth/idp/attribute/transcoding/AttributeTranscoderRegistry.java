@@ -41,9 +41,6 @@ public interface AttributeTranscoderRegistry extends IdentifiedComponent {
     /** Property name for accessing the name of the {@link IdPAttribute} to decode into. */
     @Nonnull @NotEmpty static final String PROP_ID = "id";
 
-    /** Property name for accessing the class of object supported by a given ruleset. */
-    @Nonnull @NotEmpty static final String PROP_TYPE = "type";
-
     /** Property name for accessing {@link AttributeTranscoder} object to use. */
     @Nonnull @NotEmpty static final String PROP_TRANSCODER = "transcoder";
     

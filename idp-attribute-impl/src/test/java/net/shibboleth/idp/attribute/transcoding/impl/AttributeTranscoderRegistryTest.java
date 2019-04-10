@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.opensaml.profile.context.ProfileRequestContext;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -36,15 +35,12 @@ import net.shibboleth.idp.attribute.AttributeDecodingException;
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.EmptyAttributeValue;
 import net.shibboleth.idp.attribute.IdPAttribute;
-import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.StringAttributeValue;
-import net.shibboleth.idp.attribute.transcoding.AbstractAttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 /**
  * Test for {@link AttributeTranscoderRegistry}.
@@ -60,17 +56,17 @@ public class AttributeTranscoderRegistryTest {
         registry.setNamingRegistry(Collections.singletonMap(
                 Pair.class, (Pair p) -> "{Pair}" + p.getFirst().toString()));
         
+        registry.setClassEquivalenceRegistry(Collections.singletonMap(MyPair1.class, Pair.class));
+        
         final PairTranscoder transcoder = new PairTranscoder();
         
         final Map<String,Collection<Properties>> mappings = new HashMap<>();
         
         final Properties ruleset1 = new Properties();
-        ruleset1.put(AttributeTranscoderRegistry.PROP_TYPE, Pair.class);
         ruleset1.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         ruleset1.setProperty("name", "bar");
         
         final Properties ruleset2 = new Properties();
-        ruleset2.put(AttributeTranscoderRegistry.PROP_TYPE, "net.shibboleth.utilities.java.support.collection.Pair");
         ruleset2.put(AttributeTranscoderRegistry.PROP_TRANSCODER, "net.shibboleth.idp.attribute.transcoding.impl.PairTranscoder");
         ruleset2.setProperty("name", "baz");
         
@@ -92,6 +88,8 @@ public class AttributeTranscoderRegistryTest {
     @Test public void testEncodeNoMappings() throws AttributeEncodingException {
         
         Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("frobnitz"), Pair.class).isEmpty());
+        Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("frobnitz"), MyPair1.class).isEmpty());
+        Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("foo"), MyPair2.class).isEmpty());
         Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("foo"), String.class).isEmpty());
 }
 
@@ -99,18 +97,20 @@ public class AttributeTranscoderRegistryTest {
     @Test public void testDecodeNoMappings() throws AttributeDecodingException {
         
         Assert.assertTrue(registry.getTranscodingProperties(new Pair("foo", "value")).isEmpty());
-        Assert.assertTrue(registry.getTranscodingProperties(new String("foo")).isEmpty());
+        Assert.assertTrue(registry.getTranscodingProperties(new MyPair1("foo", "value")).isEmpty());
+        Assert.assertTrue(registry.getTranscodingProperties(new MyPair2("bar", "value")).isEmpty());
+        Assert.assertTrue(registry.getTranscodingProperties(new String("bar")).isEmpty());
     }
     
     @Test public void testEncodeNoValues() throws AttributeEncodingException {
         final IdPAttribute foo = new IdPAttribute("foo");
         
-        final List<Pair<String,Object>> pairs = new ArrayList<>();
+        final List<Pair> pairs = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(foo, Pair.class)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
-            pairs.add(t.encode(null, foo, ruleset));
+            pairs.add(t.encode(null, foo, Pair.class, ruleset));
         }
         
         Assert.assertEquals(pairs.size(), 2);
@@ -124,12 +124,12 @@ public class AttributeTranscoderRegistryTest {
 
     @Test public void testDecodeOneNoValues() throws AttributeDecodingException {
         
-        final Pair<String,Object> bar = new Pair("bar", null);
+        final Pair bar = new Pair("bar", null);
         
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(bar)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
             attributes.add(t.decode(null, bar, ruleset));
         }
@@ -142,12 +142,12 @@ public class AttributeTranscoderRegistryTest {
 
     @Test public void testDecodeTwoNoValues() throws AttributeDecodingException {
         
-        final Pair<String,Object> baz = new Pair("baz", null);
+        final Pair baz = new Pair("baz", null);
         
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(baz)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
             attributes.add(t.decode(null, baz, ruleset));
         }
@@ -165,12 +165,33 @@ public class AttributeTranscoderRegistryTest {
         final IdPAttribute foo = new IdPAttribute("foo");
         foo.setValues(Collections.singletonList(StringAttributeValue.valueOf("value")));
         
-        final List<Pair<String,Object>> pairs = new ArrayList<>();
+        final List<Pair> pairs = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(foo, Pair.class)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
-            pairs.add(t.encode(null, foo, ruleset));
+            pairs.add(t.encode(null, foo, Pair.class, ruleset));
+        }
+        
+        Assert.assertEquals(pairs.size(), 2);
+        
+        Assert.assertEquals(pairs.get(0).getFirst(), "bar");
+        Assert.assertEquals(pairs.get(0).getSecond(), "value");
+        
+        Assert.assertEquals(pairs.get(1).getFirst(), "baz");
+        Assert.assertEquals(pairs.get(1).getSecond(), "value");
+    }
+
+    @Test public void testEncodeSubtypeStringValues() throws AttributeEncodingException {
+        final IdPAttribute foo = new IdPAttribute("foo");
+        foo.setValues(Collections.singletonList(StringAttributeValue.valueOf("value")));
+        
+        final List<MyPair1> pairs = new ArrayList<>();
+        
+        for (final Properties ruleset : registry.getTranscodingProperties(foo, MyPair1.class)) {
+            final AttributeTranscoder<MyPair1> t =
+                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            pairs.add(t.encode(null, foo, MyPair1.class, ruleset));
         }
         
         Assert.assertEquals(pairs.size(), 2);
@@ -184,12 +205,12 @@ public class AttributeTranscoderRegistryTest {
     
     @Test public void testDecodeOneStringValues() throws AttributeDecodingException {
         
-        final Pair<String,Object> bar = new Pair("bar", "value");
+        final Pair bar = new Pair("bar", "value");
         
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(bar)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
             attributes.add(t.decode(null, bar, ruleset));
         }
@@ -202,12 +223,12 @@ public class AttributeTranscoderRegistryTest {
     
     @Test public void testDecodeTwoStringValues() throws AttributeDecodingException {
         
-        final Pair<String,Object> baz = new Pair("baz", "value");
+        final Pair baz = new Pair("baz", "value");
         
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(baz)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
             attributes.add(t.decode(null, baz, ruleset));
         }
@@ -225,12 +246,12 @@ public class AttributeTranscoderRegistryTest {
         final IdPAttribute foo = new IdPAttribute("foo");
         foo.setValues(Collections.singletonList(EmptyAttributeValue.ZERO_LENGTH));
         
-        final List<Pair<String,Object>> pairs = new ArrayList<>();
+        final List<Pair> pairs = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(foo, Pair.class)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
-            pairs.add(t.encode(null, foo, ruleset));
+            pairs.add(t.encode(null, foo, Pair.class, ruleset));
         }
         
         Assert.assertEquals(pairs.size(), 2);
@@ -244,12 +265,12 @@ public class AttributeTranscoderRegistryTest {
     
     @Test public void testDecodeOneUnsupportedValues() throws AttributeDecodingException {
         
-        final Pair<String,Object> bar = new Pair("bar", 0L);
+        final Pair bar = new Pair("bar", 0L);
         
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(bar)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
             attributes.add(t.decode(null, bar, ruleset));
         }
@@ -262,12 +283,12 @@ public class AttributeTranscoderRegistryTest {
     
     @Test public void testDecodeTwoUnsupportedValues() throws AttributeDecodingException {
         
-        final Pair<String,Object> baz = new Pair("baz", 0L);
+        final Pair baz = new Pair("baz", 0L);
         
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(baz)) {
-            final AttributeTranscoder<Pair<String,Object>> t =
+            final AttributeTranscoder<Pair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
             attributes.add(t.decode(null, baz, ruleset));
         }
@@ -281,55 +302,18 @@ public class AttributeTranscoderRegistryTest {
         Assert.assertTrue(attributes.get(1).getValues().isEmpty());
     }
     
-    public class PairTranscoder extends AbstractAttributeTranscoder<Pair<String,Object>> {
-
-        /** {@inheritDoc} */
-        public String getEncodedName(Properties properties) {
-            if (properties.containsKey("name")) {
-                return "{Pair}" + properties.getProperty("name");
-            } else {
-                return null;
-            }
-        }
-
-        /** {@inheritDoc} */
-        public Pair<String,Object> encode(ProfileRequestContext profileRequestContext, IdPAttribute attribute, Properties properties)
-                throws AttributeEncodingException {
-            
-            final String name = StringSupport.trimOrNull(properties.getProperty("name"));
-            if (name == null) {
-                throw new AttributeEncodingException("No name property");
-            }
-            
-            if (attribute.getValues().isEmpty() || !canEncodeValue(attribute, attribute.getValues().get(0))) {
-                return new Pair<>(name, null);
-            } else {
-                return new Pair<>(name, attribute.getValues().get(0).getValue());
-            }
-        }
-
-        /** {@inheritDoc} */
-        public IdPAttribute decode(ProfileRequestContext profileRequestContext, Pair<String,Object> input, Properties properties)
-                throws AttributeDecodingException {
-           
-            final String id = StringSupport.trimOrNull(properties.getProperty(AttributeTranscoderRegistry.PROP_ID));
-            if (id == null) {
-                throw new AttributeDecodingException("No id property");
-            }
-            
-            final IdPAttribute idattr = new IdPAttribute(id);
-            
-            if (input.getSecond() instanceof String) {
-                idattr.setValues(Collections.singletonList(StringAttributeValue.valueOf((String) input.getSecond())));
-            }
-            
-            return idattr;
-        }
-
-        /** {@inheritDoc} */
-        protected boolean canEncodeValue(IdPAttribute idpAttribute, IdPAttributeValue value) {
-            return value instanceof StringAttributeValue;
+    /** Marker classes to exercise subtype support. */
+    
+    public static class MyPair1 extends Pair {
+        public MyPair1(Object one, Object two) {
+            super(one, two);
         }
     }
-    
+
+    public static class MyPair2 extends Pair {
+        public MyPair2(Object one, Object two) {
+            super(one, two);
+        }        
+    }
+
 }

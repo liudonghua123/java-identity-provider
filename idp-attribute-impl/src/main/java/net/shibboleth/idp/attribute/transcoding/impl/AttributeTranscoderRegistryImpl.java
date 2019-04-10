@@ -61,11 +61,15 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     
     /** Registry of naming functions for supported object types. */
     @Nonnull private final Map<Class<?>,Function<?,String>> namingFunctionRegistry;
+    
+    /** Maps acceptable subtypes of a given class into the proper base class to use during registry fuctions. */
+    @Nonnull private final Map<Class<?>,Class<?>> classEquivalenceRegistry;
 
     /** Constructor. */
     public AttributeTranscoderRegistryImpl() {
         transcodingRegistry = new HashMap<>();
         namingFunctionRegistry = new HashMap<>();
+        classEquivalenceRegistry = new HashMap<>();
     }
     
     /** {@inheritDoc} */
@@ -91,9 +95,32 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             }
         });
     }
+    
+    /**
+     * Installs registry of mappings from subclasses of the "officially" registered types to their proper
+     * official type so that the registry can ignore them.
+     * 
+     * <p>For example, if a transcoder registry for type Foo also handles subtypes of Foo, those subtypes
+     * should be registered with mappings to Foo.</p>
+     * 
+     * @param registry mappings from subclass to the canonical parent class
+     */
+    public void setClassEquivalenceRegistry(@Nonnull @NonnullElements final Map<Class<?>,Class<?>> registry) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        if (registry == null) {
+            classEquivalenceRegistry.clear();
+            return;
+        }
+        
+        registry.forEach((k,v) -> {
+            if (k != null && v != null && v.isAssignableFrom(k)) {
+                classEquivalenceRegistry.put(k, v);
+            }
+        });
+    }
 
     /**
-     * Install the transcoder mappings en masse.
+     * Installs the transcoder mappings en masse.
      * 
      * <p>Each map entry connects an {@link IdPAttribute} name to the rules for transcoding to/from it.</p>
      * 
@@ -127,7 +154,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         
         final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(from.getId());
         
-        return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(to))
+        return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(getEffectiveType(to)))
                 : Collections.emptyList();
     }
 
@@ -137,14 +164,16 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
         Constraint.isNotNull(from, "Input object cannot be null");
         
+        final Class<?> effectiveType = getEffectiveType(from.getClass());
+        
         final Function<?,String> namingFunction = namingFunctionRegistry.get(from.getClass());
         if (namingFunction != null) {
             // Don't know if we can work around this cast or not.
-            final String id = ((Function<T,String>) namingFunction).apply(from);
+            final String id = ((Function<? super T,String>) namingFunction).apply(from);
             if (id != null) {
                 final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(id);
                 
-                return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(from.getClass()))
+                return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(effectiveType))
                         : Collections.emptyList();
             } else {
                 log.warn("Object of type {} did not have a canonical name", from.getClass().getName());
@@ -169,20 +198,8 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * @param ruleset transcoding rules
      */
     private void addMapping(@Nonnull @NotEmpty final String id, @Nonnull final Properties ruleset) {
-        Object type = ruleset.get(PROP_TYPE);
+
         Object transcoder = ruleset.get(PROP_TRANSCODER);
-        
-        if (type instanceof String) {
-            try {
-                type = Class.forName((String) type);
-            } catch (final ClassNotFoundException e) {
-                log.warn("Target class type {} not found in transcoding rule for {}", type, id);
-                return;
-            }
-        } else if (type == null) {
-            log.warn("Transcoding rule for {} missing {} property", id, PROP_TYPE);
-        }
-        
         if (transcoder instanceof String) {
             try {
                 transcoder = Class.forName((String) transcoder).getDeclaredConstructor().newInstance();
@@ -197,6 +214,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             log.warn("Transcoding rule for {} missing {} property", id, PROP_TRANSCODER);
         }
 
+        final Class<?> type = ((AttributeTranscoder) transcoder).getEncodedType();
         final String targetName = ((AttributeTranscoder) transcoder).getEncodedName(ruleset);
         if (targetName != null) {
 
@@ -204,7 +222,6 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             copy.putAll(ruleset);
 
             copy.put(PROP_TRANSCODER, transcoder);
-            copy.put(PROP_TYPE, type);
             
             // Install mapping back to IdPAttribute's name.
             copy.setProperty(PROP_ID, id);
@@ -215,7 +232,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
                 transcodingRegistry.put(id, rulesetsForIdPName);
             }
             
-            rulesetsForIdPName.put((Class) type, copy);
+            rulesetsForIdPName.put(type, copy);
 
             Multimap<Class<?>,Properties> rulesetsForEncodedName = transcodingRegistry.get(targetName);
             if (rulesetsForEncodedName == null) {
@@ -223,12 +240,25 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
                 transcodingRegistry.put(targetName, rulesetsForEncodedName);
             }
             
-            rulesetsForEncodedName.put((Class) type, copy);
+            rulesetsForEncodedName.put(type, copy);
             
         } else {
-            log.warn("Transcoding rule for {} into type {} did not produce an encoded name",
-                    id, ((Class) type).getName());
+            log.warn("Transcoding rule for {} into type {} did not produce an encoded name", id, type.getName());
         }
     }
 
+    /**
+     * Convert an input type into the appropriate type (possibly itself) to use in looking up
+     * rules in the registry.
+     * 
+     * @param inputType the type passed into the registry operation
+     * 
+     * @return the appropriate type to use subsequently
+     */
+    @Nonnull private Class<?> getEffectiveType(@Nonnull final Class<?> inputType) {
+        
+        final Class<?> outputType = classEquivalenceRegistry.get(inputType);
+        return outputType != null ? outputType : inputType;
+    }
+    
 }

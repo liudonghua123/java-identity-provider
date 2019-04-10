@@ -17,6 +17,7 @@
 
 package net.shibboleth.idp.attribute.transcoding.impl;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -35,7 +36,12 @@ import net.shibboleth.utilities.java.support.primitive.StringSupport;
 /**
  * Sample transcoder for tests. 
  */
-public class PairTranscoder extends AbstractAttributeTranscoder<Pair<String,Object>> {
+public class PairTranscoder extends AbstractAttributeTranscoder<Pair> {
+
+    /** {@inheritDoc} */
+    public Class<Pair> getEncodedType() {
+        return Pair.class;
+    }
 
     /** {@inheritDoc} */
     public String getEncodedName(Properties properties) {
@@ -47,23 +53,28 @@ public class PairTranscoder extends AbstractAttributeTranscoder<Pair<String,Obje
     }
 
     /** {@inheritDoc} */
-    public Pair<String,Object> encode(ProfileRequestContext profileRequestContext, IdPAttribute attribute, Properties properties)
+    public Pair encode(ProfileRequestContext profileRequestContext, IdPAttribute attribute, Class<? extends Pair> to, Properties properties)
             throws AttributeEncodingException {
         
         final String name = StringSupport.trimOrNull(properties.getProperty("name"));
         if (name == null) {
             throw new AttributeEncodingException("No name property");
         }
-        
-        if (attribute.getValues().isEmpty() || !canEncodeValue(attribute, attribute.getValues().get(0))) {
-            return new Pair<>(name, null);
-        } else {
-            return new Pair<>(name, attribute.getValues().get(0).getValue());
+
+        try {
+            if (attribute.getValues().isEmpty() || !canEncodeValue(attribute, attribute.getValues().get(0))) {
+                return to.getDeclaredConstructor(Object.class, Object.class).newInstance(name, null);
+            } else {
+                return to.getDeclaredConstructor(Object.class, Object.class).newInstance(name, attribute.getValues().get(0).getValue());
+            }
+        } catch (final InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            throw new AttributeEncodingException(e);
         }
     }
 
     /** {@inheritDoc} */
-    public IdPAttribute decode(ProfileRequestContext profileRequestContext, Pair<String,Object> input, Properties properties)
+    public IdPAttribute decode(ProfileRequestContext profileRequestContext, Pair input, Properties properties)
             throws AttributeDecodingException {
        
         final String id = StringSupport.trimOrNull(properties.getProperty(AttributeTranscoderRegistry.PROP_ID));

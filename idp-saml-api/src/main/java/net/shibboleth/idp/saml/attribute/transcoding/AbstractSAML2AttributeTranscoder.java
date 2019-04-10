@@ -25,18 +25,21 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import net.shibboleth.idp.attribute.AttributeDecodingException;
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
+import net.shibboleth.idp.attribute.IdPRequestedAttribute;
+import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
-import net.shibboleth.utilities.java.support.logic.ConstraintViolationException;
 
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.SAMLObjectBuilder;
 import org.opensaml.saml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.metadata.RequestedAttribute;
 
 import com.google.common.base.Strings;
 
@@ -57,23 +60,31 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
     /** Builder used to construct {@link Attribute} objects. */
     @Nonnull private final SAMLObjectBuilder<Attribute> attributeBuilder;
 
+    /** Builder used to construct {@link RequestedAttribute} objects. */
+    @Nonnull private final SAMLObjectBuilder<RequestedAttribute> reqAttributeBuilder;
+    
     /** Constructor. */
     public AbstractSAML2AttributeTranscoder() {
-        attributeBuilder =
-                (SAMLObjectBuilder<Attribute>) XMLObjectProviderRegistrySupport.getBuilderFactory().getBuilder(
+        attributeBuilder = (SAMLObjectBuilder<Attribute>)
+                XMLObjectProviderRegistrySupport.getBuilderFactory().<Attribute>getBuilderOrThrow(
                         Attribute.TYPE_NAME);
-        if (attributeBuilder == null) {
-            throw new ConstraintViolationException("SAML 2 Attribute builder is unavailable");
-        }
+        reqAttributeBuilder = (SAMLObjectBuilder<RequestedAttribute>)
+                XMLObjectProviderRegistrySupport.getBuilderFactory().<RequestedAttribute>getBuilderOrThrow(
+                        RequestedAttribute.TYPE_NAME);
     }
 
+    /** {@inheritDoc} */
+    @Nonnull public Class<Attribute> getEncodedType() {
+        return Attribute.class;
+    }
     
     /** {@inheritDoc} */
     @Nullable public String getEncodedName(@Nonnull final Properties properties) {
         
         try {
             // SAML 2 naming should be based on only what needs to be available from the properties alone.
-            return new NamingFunction().apply(buildAttribute(null, null, properties, Collections.emptyList()));
+            return new NamingFunction().apply(buildAttribute(null, null, Attribute.class, properties,
+                    Collections.emptyList()));
         } catch (final AttributeEncodingException e) {
             return null;
         }
@@ -82,15 +93,28 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
     /** {@inheritDoc} */
     @Override
     @Nonnull protected Attribute buildAttribute(@Nonnull final ProfileRequestContext profileRequestContext,
-            @Nonnull final IdPAttribute attribute, @Nonnull final Properties properties,
-            @Nonnull @NonnullElements final List<XMLObject> attributeValues) throws AttributeEncodingException {
+            @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends Attribute> to,
+            @Nonnull final Properties properties, @Nonnull @NonnullElements final List<XMLObject> attributeValues)
+                    throws AttributeEncodingException {
 
         final String name = properties.getProperty(PROP_NAME);
         if (Strings.isNullOrEmpty(name)) {
             throw new AttributeEncodingException("Required transcoder property 'name' not found");
         }
-                
-        final Attribute samlAttribute = attributeBuilder.buildObject();
+
+        final Attribute samlAttribute;
+        
+        if (to.equals(Attribute.class)) {
+            samlAttribute = attributeBuilder.buildObject();
+        } else if (to.equals(RequestedAttribute.class)) {
+            samlAttribute = reqAttributeBuilder.buildObject();
+            if (attribute instanceof IdPRequestedAttribute) {
+                ((RequestedAttribute) samlAttribute).setIsRequired(((IdPRequestedAttribute) attribute).getIsRequired());
+            }
+        } else {
+            throw new AttributeEncodingException("Unsupported target object type: " + to.getName());
+        }
+
         samlAttribute.setName(name);
         samlAttribute.setNameFormat(properties.getProperty(PROP_NAME_FORMAT, Attribute.URI_REFERENCE));
         samlAttribute.getAttributeValues().addAll(attributeValues);
@@ -101,6 +125,38 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
         }
         
         return samlAttribute;
+    }
+    
+    /** {@inheritDoc} */
+    @Override
+    @Nonnull protected IdPAttribute buildIdPAttribute(
+            @Nonnull final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
+            @Nonnull final Properties properties,
+            @Nonnull @NonnullElements final List<IdPAttributeValue<?>> attributeValues)
+                    throws AttributeDecodingException {
+        
+        final String id = properties.getProperty(AttributeTranscoderRegistry.PROP_ID);
+        if (Strings.isNullOrEmpty(id)) {
+            throw new AttributeDecodingException("Required transcoder property 'id' not found");
+        }
+        
+        final IdPAttribute idpAttribute;
+        if (attribute instanceof RequestedAttribute) {
+            idpAttribute = new IdPRequestedAttribute(id);
+            ((IdPRequestedAttribute) idpAttribute).setRequired(((RequestedAttribute) attribute).isRequired());
+        } else {
+            idpAttribute = new IdPAttribute(id);
+        }
+        
+        idpAttribute.setValues(attributeValues);
+        
+        return idpAttribute;
+    }
+    
+    /** {@inheritDoc} */
+    @Override
+    @Nonnull protected Iterable<XMLObject> getValues(@Nonnull final Attribute input) {
+        return input.getAttributeValues();
     }
 
     /**
@@ -121,7 +177,7 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
             }
             
             final StringBuilder builder = new StringBuilder();
-            builder.append('{').append(format).append('}').append(input.getName());
+            builder.append("SAML2:{").append(format).append('}').append(input.getName());
             return builder.toString();
         }
 

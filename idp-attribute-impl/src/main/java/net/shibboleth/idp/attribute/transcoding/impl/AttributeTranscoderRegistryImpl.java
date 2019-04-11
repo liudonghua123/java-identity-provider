@@ -244,20 +244,16 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      */
     @Nullable private Class<?> getEffectiveType(@Nonnull final Class<?> inputType) {
         
-        // Walk the superclass tree.
-        Class<?> returnType = inputType;
-        while (returnType != null && !namingFunctionRegistry.containsKey(returnType)) {
-            returnType = returnType.getSuperclass();
+        // Check for explicit support.
+        if (namingFunctionRegistry.containsKey(inputType)) {
+            return inputType;
         }
         
-        if (returnType != null) {
-            return returnType;
-        }
-        
-        for (final Class<?> iface : inputType.getInterfaces()) {
-            returnType = getEffectiveType(iface);
-            if (returnType != null) {
-                return returnType;
+        // Try each map entry for a match. Optimized around the assumption the
+        // map will be fairly small.
+        for (final Class<?> candidate : namingFunctionRegistry.keySet()) {
+            if (candidate.isAssignableFrom(inputType)) {
+                return candidate;
             }
         }
         

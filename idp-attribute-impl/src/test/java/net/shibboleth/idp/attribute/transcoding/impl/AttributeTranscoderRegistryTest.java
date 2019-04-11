@@ -38,6 +38,7 @@ import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
@@ -104,8 +105,7 @@ public class AttributeTranscoderRegistryTest {
         final List<Pair> pairs = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(foo, Pair.class)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             pairs.add(t.encode(null, foo, Pair.class, ruleset));
         }
         
@@ -125,8 +125,7 @@ public class AttributeTranscoderRegistryTest {
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(bar)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             attributes.add(t.decode(null, bar, ruleset));
         }
         
@@ -143,8 +142,7 @@ public class AttributeTranscoderRegistryTest {
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(baz)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             attributes.add(t.decode(null, baz, ruleset));
         }
         
@@ -164,8 +162,7 @@ public class AttributeTranscoderRegistryTest {
         final List<Pair> pairs = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(foo, Pair.class)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             pairs.add(t.encode(null, foo, Pair.class, ruleset));
         }
         
@@ -185,8 +182,7 @@ public class AttributeTranscoderRegistryTest {
         final List<MyPair> pairs = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(foo, MyPair.class)) {
-            final AttributeTranscoder<MyPair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<MyPair> t = TranscoderSupport.getTranscoder(ruleset);            
             pairs.add(t.encode(null, foo, MyPair.class, ruleset));
         }
         
@@ -206,8 +202,7 @@ public class AttributeTranscoderRegistryTest {
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(bar)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             attributes.add(t.decode(null, bar, ruleset));
         }
         
@@ -224,8 +219,7 @@ public class AttributeTranscoderRegistryTest {
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(baz)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             attributes.add(t.decode(null, baz, ruleset));
         }
         
@@ -245,8 +239,7 @@ public class AttributeTranscoderRegistryTest {
         final List<Pair> pairs = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(foo, Pair.class)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             pairs.add(t.encode(null, foo, Pair.class, ruleset));
         }
         
@@ -266,8 +259,7 @@ public class AttributeTranscoderRegistryTest {
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(bar)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             attributes.add(t.decode(null, bar, ruleset));
         }
         
@@ -284,8 +276,7 @@ public class AttributeTranscoderRegistryTest {
         final List<IdPAttribute> attributes = new ArrayList<>();
         
         for (final Properties ruleset : registry.getTranscodingProperties(baz)) {
-            final AttributeTranscoder<Pair> t =
-                    (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
+            final AttributeTranscoder<Pair> t = TranscoderSupport.getTranscoder(ruleset);            
             attributes.add(t.decode(null, baz, ruleset));
         }
         

@@ -25,16 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.ByteAttributeValue;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
+import net.shibboleth.idp.attribute.IdPRequestedAttribute;
 import net.shibboleth.idp.attribute.ScopedStringAttributeValue;
 import net.shibboleth.idp.attribute.StringAttributeValue;
-import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAMLAttributeTranscoder;
@@ -42,6 +41,7 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 
 import org.opensaml.core.OpenSAMLInitBaseTestCase;
 import org.opensaml.core.xml.XMLObject;
+import org.opensaml.core.xml.XMLObjectBuilder;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.common.SAMLObjectBuilder;
@@ -57,10 +57,12 @@ import org.testng.annotations.Test;
 public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
 
     private AttributeTranscoderRegistryImpl registry;
+    
+    private XMLObjectBuilder<XSString> stringBuilder;
 
-    @Nonnull private SAMLObjectBuilder<Attribute> attributeBuilder;
+    private SAMLObjectBuilder<Attribute> attributeBuilder;
 
-    @Nonnull private SAMLObjectBuilder<RequestedAttribute> reqAttributeBuilder;
+    private SAMLObjectBuilder<RequestedAttribute> reqAttributeBuilder;
 
     private final static String ATTR_NAME = "foo";
     private final static String ATTR_NAMEFORMAT = "Namespace";
@@ -69,6 +71,8 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
     private final static String STRING_2 = "Second string the value is";
 
     @BeforeClass public void setUp() throws ComponentInitializationException {
+        
+        stringBuilder = XMLObjectProviderRegistrySupport.getBuilderFactory().<XSString>getBuilderOrThrow(XSString.TYPE_NAME);
         
         attributeBuilder = (SAMLObjectBuilder<Attribute>)
                 XMLObjectProviderRegistrySupport.getBuilderFactory().<Attribute>getBuilderOrThrow(
@@ -114,9 +118,8 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
         Assert.assertEquals(rulesets.size(), 1);
         final Properties ruleset = rulesets.iterator().next();
         
-        final Attribute attr =
-                ((AttributeTranscoder<Attribute>) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER)).encode(
-                        null, inputAttribute, Attribute.class, ruleset);
+        final Attribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).encode(
+                null, inputAttribute, Attribute.class, ruleset);
         
         Assert.assertNotNull(attr);
         Assert.assertEquals(attr.getName(), ATTR_NAME);
@@ -135,15 +138,32 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
         Assert.assertEquals(rulesets.size(), 1);
         final Properties ruleset = rulesets.iterator().next();
         
-        final IdPAttribute attr =
-                ((AttributeTranscoder<Attribute>) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER)).decode(
-                        null, samlAttribute, ruleset);
+        final IdPAttribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
         
         Assert.assertNotNull(attr);
         Assert.assertEquals(attr.getId(), ATTR_NAME);
         Assert.assertTrue(attr.getValues().isEmpty());
     }
 
+    @Test public void emptyRequestedDecode() throws Exception {
+        
+        final RequestedAttribute samlAttribute = reqAttributeBuilder.buildObject();
+        samlAttribute.setName(ATTR_NAME);
+        samlAttribute.setNameFormat(ATTR_NAMEFORMAT);
+        samlAttribute.setIsRequired(true);
+
+        final Collection<Properties> rulesets = registry.getTranscodingProperties(samlAttribute);
+        Assert.assertEquals(rulesets.size(), 1);
+        final Properties ruleset = rulesets.iterator().next();
+        
+        final IdPAttribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
+        
+        Assert.assertTrue(attr instanceof IdPRequestedAttribute);
+        Assert.assertEquals(attr.getId(), ATTR_NAME);
+        Assert.assertTrue(((IdPRequestedAttribute) attr).getIsRequired());
+        Assert.assertTrue(attr.getValues().isEmpty());
+    }
+    
     @Test(expectedExceptions = {AttributeEncodingException.class,}) public void inappropriate() throws Exception {
         final int[] intArray = {1, 2, 3, 4};
         final Collection<? extends IdPAttributeValue<?>> values =
@@ -165,10 +185,9 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
         Assert.assertEquals(rulesets.size(), 1);
         final Properties ruleset = rulesets.iterator().next();
         
-        ((AttributeTranscoder<Attribute>) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER)).encode(
-                null, inputAttribute, Attribute.class, ruleset);
+        TranscoderSupport.<Attribute>getTranscoder(ruleset).encode(null, inputAttribute, Attribute.class, ruleset);
     }
-
+    
     @Test public void single() throws Exception {
         final Collection<? extends IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}), new StringAttributeValue(STRING_1));
@@ -180,9 +199,8 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
         Assert.assertEquals(rulesets.size(), 1);
         final Properties ruleset = rulesets.iterator().next();
         
-        final Attribute attr =
-                ((AttributeTranscoder<Attribute>) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER)).encode(
-                        null, inputAttribute, Attribute.class, ruleset);
+        final Attribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).encode(
+                null, inputAttribute, Attribute.class, ruleset);
 
         Assert.assertNotNull(attr);
         Assert.assertEquals(attr.getName(), ATTR_NAME);
@@ -205,6 +223,90 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
         Assert.assertEquals(childAsString.getValue(), STRING_1);
     }
 
+    @Test public void singleRequested() throws Exception {
+        final Collection<? extends IdPAttributeValue<?>> values =
+                Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}), new StringAttributeValue(STRING_1));
+
+        final IdPRequestedAttribute inputAttribute = new IdPRequestedAttribute(ATTR_NAME);
+        inputAttribute.setRequired(true);
+        inputAttribute.setValues(values);
+        
+        final Collection<Properties> rulesets = registry.getTranscodingProperties(inputAttribute, Attribute.class);
+        Assert.assertEquals(rulesets.size(), 1);
+        final Properties ruleset = rulesets.iterator().next();
+
+        final RequestedAttribute attr = TranscoderSupport.<RequestedAttribute>getTranscoder(ruleset).encode(
+                null, inputAttribute, RequestedAttribute.class, ruleset);
+
+        Assert.assertNotNull(attr);
+        Assert.assertEquals(attr.getName(), ATTR_NAME);
+        Assert.assertEquals(attr.getNameFormat(), ATTR_NAMEFORMAT);
+        Assert.assertEquals(attr.getFriendlyName(), ATTR_FRIENDLYNAME);
+        Assert.assertTrue(attr.isRequired());
+
+        final List<XMLObject> children = attr.getOrderedChildren();
+
+        Assert.assertEquals(children.size(), 1, "Encoding one entry");
+
+        final XMLObject child = children.get(0);
+
+        Assert.assertEquals(child.getElementQName(), AttributeValue.DEFAULT_ELEMENT_NAME,
+                "Attribute Value not inside <AttributeValue/>");
+
+        Assert.assertTrue(child instanceof XSString, "Child of result attribute should be a string");
+
+        final XSString childAsString = (XSString) child;
+
+        Assert.assertEquals(childAsString.getValue(), STRING_1);
+    }
+    
+    @Test public void singleDecode() throws Exception {
+                
+        final XSString stringValue = stringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME);
+        stringValue.setValue(STRING_1);
+        
+        final Attribute samlAttribute = attributeBuilder.buildObject();
+        samlAttribute.setName(ATTR_NAME);
+        samlAttribute.setNameFormat(ATTR_NAMEFORMAT);
+        samlAttribute.getAttributeValues().add(stringValue);
+
+        final Collection<Properties> rulesets = registry.getTranscodingProperties(samlAttribute);
+        Assert.assertEquals(rulesets.size(), 1);
+        final Properties ruleset = rulesets.iterator().next();
+        
+        final IdPAttribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
+        
+        Assert.assertNotNull(attr);
+        Assert.assertEquals(attr.getId(), ATTR_NAME);
+        Assert.assertEquals(attr.getValues().size(), 1);
+        Assert.assertEquals(attr.getValues().get(0).getValue().toString(), STRING_1);
+    }
+    
+    
+    @Test public void singleRequestedDecode() throws Exception {
+        
+        final XSString stringValue = stringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME);
+        stringValue.setValue(STRING_1);
+        
+        final RequestedAttribute samlAttribute = reqAttributeBuilder.buildObject();
+        samlAttribute.setName(ATTR_NAME);
+        samlAttribute.setNameFormat(ATTR_NAMEFORMAT);
+        samlAttribute.setIsRequired(true);
+        samlAttribute.getAttributeValues().add(stringValue);
+
+        final Collection<Properties> rulesets = registry.getTranscodingProperties(samlAttribute);
+        Assert.assertEquals(rulesets.size(), 1);
+        final Properties ruleset = rulesets.iterator().next();
+        
+        final IdPAttribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
+        
+        Assert.assertTrue(attr instanceof IdPRequestedAttribute);
+        Assert.assertEquals(attr.getId(), ATTR_NAME);
+        Assert.assertTrue(((IdPRequestedAttribute) attr).getIsRequired());
+        Assert.assertEquals(attr.getValues().size(), 1);
+        Assert.assertEquals(attr.getValues().get(0).getValue().toString(), STRING_1);
+    }
+    
     @Test public void multi() throws Exception {
         final Collection<? extends IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}),
@@ -219,9 +321,8 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
         Assert.assertEquals(rulesets.size(), 1);
         final Properties ruleset = rulesets.iterator().next();
         
-        final Attribute attr =
-                ((AttributeTranscoder<Attribute>) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER)).encode(
-                        null, inputAttribute, Attribute.class, ruleset);
+        final Attribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).encode(
+                null, inputAttribute, Attribute.class, ruleset);
 
         Assert.assertNotNull(attr);
 
@@ -233,6 +334,33 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
             final String childAsString = ((XSString) children.get(0)).getValue();
             Assert.assertTrue(STRING_1.equals(childAsString)||STRING_2.equals(childAsString));
         }
+    }
+
+    @Test public void multiDecode() throws Exception {
+        
+        final XSString stringValue = stringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME);
+        stringValue.setValue(STRING_1);
+
+        final XSString stringValue2 = stringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME);
+        stringValue2.setValue(STRING_2);
+        
+        final Attribute samlAttribute = attributeBuilder.buildObject();
+        samlAttribute.setName(ATTR_NAME);
+        samlAttribute.setNameFormat(ATTR_NAMEFORMAT);
+        samlAttribute.getAttributeValues().add(stringValue);
+        samlAttribute.getAttributeValues().add(stringValue2);
+
+        final Collection<Properties> rulesets = registry.getTranscodingProperties(samlAttribute);
+        Assert.assertEquals(rulesets.size(), 1);
+        final Properties ruleset = rulesets.iterator().next();
+        
+        final IdPAttribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
+        
+        Assert.assertNotNull(attr);
+        Assert.assertEquals(attr.getId(), ATTR_NAME);
+        Assert.assertEquals(attr.getValues().size(), 2);
+        Assert.assertEquals(attr.getValues().get(0).getValue().toString(), STRING_1);
+        Assert.assertEquals(attr.getValues().get(1).getValue().toString(), STRING_2);
     }
 
 }

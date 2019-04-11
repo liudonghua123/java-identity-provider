@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import net.shibboleth.ext.spring.service.AbstractServiceableComponent;
@@ -62,14 +63,10 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     /** Registry of naming functions for supported object types. */
     @Nonnull private final Map<Class<?>,Function<?,String>> namingFunctionRegistry;
     
-    /** Maps acceptable subtypes of a given class into the proper base class to use during registry fuctions. */
-    @Nonnull private final Map<Class<?>,Class<?>> classEquivalenceRegistry;
-
     /** Constructor. */
     public AttributeTranscoderRegistryImpl() {
         transcodingRegistry = new HashMap<>();
         namingFunctionRegistry = new HashMap<>();
-        classEquivalenceRegistry = new HashMap<>();
     }
     
     /** {@inheritDoc} */
@@ -92,29 +89,6 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         registry.forEach((k,v) -> {
             if (k != null && v != null) {
                 namingFunctionRegistry.put(k, v);
-            }
-        });
-    }
-    
-    /**
-     * Installs registry of mappings from subclasses of the "officially" registered types to their proper
-     * official type so that the registry can ignore them.
-     * 
-     * <p>For example, if a transcoder registry for type Foo also handles subtypes of Foo, those subtypes
-     * should be registered with mappings to Foo.</p>
-     * 
-     * @param registry mappings from subclass to the canonical parent class
-     */
-    public void setClassEquivalenceRegistry(@Nonnull @NonnullElements final Map<Class<?>,Class<?>> registry) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
-        if (registry == null) {
-            classEquivalenceRegistry.clear();
-            return;
-        }
-        
-        registry.forEach((k,v) -> {
-            if (k != null && v != null && v.isAssignableFrom(k)) {
-                classEquivalenceRegistry.put(k, v);
             }
         });
     }
@@ -153,9 +127,19 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         Constraint.isNotNull(to, "Target type cannot be null");
         
         final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(from.getId());
+        if (propertyCollections == null) {
+            return Collections.emptyList();
+        }
         
-        return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(getEffectiveType(to)))
-                : Collections.emptyList();
+        final Class<?> effectiveType = getEffectiveType(to);
+        if (effectiveType == null) {
+            log.warn("Unsupported object type: {}", to.getClass().getName());
+            return Collections.emptyList();
+        }
+        
+        log.trace("Using rules for effective type {}", effectiveType.getName());
+        
+        return ImmutableList.copyOf(propertyCollections.get(effectiveType));
     }
 
     /** {@inheritDoc} */
@@ -165,21 +149,24 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         Constraint.isNotNull(from, "Input object cannot be null");
         
         final Class<?> effectiveType = getEffectiveType(from.getClass());
-        
-        final Function<?,String> namingFunction = namingFunctionRegistry.get(from.getClass());
-        if (namingFunction != null) {
-            // Don't know if we can work around this cast or not.
-            final String id = ((Function<? super T,String>) namingFunction).apply(from);
-            if (id != null) {
-                final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(id);
-                
-                return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(effectiveType))
-                        : Collections.emptyList();
-            } else {
-                log.warn("Object of type {} did not have a canonical name", from.getClass().getName());
-            }
-        } else {
+        if (effectiveType == null) {
             log.warn("Unsupported object type: {}", from.getClass().getName());
+            return Collections.emptyList();
+        }
+        
+        log.trace("Using rules for effective type {}", effectiveType.getName());
+        
+        final Function<?,String> namingFunction = namingFunctionRegistry.get(effectiveType);
+        
+        // Don't know if we can work around this cast or not.
+        final String id = ((Function<? super T,String>) namingFunction).apply(from);
+        if (id != null) {
+            final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(id);
+            
+            return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(effectiveType))
+                    : Collections.emptyList();
+        } else {
+            log.warn("Object of type {} did not have a canonical name", from.getClass().getName());
         }
         
         return Collections.emptyList();
@@ -253,12 +240,28 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * 
      * @param inputType the type passed into the registry operation
      * 
-     * @return the appropriate type to use subsequently
+     * @return the appropriate type to use subsequently or null if not found
      */
-    @Nonnull private Class<?> getEffectiveType(@Nonnull final Class<?> inputType) {
+    @Nullable private Class<?> getEffectiveType(@Nonnull final Class<?> inputType) {
         
-        final Class<?> outputType = classEquivalenceRegistry.get(inputType);
-        return outputType != null ? outputType : inputType;
+        // Walk the superclass tree.
+        Class<?> returnType = inputType;
+        while (returnType != null && !namingFunctionRegistry.containsKey(returnType)) {
+            returnType = returnType.getSuperclass();
+        }
+        
+        if (returnType != null) {
+            return returnType;
+        }
+        
+        for (final Class<?> iface : inputType.getInterfaces()) {
+            returnType = getEffectiveType(iface);
+            if (returnType != null) {
+                return returnType;
+            }
+        }
+        
+        return null;
     }
     
 }

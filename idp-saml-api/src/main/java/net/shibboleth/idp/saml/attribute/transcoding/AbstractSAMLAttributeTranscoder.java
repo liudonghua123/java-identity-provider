@@ -30,6 +30,7 @@ import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.transcoding.AbstractAttributeTranscoder;
+import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
@@ -68,7 +69,7 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
     @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAMLAttributeTranscoder.class);
         
     /** {@inheritDoc} */
-    @Nullable public AttributeType encode(@Nonnull final ProfileRequestContext profileRequestContext,
+    @Nullable public AttributeType encode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends AttributeType> to,
             @Nonnull final Properties properties) throws AttributeEncodingException {
         ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
@@ -94,7 +95,7 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
 
             if (!canEncodeValue(attribute, o)) {
                 log.warn("Skipping value of attribute '{}'; Type {} cannot be encoded by this encoder ({}).",
-                        attributeId, o.getClass().getName(), this.getClass().getName());
+                        attributeId, o.getClass().getSimpleName(), this.getClass().getSimpleName());
                 continue;
             }
 
@@ -102,9 +103,19 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
             final XMLObject samlAttributeValue =
                     encodeValue(profileRequestContext, attribute, properties, attributeValue);
             if (samlAttributeValue == null) {
-                log.debug("Skipping empty value for attribute {}", attributeId);
+                log.debug("Skipping null value for attribute {}", attributeId);
             } else {
                 samlAttributeValues.add(samlAttributeValue);
+            }
+        }
+        
+        if (samlAttributeValues.isEmpty()) {
+            Object allowNoValues = properties.get(AttributeTranscoderRegistry.PROP_ENCODE_NO_VALUES);
+            if (!(allowNoValues instanceof Boolean)) {
+                allowNoValues = false;
+            }
+            if (! (Boolean) allowNoValues) {
+                throw new AttributeEncodingException("No values encoded for attribute " + attributeId);
             }
         }
 
@@ -113,7 +124,7 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
     }
 
     /** {@inheritDoc} */
-    @Nullable public IdPAttribute decode(@Nonnull final ProfileRequestContext profileRequestContext,
+    @Nullable public IdPAttribute decode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final AttributeType input, @Nonnull final Properties properties)
                     throws AttributeDecodingException {
         ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
@@ -143,6 +154,16 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
                 log.debug("Unable to decode value of attribute {}", attributeName);
             } else {
                 idpAttributeValues.add(idpAttributeValue);
+            }
+        }
+        
+        if (idpAttributeValues.isEmpty()) {
+            Object allowNoValues = properties.get(AttributeTranscoderRegistry.PROP_DECODE_NO_VALUES);
+            if (!(allowNoValues instanceof Boolean)) {
+                allowNoValues = true;
+            }
+            if (! (Boolean) allowNoValues) {
+                throw new AttributeDecodingException("No values decoded for attribute " + attributeName);
             }
         }
 
@@ -201,11 +222,24 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
         }
 
         if (null == retVal) {
-            log.info("Value of type {} could not be converted", object.getClass().toString());
+            log.info("Value of type {} could not be converted", object.getClass().getSimpleName());
         }
         return retVal;
     }
 // Checkstyle: CyclomaticComplexity ON
+
+    /**
+     * Checks if the given value can be handled by the transcoder.
+     * 
+     * <p>In many cases this is simply a check to see if the given object is of the right type.</p>
+     * 
+     * @param idpAttribute the attribute being encoded, never null
+     * @param value the value to check, never null
+     * 
+     * @return true if the transcoder can encode this value, false if not
+     */
+    protected abstract boolean canEncodeValue(@Nonnull final IdPAttribute idpAttribute,
+            @Nonnull final IdPAttributeValue value);
     
     /**
      * Builds a SAML attribute element from the given attribute values.
@@ -220,10 +254,10 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
      * 
      * @throws AttributeEncodingException thrown if there is a problem constructing the SAML attribute
      */
-    @Nonnull protected abstract AttributeType buildAttribute(@Nonnull final ProfileRequestContext profileRequestContext,
-            @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends AttributeType> to,
-            @Nonnull final Properties properties, @Nonnull @NonnullElements final List<XMLObject> attributeValues)
-                    throws AttributeEncodingException;
+    @Nonnull protected abstract AttributeType buildAttribute(
+            @Nullable final ProfileRequestContext profileRequestContext, @Nullable final IdPAttribute attribute,
+            @Nonnull final Class<? extends AttributeType> to, @Nonnull final Properties properties,
+            @Nonnull @NonnullElements final List<XMLObject> attributeValues) throws AttributeEncodingException;
 
     /**
      * Encodes an attribute value into a SAML AttributeValue element.
@@ -237,7 +271,7 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
      * 
      * @throws AttributeEncodingException thrown if there is a problem encoding the attribute value
      */
-    @Nullable protected abstract XMLObject encodeValue(@Nonnull final ProfileRequestContext profileRequestContext,
+    @Nullable protected abstract XMLObject encodeValue(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final IdPAttribute attribute, @Nonnull final Properties properties,
             @Nonnull final EncodedType value) throws AttributeEncodingException;
 
@@ -254,7 +288,7 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
      * @throws AttributeDecodingException thrown if there is a problem constructing the IdPAttribute
      */
     @Nonnull protected abstract IdPAttribute buildIdPAttribute(
-            @Nonnull final ProfileRequestContext profileRequestContext, @Nonnull final AttributeType attribute,
+            @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final AttributeType attribute,
             @Nonnull final Properties properties,
             @Nonnull @NonnullElements final List<IdPAttributeValue<?>> attributeValues)
                     throws AttributeDecodingException;
@@ -268,7 +302,6 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
      */
     @Nonnull protected abstract Iterable<XMLObject> getValues(@Nonnull final AttributeType input);
     
-    
     /**
      * Function to decode a single {@link XMLObject} into an {@link IdPAttributeValue}.
      * 
@@ -280,7 +313,7 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
      * @return the returned final {@link IdPAttributeValue} or null if decoding failed
      */
     @Nullable protected abstract IdPAttributeValue<?> decodeValue(
-            @Nonnull final ProfileRequestContext profileRequestContext, @Nonnull final AttributeType attribute,
+            @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final AttributeType attribute,
             @Nonnull final Properties properties, @Nullable final XMLObject value);
 
 }

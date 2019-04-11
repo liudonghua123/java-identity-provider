@@ -54,13 +54,13 @@ public class SAML2StringAttributeTranscoder extends AbstractSAML2AttributeTransc
     }
 
     /** {@inheritDoc} */
-    @Override @Nullable protected XMLObject encodeValue(@Nonnull final ProfileRequestContext profileRequestContext,
+    @Override @Nullable protected XMLObject encodeValue(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final IdPAttribute attribute, @Nonnull final Properties properties,
             @Nonnull final StringAttributeValue value) throws AttributeEncodingException {
         
         if (value instanceof LocalizedStringAttributeValue || value instanceof ScopedStringAttributeValue) {
             log.warn("Attribute '{}': Lossy encoding of attribute value of type {} to SAML2 String Attribute",
-                    attribute.getId(), value.getClass().getName());
+                    attribute.getId(), value.getClass().getSimpleName());
         }
         
         final Object encodeType = properties.getOrDefault(PROP_ENCODE_TYPE, Boolean.TRUE);
@@ -72,7 +72,7 @@ public class SAML2StringAttributeTranscoder extends AbstractSAML2AttributeTransc
 
     /** {@inheritDoc} */
     @Override @Nullable protected IdPAttributeValue<?> decodeValue(
-            @Nonnull final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
+            @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
             @Nonnull final Properties properties, @Nullable final XMLObject value) {
         
         return value != null ? StringAttributeValue.valueOf(getStringValue(value)) : null;

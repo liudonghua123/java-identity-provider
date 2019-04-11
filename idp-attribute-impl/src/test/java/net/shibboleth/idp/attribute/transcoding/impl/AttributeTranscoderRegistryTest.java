@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import net.shibboleth.idp.attribute.AttributeDecodingException;
@@ -49,14 +49,12 @@ public class AttributeTranscoderRegistryTest {
     
     private AttributeTranscoderRegistryImpl registry;
     
-    @BeforeMethod public void setUp() throws ComponentInitializationException {
+    @BeforeClass public void setUp() throws ComponentInitializationException {
         registry = new AttributeTranscoderRegistryImpl();
         registry.setId("test");
         
         registry.setNamingRegistry(Collections.singletonMap(
                 Pair.class, (Pair p) -> "{Pair}" + p.getFirst().toString()));
-        
-        registry.setClassEquivalenceRegistry(Collections.singletonMap(MyPair1.class, Pair.class));
         
         final PairTranscoder transcoder = new PairTranscoder();
         
@@ -78,7 +76,7 @@ public class AttributeTranscoderRegistryTest {
         registry.initialize();
     }
     
-    @AfterMethod public void tearDown() {
+    @AfterClass public void tearDown() {
         registry.destroy();
         registry = null;
     }
@@ -88,8 +86,7 @@ public class AttributeTranscoderRegistryTest {
     @Test public void testEncodeNoMappings() throws AttributeEncodingException {
         
         Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("frobnitz"), Pair.class).isEmpty());
-        Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("frobnitz"), MyPair1.class).isEmpty());
-        Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("foo"), MyPair2.class).isEmpty());
+        Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("frobnitz"), MyPair.class).isEmpty());
         Assert.assertTrue(registry.getTranscodingProperties(new IdPAttribute("foo"), String.class).isEmpty());
 }
 
@@ -97,8 +94,7 @@ public class AttributeTranscoderRegistryTest {
     @Test public void testDecodeNoMappings() throws AttributeDecodingException {
         
         Assert.assertTrue(registry.getTranscodingProperties(new Pair("foo", "value")).isEmpty());
-        Assert.assertTrue(registry.getTranscodingProperties(new MyPair1("foo", "value")).isEmpty());
-        Assert.assertTrue(registry.getTranscodingProperties(new MyPair2("bar", "value")).isEmpty());
+        Assert.assertTrue(registry.getTranscodingProperties(new MyPair("foo", "value")).isEmpty());
         Assert.assertTrue(registry.getTranscodingProperties(new String("bar")).isEmpty());
     }
     
@@ -186,12 +182,12 @@ public class AttributeTranscoderRegistryTest {
         final IdPAttribute foo = new IdPAttribute("foo");
         foo.setValues(Collections.singletonList(StringAttributeValue.valueOf("value")));
         
-        final List<MyPair1> pairs = new ArrayList<>();
+        final List<MyPair> pairs = new ArrayList<>();
         
-        for (final Properties ruleset : registry.getTranscodingProperties(foo, MyPair1.class)) {
-            final AttributeTranscoder<MyPair1> t =
+        for (final Properties ruleset : registry.getTranscodingProperties(foo, MyPair.class)) {
+            final AttributeTranscoder<MyPair> t =
                     (AttributeTranscoder) ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);            
-            pairs.add(t.encode(null, foo, MyPair1.class, ruleset));
+            pairs.add(t.encode(null, foo, MyPair.class, ruleset));
         }
         
         Assert.assertEquals(pairs.size(), 2);
@@ -302,18 +298,12 @@ public class AttributeTranscoderRegistryTest {
         Assert.assertTrue(attributes.get(1).getValues().isEmpty());
     }
     
-    /** Marker classes to exercise subtype support. */
+    /** Marker class to exercise subtype support. */
     
-    public static class MyPair1 extends Pair {
-        public MyPair1(Object one, Object two) {
+    public static class MyPair extends Pair {
+        public MyPair(Object one, Object two) {
             super(one, two);
         }
-    }
-
-    public static class MyPair2 extends Pair {
-        public MyPair2(Object one, Object two) {
-            super(one, two);
-        }        
     }
 
 }

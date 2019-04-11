@@ -77,7 +77,7 @@ public interface AttributeTranscoder<T> {
      * 
      * @throws AttributeEncodingException if unable to successfully encode attribute
      */
-    @Nullable T encode(@Nonnull final ProfileRequestContext profileRequestContext,
+    @Nullable T encode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends T> to,
             @Nonnull final Properties properties) throws AttributeEncodingException;
     
@@ -92,7 +92,7 @@ public interface AttributeTranscoder<T> {
      * 
      * @throws AttributeDecodingException if unable to successfully decode object
      */
-    @Nullable IdPAttribute decode(@Nonnull final ProfileRequestContext profileRequestContext,
+    @Nullable IdPAttribute decode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final T input, @Nonnull final Properties properties) throws AttributeDecodingException;
     
 }

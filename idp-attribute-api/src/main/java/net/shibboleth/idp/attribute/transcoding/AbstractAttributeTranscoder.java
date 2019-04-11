@@ -21,8 +21,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
-import net.shibboleth.idp.attribute.IdPAttribute;
-import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.utilities.java.support.component.AbstractInitializableComponent;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
@@ -68,17 +66,4 @@ public abstract class AbstractAttributeTranscoder<T> extends AbstractInitializab
         activationCondition = Constraint.isNotNull(condition, "Activation condition cannot be null");
     }
     
-    /**
-     * Checks if the given value can be handled by the transcoder.
-     * 
-     * <p>In many cases this is simply a check to see if the given object is of the right type.</p>
-     * 
-     * @param idpAttribute the attribute being encoded, never null
-     * @param value the value to check, never null
-     * 
-     * @return true if the transcoder can encode this value, false if not
-     */
-    protected abstract boolean canEncodeValue(@Nonnull final IdPAttribute idpAttribute,
-            @Nonnull final IdPAttributeValue value);
-
 }

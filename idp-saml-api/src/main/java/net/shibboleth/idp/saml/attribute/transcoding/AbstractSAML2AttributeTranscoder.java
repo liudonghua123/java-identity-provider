@@ -92,8 +92,8 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull protected Attribute buildAttribute(@Nonnull final ProfileRequestContext profileRequestContext,
-            @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends Attribute> to,
+    @Nonnull protected Attribute buildAttribute(@Nullable final ProfileRequestContext profileRequestContext,
+            @Nullable final IdPAttribute attribute, @Nonnull final Class<? extends Attribute> to,
             @Nonnull final Properties properties, @Nonnull @NonnullElements final List<XMLObject> attributeValues)
                     throws AttributeEncodingException {
 
@@ -119,7 +119,8 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
         samlAttribute.setNameFormat(properties.getProperty(PROP_NAME_FORMAT, Attribute.URI_REFERENCE));
         samlAttribute.getAttributeValues().addAll(attributeValues);
         
-        final String friendlyName = properties.getProperty(PROP_FRIENDLY_NAME, attribute.getId());
+        final String friendlyName = properties.getProperty(PROP_FRIENDLY_NAME,
+                attribute != null ? attribute.getId() : "");
         if (!friendlyName.isBlank()) {
             samlAttribute.setFriendlyName(friendlyName);
         }
@@ -130,7 +131,7 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
     /** {@inheritDoc} */
     @Override
     @Nonnull protected IdPAttribute buildIdPAttribute(
-            @Nonnull final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
+            @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
             @Nonnull final Properties properties,
             @Nonnull @NonnullElements final List<IdPAttributeValue<?>> attributeValues)
                     throws AttributeDecodingException {

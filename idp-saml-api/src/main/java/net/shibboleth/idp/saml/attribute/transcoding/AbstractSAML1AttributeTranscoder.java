@@ -31,6 +31,7 @@ import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.IdPRequestedAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.saml.xml.SAMLConstants;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 
@@ -38,52 +39,54 @@ import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.SAMLObjectBuilder;
-import org.opensaml.saml.saml2.core.Attribute;
-import org.opensaml.saml.saml2.metadata.RequestedAttribute;
+import org.opensaml.saml.saml1.core.Attribute;
+import org.opensaml.saml.saml1.core.AttributeDesignator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 
 /**
- * Base class for transcoders that operate on a SAML 2 {@link Attribute} or {@link RequestedAttribute}.
+ * Base class for transcoders that operate on a SAML 1 {@link Attribute} or {@link AttributeDesignator}.
  * 
  * @param <EncodedType> the type of data that can be handled by the transcoder
  */
-public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAttributeValue> extends
-        AbstractSAMLAttributeTranscoder<Attribute,EncodedType> {
+public abstract class AbstractSAML1AttributeTranscoder<EncodedType extends IdPAttributeValue> extends
+        AbstractSAMLAttributeTranscoder<AttributeDesignator,EncodedType> {
 
-    /** A friendly, human readable, name for the attribute. */
-    @Nonnull @NotEmpty public static final String PROP_FRIENDLY_NAME = "friendlyName";
+    /** The namespace of the attribute name. */
+    @Nonnull @NotEmpty public static final String PROP_NAMESPACE = "namespace";
 
-    /** The format of the attribute name. */
-    @Nonnull @NotEmpty public static final String PROP_NAME_FORMAT = "nameFormat";
+    /** Class logger. */
+    @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAML1AttributeTranscoder.class);
     
     /** Builder used to construct {@link Attribute} objects. */
     @Nonnull private final SAMLObjectBuilder<Attribute> attributeBuilder;
 
-    /** Builder used to construct {@link RequestedAttribute} objects. */
-    @Nonnull private final SAMLObjectBuilder<RequestedAttribute> reqAttributeBuilder;
+    /** Builder used to construct {@link AttributeDesignator} objects. */
+    @Nonnull private final SAMLObjectBuilder<AttributeDesignator> designatorBuilder;
     
     /** Constructor. */
-    public AbstractSAML2AttributeTranscoder() {
+    public AbstractSAML1AttributeTranscoder() {
         attributeBuilder = (SAMLObjectBuilder<Attribute>)
                 XMLObjectProviderRegistrySupport.getBuilderFactory().<Attribute>getBuilderOrThrow(
                         Attribute.TYPE_NAME);
-        reqAttributeBuilder = (SAMLObjectBuilder<RequestedAttribute>)
-                XMLObjectProviderRegistrySupport.getBuilderFactory().<RequestedAttribute>getBuilderOrThrow(
-                        RequestedAttribute.TYPE_NAME);
+        designatorBuilder = (SAMLObjectBuilder<AttributeDesignator>)
+                XMLObjectProviderRegistrySupport.getBuilderFactory().<AttributeDesignator>getBuilderOrThrow(
+                        AttributeDesignator.TYPE_NAME);
     }
 
     /** {@inheritDoc} */
-    @Nonnull public Class<Attribute> getEncodedType() {
-        return Attribute.class;
+    @Nonnull public Class<AttributeDesignator> getEncodedType() {
+        return AttributeDesignator.class;
     }
     
     /** {@inheritDoc} */
     @Nullable public String getEncodedName(@Nonnull final Properties properties) {
         
         try {
-            // SAML 2 naming should be based on only what needs to be available from the properties alone.
-            return new NamingFunction().apply(buildAttribute(null, null, Attribute.class, properties,
+            // SAML 1 naming should be based on only what needs to be available from the properties alone.
+            return new NamingFunction().apply(buildAttribute(null, null, AttributeDesignator.class, properties,
                     Collections.emptyList()));
         } catch (final AttributeEncodingException e) {
             return null;
@@ -92,42 +95,39 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull protected Attribute buildAttribute(@Nullable final ProfileRequestContext profileRequestContext,
-            @Nullable final IdPAttribute attribute, @Nonnull final Class<? extends Attribute> to,
+    @Nonnull protected AttributeDesignator buildAttribute(@Nullable final ProfileRequestContext profileRequestContext,
+            @Nullable final IdPAttribute attribute, @Nonnull final Class<? extends AttributeDesignator> to,
             @Nonnull final Properties properties, @Nonnull @NonnullElements final List<XMLObject> attributeValues)
                     throws AttributeEncodingException {
 
         if (attribute != null && !attribute.getValues().isEmpty() && attributeValues.isEmpty()) {
             throw new AttributeEncodingException("Failed to encode any values for attribute " + attribute.getId());
         }
-        
+
         final String name = properties.getProperty(PROP_NAME);
         if (Strings.isNullOrEmpty(name)) {
             throw new AttributeEncodingException("Required transcoder property 'name' not found");
         }
 
-        final Attribute samlAttribute;
+        final AttributeDesignator samlAttribute;
         
         if (to.equals(Attribute.class)) {
-            samlAttribute = attributeBuilder.buildObject();
-        } else if (to.equals(RequestedAttribute.class)) {
-            samlAttribute = reqAttributeBuilder.buildObject();
-            if (attribute instanceof IdPRequestedAttribute) {
-                ((RequestedAttribute) samlAttribute).setIsRequired(((IdPRequestedAttribute) attribute).getIsRequired());
+            if (attributeValues.isEmpty()) {
+                throw new AttributeEncodingException("Unable to encode a SAML 1 Attribute with no values");
             }
+            
+            samlAttribute = attributeBuilder.buildObject();
+            ((Attribute) samlAttribute).getAttributeValues().addAll(attributeValues);
+        } else if (to.equals(AttributeDesignator.class)) {
+            samlAttribute = designatorBuilder.buildObject();
+            log.warn("Lossy conversion to AttributeDesignator");
         } else {
             throw new AttributeEncodingException("Unsupported target object type: " + to.getName());
         }
 
-        samlAttribute.setName(name);
-        samlAttribute.setNameFormat(properties.getProperty(PROP_NAME_FORMAT, Attribute.URI_REFERENCE));
-        samlAttribute.getAttributeValues().addAll(attributeValues);
-        
-        final String friendlyName = properties.getProperty(PROP_FRIENDLY_NAME,
-                attribute != null ? attribute.getId() : "");
-        if (!friendlyName.isBlank()) {
-            samlAttribute.setFriendlyName(friendlyName);
-        }
+        samlAttribute.setAttributeName(name);
+        samlAttribute.setAttributeNamespace(
+                properties.getProperty(PROP_NAMESPACE, SAMLConstants.SAML1_ATTR_NAMESPACE_URI));
         
         return samlAttribute;
     }
@@ -135,14 +135,10 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
     /** {@inheritDoc} */
     @Override
     @Nonnull protected IdPAttribute buildIdPAttribute(
-            @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
+            @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final AttributeDesignator attribute,
             @Nonnull final Properties properties,
             @Nonnull @NonnullElements final List<IdPAttributeValue<?>> attributeValues)
                     throws AttributeDecodingException {
-        
-        if (!attribute.getAttributeValues().isEmpty() && attributeValues.isEmpty()) {
-            throw new AttributeDecodingException("Failed to decode any values for attribute " + attribute.getName());
-        }
         
         final String id = properties.getProperty(AttributeTranscoderRegistry.PROP_ID);
         if (Strings.isNullOrEmpty(id)) {
@@ -150,11 +146,14 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
         }
         
         final IdPAttribute idpAttribute;
-        if (attribute instanceof RequestedAttribute) {
-            idpAttribute = new IdPRequestedAttribute(id);
-            ((IdPRequestedAttribute) idpAttribute).setRequired(((RequestedAttribute) attribute).isRequired());
-        } else {
+        if (attribute instanceof Attribute) {
+            if (!((Attribute) attribute).getAttributeValues().isEmpty() && attributeValues.isEmpty()) {
+                throw new AttributeDecodingException("Failed to decode any values for attribute "
+                        + attribute.getAttributeName());
+            }
             idpAttribute = new IdPAttribute(id);
+        } else {
+            idpAttribute = new IdPRequestedAttribute(id);
         }
         
         idpAttribute.setValues(attributeValues);
@@ -164,29 +163,23 @@ public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAt
     
     /** {@inheritDoc} */
     @Override
-    @Nonnull protected Iterable<XMLObject> getValues(@Nonnull final Attribute input) {
-        return input.getAttributeValues();
+    @Nonnull protected Iterable<XMLObject> getValues(@Nonnull final AttributeDesignator input) {
+        return input instanceof Attribute ? ((Attribute) input).getAttributeValues() : Collections.emptyList();
     }
 
-    /**
-     * A function to produce a "canonical" name for a SAML 2.0 {@link Attribute} for transcoding rules.
-     */
-    public static class NamingFunction implements Function<Attribute,String> {
+    /** A function to produce a "canonical" name for a SAML 1 {@link AttributeDesignator} for transcoding rules. */
+    public static class NamingFunction implements Function<AttributeDesignator,String> {
 
         /** {@inheritDoc} */
-        @Nullable public String apply(@Nullable final Attribute input) {
+        @Nullable public String apply(@Nullable final AttributeDesignator input) {
             
-            if (input == null || input.getName() == null) {
+            if (input == null || input.getAttributeName() == null || input.getAttributeNamespace() == null) {
                 return null;
             }
             
-            String format = input.getNameFormat();
-            if (format == null) {
-                format = Attribute.UNSPECIFIED;
-            }
-            
             final StringBuilder builder = new StringBuilder();
-            builder.append("SAML2:{").append(format).append('}').append(input.getName());
+            builder.append("SAML1:{").append(input.getAttributeNamespace()).append('}')
+                .append(input.getAttributeName());
             return builder.toString();
         }
 

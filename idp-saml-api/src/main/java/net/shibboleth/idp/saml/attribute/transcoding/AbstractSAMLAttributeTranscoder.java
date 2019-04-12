@@ -30,7 +30,6 @@ import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.transcoding.AbstractAttributeTranscoder;
-import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
@@ -109,17 +108,7 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
             }
         }
         
-        if (samlAttributeValues.isEmpty()) {
-            Object allowNoValues = properties.get(AttributeTranscoderRegistry.PROP_ENCODE_NO_VALUES);
-            if (!(allowNoValues instanceof Boolean)) {
-                allowNoValues = false;
-            }
-            if (! (Boolean) allowNoValues) {
-                throw new AttributeEncodingException("No values encoded for attribute " + attributeId);
-            }
-        }
-
-        log.debug("Completed encoding {} values for attribute {}", samlAttributeValues.size(), attributeId);
+        log.debug("Encoded {} values for attribute {}", samlAttributeValues.size(), attributeId);
         return buildAttribute(profileRequestContext, attribute, to, properties, samlAttributeValues);
     }
 
@@ -157,17 +146,7 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
             }
         }
         
-        if (idpAttributeValues.isEmpty()) {
-            Object allowNoValues = properties.get(AttributeTranscoderRegistry.PROP_DECODE_NO_VALUES);
-            if (!(allowNoValues instanceof Boolean)) {
-                allowNoValues = true;
-            }
-            if (! (Boolean) allowNoValues) {
-                throw new AttributeDecodingException("No values decoded for attribute " + attributeName);
-            }
-        }
-
-        log.debug("Completed decoding {} values for attribute {}", idpAttributeValues.size(), attributeName);
+        log.debug("Decoded {} values for attribute {}", idpAttributeValues.size(), attributeName);
         return buildIdPAttribute(profileRequestContext, input, properties, idpAttributeValues);
     }
 

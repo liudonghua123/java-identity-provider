@@ -44,12 +44,6 @@ public interface AttributeTranscoderRegistry extends IdentifiedComponent {
     /** Property name for accessing {@link AttributeTranscoder} object to use. */
     @Nonnull @NotEmpty static final String PROP_TRANSCODER = "transcoder";
     
-    /** Property name for whether a result with no values should be allowed, default false . */
-    @Nonnull @NotEmpty static final String PROP_ENCODE_NO_VALUES = "encodeNoValues";
-
-    /** Property name for whether a result with no values should be allowed, default true. */
-    @Nonnull @NotEmpty static final String PROP_DECODE_NO_VALUES = "decodeNoValues";
-
     /**
      * Obtains a set of instructions for encoding an input {@link IdPAttribute} into a target type.
      * 

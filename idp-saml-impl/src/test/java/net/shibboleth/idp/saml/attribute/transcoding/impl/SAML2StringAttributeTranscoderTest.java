@@ -54,7 +54,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /** {@link SAML2StringAttributeTranscoder} unit test. */
-public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
+public class SAML2StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase {
 
     private AttributeTranscoderRegistryImpl registry;
     
@@ -111,7 +111,7 @@ public class SAML2StringAttributeEncoderTest extends OpenSAMLInitBaseTestCase {
         registry = null;
     }
 
-    @Test(expectedExceptions = {AttributeEncodingException.class,}) public void emptyEncode() throws Exception {
+    @Test public void emptyEncode() throws Exception {
         final IdPAttribute inputAttribute = new IdPAttribute(ATTR_NAME);
 
         final Collection<Properties> rulesets = registry.getTranscodingProperties(inputAttribute, Attribute.class);

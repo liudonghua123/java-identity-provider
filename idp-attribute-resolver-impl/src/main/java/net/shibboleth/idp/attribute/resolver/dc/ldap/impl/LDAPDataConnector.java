@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
+import net.shibboleth.idp.attribute.resolver.dc.MappingStrategy;
 import net.shibboleth.idp.attribute.resolver.dc.ValidationException;
 import net.shibboleth.idp.attribute.resolver.dc.Validator;
 import net.shibboleth.idp.attribute.resolver.dc.impl.AbstractSearchDataConnector;
@@ -47,7 +48,8 @@ import net.shibboleth.utilities.java.support.logic.Constraint;
  * A {@link net.shibboleth.idp.attribute.resolver.DataConnector} that queries an LDAP in order to retrieve attribute
  * data.
  */
-public class LDAPDataConnector extends AbstractSearchDataConnector<ExecutableSearchFilter,SearchResultMappingStrategy> {
+public class LDAPDataConnector extends
+        AbstractSearchDataConnector<ExecutableSearchFilter, MappingStrategy<SearchResult>> {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(LDAPDataConnector.class);
@@ -119,7 +121,7 @@ public class LDAPDataConnector extends AbstractSearchDataConnector<ExecutableSea
     }
 
     /** {@inheritDoc} */
-    @Override public void setMappingStrategy(@Nonnull final SearchResultMappingStrategy strategy) {
+    @Override public void setMappingStrategy(@Nonnull final MappingStrategy<SearchResult> strategy) {
         super.setMappingStrategy(strategy);
         defaultMappingStrategy = false;
     }

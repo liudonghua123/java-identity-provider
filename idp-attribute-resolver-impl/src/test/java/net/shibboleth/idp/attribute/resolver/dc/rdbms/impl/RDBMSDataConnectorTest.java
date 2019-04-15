@@ -23,6 +23,7 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
 import net.shibboleth.idp.attribute.resolver.context.AttributeResolutionContext;
+import net.shibboleth.idp.attribute.resolver.dc.MappingStrategy;
 import net.shibboleth.idp.attribute.resolver.dc.impl.ExecutableSearchBuilder;
 import net.shibboleth.idp.attribute.resolver.dc.impl.TestCache;
 import net.shibboleth.idp.saml.impl.TestSources;
@@ -91,7 +93,7 @@ public class RDBMSDataConnectorTest {
      * @return rdbms data connector
      */
     protected RDBMSDataConnector createUserRdbmsDataConnector(final ExecutableSearchBuilder builder,
-            final ResultMappingStrategy strategy) {
+            final MappingStrategy<ResultSet> strategy) {
         final RDBMSDataConnector connector = new RDBMSDataConnector();
         connector.setId(TEST_CONNECTOR_NAME);
         connector.setDataSource(datasource);
@@ -109,7 +111,7 @@ public class RDBMSDataConnectorTest {
      * @return rdbms data connector
      */
     protected RDBMSDataConnector createGroupRdbmsDataConnector(final ExecutableSearchBuilder builder,
-            final ResultMappingStrategy strategy) {
+            final MappingStrategy<ResultSet> strategy) {
         final RDBMSDataConnector connector = new RDBMSDataConnector();
         connector.setId(TEST_CONNECTOR_NAME + "ForGroups");
         connector.setDataSource(datasource);

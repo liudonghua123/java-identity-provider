@@ -36,16 +36,18 @@ import net.shibboleth.idp.attribute.resolver.MultipleResultAnErrorResolutionExce
 import net.shibboleth.idp.attribute.resolver.NoResultAnErrorResolutionException;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
 import net.shibboleth.idp.attribute.resolver.dc.AbstractMappingStrategy;
+import net.shibboleth.idp.attribute.resolver.dc.MappingStrategy;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A simple {@link ResultMappingStrategy} that assumes all columns in the result set should be mapped and that all
+ * A simple {@link MappingStrategy<ResultSet>} that assumes all columns in the result set should be mapped and that all
  * values are strings.
  */
-public class StringResultMappingStrategy extends AbstractMappingStrategy<ResultSet> implements ResultMappingStrategy {
+public class StringResultMappingStrategy extends AbstractMappingStrategy<ResultSet>
+        implements MappingStrategy<ResultSet> {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(StringResultMappingStrategy.class);

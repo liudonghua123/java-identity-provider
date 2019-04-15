@@ -32,6 +32,7 @@ import net.shibboleth.idp.attribute.resolver.MultipleResultAnErrorResolutionExce
 import net.shibboleth.idp.attribute.resolver.NoResultAnErrorResolutionException;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
 import net.shibboleth.idp.attribute.resolver.dc.AbstractMappingStrategy;
+import net.shibboleth.idp.attribute.resolver.dc.MappingStrategy;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
 import org.ldaptive.LdapAttribute;
@@ -41,11 +42,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A simple {@link SearchResultMappingStrategy} that iterates over all result entries and includes all attribute values
- * as strings.
+ * A simple {@link MappingStrategy<SearchResult>} that iterates over all result entries and includes all attribute
+ * values as strings.
  */
 public class StringAttributeValueMappingStrategy extends AbstractMappingStrategy<SearchResult>
-        implements SearchResultMappingStrategy {
+        implements MappingStrategy<SearchResult> {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(StringAttributeValueMappingStrategy.class);

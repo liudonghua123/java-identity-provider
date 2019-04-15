@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
 import org.ldaptive.ConnectionFactory;
 import org.ldaptive.DefaultConnectionFactory;
 import org.ldaptive.SearchExecutor;
+import org.ldaptive.SearchResult;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -51,6 +52,7 @@ import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.resolver.DataConnector;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
 import net.shibboleth.idp.attribute.resolver.context.AttributeResolutionContext;
+import net.shibboleth.idp.attribute.resolver.dc.MappingStrategy;
 import net.shibboleth.idp.attribute.resolver.dc.impl.ExecutableSearchBuilder;
 import net.shibboleth.idp.attribute.resolver.dc.impl.TestCache;
 import net.shibboleth.idp.saml.impl.TestSources;
@@ -110,7 +112,7 @@ public class LDAPDataConnectorTest {
      * @throws ComponentInitializationException 
      */
     protected LDAPDataConnector createLdapDataConnector(final ExecutableSearchBuilder builder,
-            final SearchResultMappingStrategy strategy) throws ComponentInitializationException {
+            final MappingStrategy<SearchResult> strategy) throws ComponentInitializationException {
         final LDAPDataConnector connector = new LDAPDataConnector();
         connector.setId(TEST_CONNECTOR_NAME);
         final ConnectionFactory connectionFactory = new DefaultConnectionFactory("ldap://localhost:10389");
@@ -170,7 +172,7 @@ public class LDAPDataConnectorTest {
         final ConnectionFactory connectionFactory = new DefaultConnectionFactory("ldap://localhost:10389");
         connector.setConnectionFactory(connectionFactory);
 
-        final SearchResultMappingStrategy mappingStrategy = new StringAttributeValueMappingStrategy();
+        final MappingStrategy<SearchResult> mappingStrategy = new StringAttributeValueMappingStrategy();
         connector.setMappingStrategy(mappingStrategy);
 
         try {

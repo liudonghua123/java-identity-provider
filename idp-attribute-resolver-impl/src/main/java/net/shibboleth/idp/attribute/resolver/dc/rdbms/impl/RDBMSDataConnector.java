@@ -28,6 +28,7 @@ import javax.sql.DataSource;
 
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
+import net.shibboleth.idp.attribute.resolver.dc.MappingStrategy;
 import net.shibboleth.idp.attribute.resolver.dc.ValidationException;
 import net.shibboleth.idp.attribute.resolver.dc.Validator;
 import net.shibboleth.idp.attribute.resolver.dc.impl.AbstractSearchDataConnector;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * A {@link net.shibboleth.idp.attribute.resolver.DataConnector} that queries a relation database in order to retrieve
  * attribute data.
  */
-public class RDBMSDataConnector extends AbstractSearchDataConnector<ExecutableStatement,ResultMappingStrategy> {
+public class RDBMSDataConnector extends AbstractSearchDataConnector<ExecutableStatement, MappingStrategy<ResultSet>> {
 
     /** Class logger. */
     private final Logger log = LoggerFactory.getLogger(RDBMSDataConnector.class);
@@ -111,7 +112,7 @@ public class RDBMSDataConnector extends AbstractSearchDataConnector<ExecutableSt
     }
 
     /** {@inheritDoc} */
-    @Override public void setMappingStrategy(@Nonnull final ResultMappingStrategy strategy) {
+    @Override public void setMappingStrategy(@Nonnull final MappingStrategy<ResultSet> strategy) {
         super.setMappingStrategy(strategy);
         defaultMappingStrategy = false;
     }

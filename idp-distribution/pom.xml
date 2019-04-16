@@ -82,6 +82,19 @@
             <version>${metrics.version}</version>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.ldaptive</groupId>
+            <artifactId>ldaptive-unboundid</artifactId>
+            <version>${ldaptive.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.unboundid</groupId>
+            <artifactId>unboundid-ldapsdk</artifactId>
+            <version>4.0.9</version>
+            <scope>runtime</scope>
+        </dependency>
         
         <!-- Test Dependencies -->
 
@@ -214,6 +227,19 @@
                                 <artifactItem>
                                     <groupId>${slf4j.groupId}</groupId>
                                     <artifactId>jcl-over-slf4j</artifactId>
+                                </artifactItem>
+                                <!-- Support for JVM metrics, per IDP-1205. -->
+                                <artifactItem>
+                                    <groupId>io.dropwizard.metrics</groupId>
+                                    <artifactId>metrics-jvm</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.ldaptive</groupId>
+                                    <artifactId>ldaptive-unboundid</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.unboundid</groupId>
+                                    <artifactId>unboundid-ldapsdk</artifactId>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${idp.assemblyDirectory}/webapp/WEB-INF/lib/</outputDirectory>

@@ -42,8 +42,6 @@ import net.shibboleth.idp.saml.authn.principal.NameIDPrincipal;
 import net.shibboleth.idp.saml.authn.principal.NameIdentifierPrincipal;
 import net.shibboleth.utilities.java.support.annotation.ParameterName;
 import net.shibboleth.utilities.java.support.logic.Constraint;
-import net.shibboleth.utilities.java.support.primitive.DeprecationSupport;
-import net.shibboleth.utilities.java.support.primitive.DeprecationSupport.ObjectType;
 import net.shibboleth.utilities.java.support.service.ReloadableService;
 import net.shibboleth.utilities.java.support.service.ServiceableComponent;
 
@@ -82,7 +80,7 @@ public class LegacyCanonicalization extends AbstractSubjectCanonicalizationActio
                 log.error("{} Error resolving PrincipalConnector: Invalid Attribute resolver configuration.",
                         getLogPrefix());
                 c14nContext.setException(new SubjectCanonicalizationException(
-                        "Error resolving PrincipalConnectore: Invalid Attribute resolver configuration."));
+                        "Error resolving PrincipalConnector: Invalid Attribute resolver configuration."));
                 ActionSupport.buildEvent(profileRequestContext, AuthnEventIds.INVALID_SUBJECT);
                 return;
             }
@@ -126,7 +124,6 @@ public class LegacyCanonicalization extends AbstractSubjectCanonicalizationActio
     public static SubjectCanonicalizationFlowDescriptor c14LegacyPrincipalConnectorFactory(
                 @ParameterName(name="activationCondition") Predicate<ProfileRequestContext> activationCondition)
     {
-        DeprecationSupport.warn(ObjectType.BEAN, "c14n/LegacyPrincipalConnector", "c14n/subject-c14n.xml", "<remove>");
         final SubjectCanonicalizationFlowDescriptor result = new SubjectCanonicalizationFlowDescriptor ();
         result.setActivationCondition(activationCondition);
         return result;

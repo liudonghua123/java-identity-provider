@@ -39,8 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link net.shibboleth.idp.attribute.AttributeTranscoder} that produces a SAML 2 Attribute from an
- * {@link IdPAttribute} that contains <code>String</code> values.
+ * {@link net.shibboleth.idp.attribute.AttributeTranscoder} that supports {@link Attribute} and
+ * {@link StringAttributeValue} objects.
  */
 public class SAML2StringAttributeTranscoder extends AbstractSAML2AttributeTranscoder<StringAttributeValue> {
 

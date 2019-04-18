@@ -87,12 +87,12 @@ public class SAML2ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
         registry = new AttributeTranscoderRegistryImpl();
         registry.setId("test");
         
-        registry.setNamingRegistry(Collections.singletonMap(
-                Attribute.class, new AbstractSAML2AttributeTranscoder.NamingFunction()));
-        
         final SAML2ScopedStringAttributeTranscoder transcoder = new SAML2ScopedStringAttributeTranscoder();
         transcoder.initialize();
         
+        registry.setNamingRegistry(Collections.singletonMap(
+                transcoder.getEncodedType(), new AbstractSAML2AttributeTranscoder.NamingFunction()));
+                
         final Map<String,Collection<Properties>> mappings = new HashMap<>();
         
         final Properties ruleset1 = new Properties();

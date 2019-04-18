@@ -30,6 +30,7 @@ import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.transcoding.AbstractAttributeTranscoder;
+import net.shibboleth.idp.saml.xmlobject.ScopedValue;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
@@ -189,6 +190,10 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
         } else if (object instanceof XSBase64Binary) {
 
             retVal = ((XSBase64Binary) object).getValue();
+            
+        } else if (object instanceof ScopedValue) {
+            
+            retVal = ((ScopedValue) object).getValue();
 
         } else if (object instanceof XSAny) {
 

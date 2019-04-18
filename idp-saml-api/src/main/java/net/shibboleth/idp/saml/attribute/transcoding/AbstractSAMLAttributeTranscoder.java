@@ -33,8 +33,6 @@ import net.shibboleth.idp.attribute.transcoding.AbstractAttributeTranscoder;
 import net.shibboleth.idp.saml.xmlobject.ScopedValue;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
-import net.shibboleth.utilities.java.support.component.ComponentSupport;
-import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.xml.DOMTypeSupport;
 
 import org.opensaml.core.xml.XMLObject;
@@ -69,19 +67,13 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
     @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAMLAttributeTranscoder.class);
         
     /** {@inheritDoc} */
-    @Nullable public AttributeType encode(@Nullable final ProfileRequestContext profileRequestContext,
+    @Override
+    @Nullable public AttributeType doEncode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends AttributeType> to,
             @Nonnull final Properties properties) throws AttributeEncodingException {
-        ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
-        Constraint.isNotNull(attribute, "Attribute to encode cannot be null");
 
         final String attributeId = attribute.getId();
 
-        if (!getActivationCondition().test(profileRequestContext)) {
-            log.debug("Encoder for attribute {} inactive", attributeId);
-            return null;
-        }
-        
         log.debug("Beginning to encode attribute {}", attributeId);
 
         final List<XMLObject> samlAttributeValues = new ArrayList<>();
@@ -114,18 +106,12 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
     }
 
     /** {@inheritDoc} */
-    @Nullable public IdPAttribute decode(@Nullable final ProfileRequestContext profileRequestContext,
+    @Override
+    @Nullable public IdPAttribute doDecode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final AttributeType input, @Nonnull final Properties properties)
                     throws AttributeDecodingException {
-        ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
-        Constraint.isNotNull(input, "Attribute to decode cannot be null");
 
         final String attributeName = getEncodedName(properties);
-
-        if (!getActivationCondition().test(profileRequestContext)) {
-            log.debug("Decoder for attribute {} inactive", attributeName);
-            return null;
-        }
         
         log.debug("Beginning to decode attribute {}", attributeName);
 

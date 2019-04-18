@@ -87,7 +87,7 @@ public class SAML2StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         final SAML2StringAttributeTranscoder transcoder = new SAML2StringAttributeTranscoder();
         transcoder.initialize();
         
-        registry.setNamingRegistry(Collections.singletonMap(
+        registry.addToNamingRegistry(Collections.singletonMap(
                 transcoder.getEncodedType(), new AbstractSAML2AttributeTranscoder.NamingFunction()));
         
         final Map<String,Collection<Properties>> mappings = new HashMap<>();
@@ -101,7 +101,7 @@ public class SAML2StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         
         mappings.put(ATTR_NAME, Collections.singletonList(ruleset1));
         
-        registry.setTranscoderRegistry(mappings);
+        registry.addToTranscoderRegistry(mappings);
         
         registry.initialize();
     }

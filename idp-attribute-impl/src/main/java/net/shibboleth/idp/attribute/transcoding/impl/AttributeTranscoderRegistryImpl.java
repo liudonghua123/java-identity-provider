@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,13 +34,16 @@ import net.shibboleth.ext.spring.service.AbstractServiceableComponent;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.profile.logic.RelyingPartyIdPredicate;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.annotation.constraint.Unmodifiable;
+import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
+import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,10 +83,10 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * 
      * @param registry map of types to naming functions
      */
-    public void setNamingRegistry(@Nonnull @NonnullElements final Map<Class<?>,Function<?,String>> registry) {
+    public void addToNamingRegistry(@Nonnull @NonnullElements final Map<Class<?>,Function<?,String>> registry) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        
         if (registry == null) {
-            namingFunctionRegistry.clear();
             return;
         }
         
@@ -100,10 +104,10 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * 
      * @param registry mappings from internal name to transcoding rules
      */
-    public void setTranscoderRegistry(@Nonnull @NonnullElements final Map<String,Collection<Properties>> registry) {
+    public void addToTranscoderRegistry(@Nonnull @NonnullElements final Map<String,Collection<Properties>> registry) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+
         if (registry == null) {
-            transcodingRegistry.clear();
             return;
         }
         
@@ -113,6 +117,14 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             if (internalId != null && entry.getValue() != null && !entry.getValue().isEmpty()) {
 
                 for (final Properties props : Collections2.filter(entry.getValue(), Predicates.notNull())) {
+                    
+                    final Predicate activationCondition = buildActivationCondition(props);
+                    if (activationCondition != null) {
+                        props.put(PROP_CONDITION, activationCondition);
+                    } else {
+                        props.remove(PROP_CONDITION);
+                    }
+                    
                     addMapping(internalId, props);
                 }
             }
@@ -190,9 +202,10 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         if (transcoder instanceof String) {
             try {
                 transcoder = Class.forName((String) transcoder).getDeclaredConstructor().newInstance();
+                ((AttributeTranscoder) transcoder).initialize();
             } catch (final InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException
-                    | ClassNotFoundException e) {
+                    | ClassNotFoundException | ComponentInitializationException e) {
                 log.warn("Unable to create AttributeTranscoder of specified type {} in transcoding rule for {}",
                         transcoder, id, e);
                 return;
@@ -231,6 +244,46 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             
         } else {
             log.warn("Transcoding rule for {} into type {} did not produce an encoded name", id, type.getName());
+        }
+    }
+    
+    /**
+     * Build an appropriate {@link Predicate} to use as an activation condition within the ruleset.
+     * 
+     * @param ruleset transcoding rules
+     * 
+     * @return a predicate to install under the ruleset's {@link #PROP_CONDITION}
+     */
+    @Nullable private Predicate<ProfileRequestContext> buildActivationCondition(@Nonnull final Properties ruleset) {
+        
+        Predicate effectiveCondition = null;
+        
+        final Object baseCondition = ruleset.get(PROP_CONDITION);
+        if (baseCondition instanceof Predicate) {
+            effectiveCondition = (Predicate) baseCondition;
+        } else if (baseCondition != null) {
+            log.error("{} property did not contain a Predicate object, ignored", PROP_CONDITION);
+        }
+
+        Predicate relyingPartyCondition = null;
+
+        final Object relyingParties = ruleset.get(PROP_RELYINGPARTIES);
+        if (relyingParties instanceof Collection) {
+            relyingPartyCondition = new RelyingPartyIdPredicate((Collection<String>) relyingParties);
+        } else if (relyingParties instanceof String) {
+            final Collection<String> parsed = StringSupport.normalizeStringCollection(
+                    StringSupport.stringToList((String) relyingParties, " "));
+            relyingPartyCondition = new RelyingPartyIdPredicate(parsed);
+        } else if (relyingParties != null) {
+            log.error("{} property did not contain a Collection or String, ignored", PROP_RELYINGPARTIES);
+        }
+        
+        if (effectiveCondition == null) {
+            return relyingPartyCondition;
+        } else if (relyingPartyCondition != null) {
+            return effectiveCondition.and(relyingPartyCondition);
+        } else {
+            return effectiveCondition;
         }
     }
 

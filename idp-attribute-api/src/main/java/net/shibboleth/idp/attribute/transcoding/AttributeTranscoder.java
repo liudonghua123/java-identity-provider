@@ -30,6 +30,7 @@ import net.shibboleth.idp.attribute.AttributeDecodingException;
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
+import net.shibboleth.utilities.java.support.component.InitializableComponent;
 
 /**
  * Transcoders are objects that support both attribute encoding and decoding for bidirectional
@@ -45,7 +46,7 @@ import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
  * @param <T> the type of object supported
  */
 @ThreadSafe
-public interface AttributeTranscoder<T> {
+public interface AttributeTranscoder<T> extends InitializableComponent {
 
     /**
      * Get the class representing the type of object supported by this transcoder.

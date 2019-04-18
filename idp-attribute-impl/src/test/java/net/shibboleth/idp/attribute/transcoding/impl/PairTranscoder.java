@@ -53,7 +53,8 @@ public class PairTranscoder extends AbstractAttributeTranscoder<Pair> {
     }
 
     /** {@inheritDoc} */
-    public Pair encode(ProfileRequestContext profileRequestContext, IdPAttribute attribute, Class<? extends Pair> to, Properties properties)
+    @Override
+    public Pair doEncode(ProfileRequestContext profileRequestContext, IdPAttribute attribute, Class<? extends Pair> to, Properties properties)
             throws AttributeEncodingException {
         
         final String name = StringSupport.trimOrNull(properties.getProperty("name"));
@@ -74,7 +75,8 @@ public class PairTranscoder extends AbstractAttributeTranscoder<Pair> {
     }
 
     /** {@inheritDoc} */
-    public IdPAttribute decode(ProfileRequestContext profileRequestContext, Pair input, Properties properties)
+    @Override
+    public IdPAttribute doDecode(ProfileRequestContext profileRequestContext, Pair input, Properties properties)
             throws AttributeDecodingException {
        
         final String id = StringSupport.trimOrNull(properties.getProperty(AttributeTranscoderRegistry.PROP_ID));

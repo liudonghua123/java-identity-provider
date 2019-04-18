@@ -90,7 +90,7 @@ public class SAML2ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
         final SAML2ScopedStringAttributeTranscoder transcoder = new SAML2ScopedStringAttributeTranscoder();
         transcoder.initialize();
         
-        registry.setNamingRegistry(Collections.singletonMap(
+        registry.addToNamingRegistry(Collections.singletonMap(
                 transcoder.getEncodedType(), new AbstractSAML2AttributeTranscoder.NamingFunction()));
                 
         final Map<String,Collection<Properties>> mappings = new HashMap<>();
@@ -106,7 +106,7 @@ public class SAML2ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
         
         mappings.put(ATTR_NAME, Collections.singletonList(ruleset1));
         
-        registry.setTranscoderRegistry(mappings);
+        registry.addToTranscoderRegistry(mappings);
         
         registry.initialize();
     }

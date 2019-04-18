@@ -44,6 +44,12 @@ public interface AttributeTranscoderRegistry extends IdentifiedComponent {
     /** Property name for accessing {@link AttributeTranscoder} object to use. */
     @Nonnull @NotEmpty static final String PROP_TRANSCODER = "transcoder";
     
+    /** Property name for accessing an activation condition object to apply. */
+    @Nonnull @NotEmpty static final String PROP_CONDITION = "activationCondition";
+
+    /** Property name for accessing relying parties to wrap an activation condition around. */
+    @Nonnull @NotEmpty static final String PROP_RELYINGPARTIES = "relyingParties";
+    
     /**
      * Obtains a set of instructions for encoding an input {@link IdPAttribute} into a target type.
      * 

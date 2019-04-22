@@ -212,6 +212,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             }
         } else if (!(transcoder instanceof AttributeTranscoder)) {
             log.warn("Transcoding rule for {} missing {} property", id, PROP_TRANSCODER);
+            return;
         }
 
         final Class<?> type = ((AttributeTranscoder) transcoder).getEncodedType();

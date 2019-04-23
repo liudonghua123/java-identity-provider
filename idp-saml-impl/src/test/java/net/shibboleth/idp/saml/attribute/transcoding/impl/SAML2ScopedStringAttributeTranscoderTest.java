@@ -171,7 +171,7 @@ public class SAML2ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
     
     @Test(expectedExceptions = {AttributeEncodingException.class,}) public void inappropriate() throws Exception {
         final int[] intArray = {1, 2, 3, 4};
-        final Collection<? extends IdPAttributeValue<?>> values =
+        final Collection<IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}), new IdPAttributeValue<Object>() {
                     @Override
                     public Object getValue() {
@@ -194,7 +194,7 @@ public class SAML2ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
     }
     
     @Test public void single() throws Exception {
-        final Collection<? extends IdPAttributeValue<?>> values =
+        final Collection<IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}),
                         new ScopedStringAttributeValue(STRING_1, SCOPE_1),
                         new StringAttributeValue(STRING_1),
@@ -232,7 +232,7 @@ public class SAML2ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
     }
 
     @Test public void singleRequested() throws Exception {
-        final Collection<? extends IdPAttributeValue<?>> values =
+        final Collection<IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}),
                         new ScopedStringAttributeValue(STRING_1, SCOPE_1));
 
@@ -323,7 +323,7 @@ public class SAML2ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
     }
     
     @Test public void multi() throws Exception {
-        final Collection<? extends IdPAttributeValue<?>> values =
+        final Collection<IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}),
                         new ScopedStringAttributeValue(STRING_1, SCOPE_1),
                         new ScopedStringAttributeValue(STRING_2, SCOPE_2));

@@ -173,7 +173,7 @@ public class SAML2XMLObjectAttributeTranscoderTest extends OpenSAMLInitBaseTestC
     
     @Test(expectedExceptions = {AttributeEncodingException.class,}) public void inappropriate() throws Exception {
         final int[] intArray = {1, 2, 3, 4};
-        final Collection<? extends IdPAttributeValue<?>> values =
+        final Collection<IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}), new IdPAttributeValue<Object>() {
                     @Override
                     public Object getValue() {
@@ -196,7 +196,7 @@ public class SAML2XMLObjectAttributeTranscoderTest extends OpenSAMLInitBaseTestC
     }
     
     @Test public void single() throws Exception {
-        final List<? extends IdPAttributeValue<?>> values =
+        final List<IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}), objectFor(STRING_1));
 
         final IdPAttribute inputAttribute = new IdPAttribute(ATTR_NAME);
@@ -226,7 +226,7 @@ public class SAML2XMLObjectAttributeTranscoderTest extends OpenSAMLInitBaseTestC
     }
 
     @Test public void singleRequested() throws Exception {
-        final List<? extends IdPAttributeValue<?>> values =
+        final List<IdPAttributeValue<?>> values =
                 Arrays.asList(new ByteAttributeValue(new byte[] {1, 2, 3,}), objectFor(STRING_1));
 
         final IdPRequestedAttribute inputAttribute = new IdPRequestedAttribute(ATTR_NAME);
@@ -318,7 +318,7 @@ public class SAML2XMLObjectAttributeTranscoderTest extends OpenSAMLInitBaseTestC
     }
     
     @Test public void multi() throws Exception {
-        final List<? extends IdPAttributeValue<?>> values =
+        final List<IdPAttributeValue<?>> values =
                 Arrays.asList(objectFor(STRING_1), objectFor(STRING_2));
 
         final IdPAttribute inputAttribute = new IdPAttribute(ATTR_NAME);

@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.shibboleth.idp.attribute.context.AttributeContext;
+import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.config.navigate.IdentifierGenerationStrategyLookupFunction;
 import net.shibboleth.idp.profile.context.RelyingPartyContext;
@@ -34,9 +35,11 @@ import org.opensaml.profile.context.ProfileRequestContext;
 
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
+import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.security.IdentifierGenerationStrategy;
+import net.shibboleth.utilities.java.support.service.ReloadableService;
 
 import org.opensaml.messaging.context.navigate.ChildContextLookup;
 import org.slf4j.Logger;
@@ -79,6 +82,9 @@ public abstract class BaseAddAttributeStatementToAssertion extends AbstractProfi
      */
     @Nonnull private Function<ProfileRequestContext,AttributeContext> attributeContextLookupStrategy;
 
+    /** Transcoder registry service object. */
+    @NonnullAfterInit private ReloadableService<AttributeTranscoderRegistry> transcoderRegistry;
+    
     /** AttributeContext to use. */
     @Nullable private AttributeContext attributeCtx;
 
@@ -187,6 +193,26 @@ public abstract class BaseAddAttributeStatementToAssertion extends AbstractProfi
 
         issuerLookupStrategy = Constraint.isNotNull(strategy, "Issuer lookup strategy cannot be null");
     }
+
+    /**
+     * Gets the registry of transcoding rules to apply to encode attributes.
+     * 
+     * @return registry
+     */
+    @NonnullAfterInit public ReloadableService<AttributeTranscoderRegistry> getTranscoderRegistry() {
+        return transcoderRegistry;
+    }
+    
+    /**
+     * Sets the registry of transcoding rules to apply to encode attributes.
+     * 
+     * @param registry registry service interface
+     */
+    public void setTranscoderRegistry(@Nonnull final ReloadableService<AttributeTranscoderRegistry> registry) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        
+        transcoderRegistry = Constraint.isNotNull(registry, "AttributeTranscoderRegistry cannot be null");
+    }
     
     /**
      * Get the {@link AttributeContext} to encode.
@@ -218,6 +244,16 @@ public abstract class BaseAddAttributeStatementToAssertion extends AbstractProfi
         return issuerId;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected void doInitialize() throws ComponentInitializationException {
+        super.doInitialize();
+        
+        if (transcoderRegistry == null) {
+            throw new ComponentInitializationException("AttributeTranscoderRegistry cannot be null");
+        }
+    }
+    
     /** {@inheritDoc} */
     @Override
     protected boolean doPreExecute(@Nonnull final ProfileRequestContext profileRequestContext) {

@@ -81,10 +81,23 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     /**
      * Installs registry of naming functions mapped against the types of objects they support.
      * 
+     * @param <T> type of object
+     * @param type class of object
+     * @param f naming function to install
+     */
+    public <T> void addToNamingRegistry(@Nonnull final Class<T> type, @Nonnull final Function<T,String> f) {
+        Constraint.isNotNull(type, "Type cannot be null");
+        Constraint.isNotNull(f, "Naming function cannot be null");
+        
+        namingFunctionRegistry.put(type, f);
+    }
+    
+    /**
+     * Installs registry of naming functions mapped against the types of objects they support.
+     * 
      * @param registry map of types to naming functions
      */
     public void addToNamingRegistry(@Nonnull @NonnullElements final Map<Class<?>,Function<?,String>> registry) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         
         if (registry == null) {
             return;
@@ -104,19 +117,19 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * 
      * @param registry mappings from internal name to transcoding rules
      */
-    public void addToTranscoderRegistry(@Nonnull @NonnullElements final Map<String,Collection<Properties>> registry) {
-        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+    public void addToTranscoderRegistry(
+            @Nonnull @NonnullElements final Map<String,Collection<Map<String,Object>>> registry) {
 
         if (registry == null) {
             return;
         }
         
-        for (final Map.Entry<String,Collection<Properties>> entry : registry.entrySet()) {
+        for (final Map.Entry<String,Collection<Map<String,Object>>> entry : registry.entrySet()) {
             
             final String internalId = StringSupport.trimOrNull(entry.getKey());
             if (internalId != null && entry.getValue() != null && !entry.getValue().isEmpty()) {
 
-                for (final Properties props : Collections2.filter(entry.getValue(), Predicates.notNull())) {
+                for (final Map<String,Object> props : Collections2.filter(entry.getValue(), Predicates.notNull())) {
                     
                     final Predicate activationCondition = buildActivationCondition(props);
                     if (activationCondition != null) {
@@ -196,7 +209,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * @param id name of the {@link IdPAttribute} to map to/from
      * @param ruleset transcoding rules
      */
-    private void addMapping(@Nonnull @NotEmpty final String id, @Nonnull final Properties ruleset) {
+    private void addMapping(@Nonnull @NotEmpty final String id, @Nonnull final Map<String,Object> ruleset) {
 
         Object transcoder = ruleset.get(PROP_TRANSCODER);
         if (transcoder instanceof String) {
@@ -215,14 +228,15 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             return;
         }
 
+        final Properties copy = new Properties();
+        copy.putAll(ruleset);
+        copy.put(PROP_TRANSCODER, transcoder);
+
         final Class<?> type = ((AttributeTranscoder) transcoder).getEncodedType();
-        final String targetName = ((AttributeTranscoder) transcoder).getEncodedName(ruleset);
+        final String targetName = ((AttributeTranscoder) transcoder).getEncodedName(copy);
         if (targetName != null) {
-
-            final Properties copy = new Properties();
-            copy.putAll(ruleset);
-
-            copy.put(PROP_TRANSCODER, transcoder);
+            
+            log.debug("Attribute mapping: {} <-> {} via {}", id, targetName, transcoder.getClass().getSimpleName());
             
             // Install mapping back to IdPAttribute's name.
             copy.setProperty(PROP_ID, id);
@@ -255,7 +269,8 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * 
      * @return a predicate to install under the ruleset's {@link #PROP_CONDITION}
      */
-    @Nullable private Predicate<ProfileRequestContext> buildActivationCondition(@Nonnull final Properties ruleset) {
+    @Nullable private Predicate<ProfileRequestContext> buildActivationCondition(
+            @Nonnull final Map<String,Object> ruleset) {
         
         Predicate effectiveCondition = null;
         

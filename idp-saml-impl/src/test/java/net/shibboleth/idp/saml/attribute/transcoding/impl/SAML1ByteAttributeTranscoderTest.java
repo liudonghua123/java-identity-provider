@@ -89,16 +89,15 @@ public class SAML1ByteAttributeTranscoderTest extends OpenSAMLInitBaseTestCase {
         final SAML1ByteAttributeTranscoder transcoder = new SAML1ByteAttributeTranscoder();
         transcoder.initialize();
         
-        registry.addToNamingRegistry(Collections.singletonMap(
-                transcoder.getEncodedType(), new AbstractSAML1AttributeTranscoder.NamingFunction()));
+        registry.addToNamingRegistry(transcoder.getEncodedType(), new AbstractSAML1AttributeTranscoder.NamingFunction());
         
-        final Map<String,Collection<Properties>> mappings = new HashMap<>();
+        final Map<String,Collection<Map<String,Object>>> mappings = new HashMap<>();
         
-        final Properties ruleset1 = new Properties();
+        final Map<String,Object> ruleset1 = new HashMap<>();
         ruleset1.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         ruleset1.put(AbstractSAMLAttributeTranscoder.PROP_ENCODE_TYPE, true);
-        ruleset1.setProperty(AbstractSAMLAttributeTranscoder.PROP_NAME, ATTR_NAME);
-        ruleset1.setProperty(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, ATTR_NAMESPACE);
+        ruleset1.put(AbstractSAMLAttributeTranscoder.PROP_NAME, ATTR_NAME);
+        ruleset1.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, ATTR_NAMESPACE);
         
         mappings.put(ATTR_NAME, Collections.singletonList(ruleset1));
         

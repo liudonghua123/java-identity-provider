@@ -62,6 +62,20 @@
         p:beanPostProcessors-ref="shibboleth.IdentifiableBeanPostProcessor"
         p:beanFactoryPostProcessors-ref="shibboleth.PropertySourcesPlaceholderConfigurer" />
 
+    <bean id="shibboleth.AttributeRegistryService" class="net.shibboleth.ext.spring.service.ReloadableSpringService" 
+        c:claz="net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl"
+          p:serviceConfigurations-ref="#{
+            getObject('%{idp.service.attribute.registry.resources:shibboleth.AttributeRegistryResources}'.trim()) != null
+                ? '%{idp.service.attribute.registry.resources:shibboleth.AttributeRegistryResources}'.trim()
+                : 'shibboleth.DefaultAttributeRegistryResources' }"
+        p:failFast="%{idp.service.attribute.registry.failFast:%{idp.service.failFast:false}}"
+        p:reloadCheckDelay="%{idp.service.attribute.registry.checkInterval:PT0S}"
+        p:beanPostProcessors-ref="shibboleth.IdentifiableBeanPostProcessor"
+        p:beanFactoryPostProcessors-ref="shibboleth.PropertySourcesPlaceholderConfigurer" />
+    <util:list id ="shibboleth.DefaultAttributeRegistryResources">
+        <value>%{idp.home}/conf/attribute-registry.xml</value>
+    </util:list>
+
     <bean id="shibboleth.RelyingPartyResolverService" class="net.shibboleth.ext.spring.service.ReloadableSpringService"
             p:serviceConfigurations-ref="#{'%{idp.service.relyingparty.resources:shibboleth.RelyingPartyResolverResources}'.trim()}"
             p:failFast="%{idp.service.relyingparty.failFast:%{idp.service.failFast:false}}"

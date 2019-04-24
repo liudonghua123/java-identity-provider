@@ -56,26 +56,25 @@ public class AttributeTranscoderRegistryImplTest {
         registry = new AttributeTranscoderRegistryImpl();
         registry.setId("test");
         
-        registry.addToNamingRegistry(Collections.singletonMap(
-                Pair.class, (Pair p) -> "{Pair}" + p.getFirst().toString()));
+        registry.addToNamingRegistry(Pair.class, (Pair p) -> "{Pair}" + p.getFirst().toString());
         
         final PairTranscoder transcoder = new PairTranscoder();
         transcoder.initialize();
         
-        final Map<String,Collection<Properties>> mappings = new HashMap<>();
+        final Map<String,Collection<Map<String,Object>>> mappings = new HashMap<>();
         
-        final Properties ruleset1 = new Properties();
+        final Map<String,Object> ruleset1 = new HashMap<>();
         ruleset1.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
-        ruleset1.setProperty("name", "bar");
+        ruleset1.put("name", "bar");
         
-        final Properties ruleset2 = new Properties();
+        final Map<String,Object> ruleset2 = new HashMap<>();
         ruleset2.put(AttributeTranscoderRegistry.PROP_TRANSCODER, "net.shibboleth.idp.attribute.transcoding.impl.PairTranscoder");
-        ruleset2.setProperty("name", "baz");
+        ruleset2.put("name", "baz");
         
-        final Properties ruleset3 = new Properties();
+        final Map<String,Object> ruleset3 = new HashMap<>();
         ruleset3.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         ruleset3.put(AttributeTranscoderRegistry.PROP_CONDITION, Predicates.alwaysFalse());
-        ruleset3.setProperty("name", "ban");
+        ruleset3.put("name", "ban");
         
         mappings.put("foo", Arrays.asList(ruleset1, ruleset2, ruleset3));
         mappings.put("foo2", Collections.singletonList(ruleset2));

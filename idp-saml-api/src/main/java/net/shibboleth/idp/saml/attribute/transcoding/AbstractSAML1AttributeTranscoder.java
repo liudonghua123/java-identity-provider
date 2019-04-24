@@ -120,7 +120,9 @@ public abstract class AbstractSAML1AttributeTranscoder<EncodedType extends IdPAt
             ((Attribute) samlAttribute).getAttributeValues().addAll(attributeValues);
         } else if (to.equals(AttributeDesignator.class)) {
             samlAttribute = designatorBuilder.buildObject();
-            log.warn("Lossy conversion to AttributeDesignator");
+            if (!attributeValues.isEmpty()) {
+                log.warn("Lossy conversion to AttributeDesignator");
+            }
         } else {
             throw new AttributeEncodingException("Unsupported target object type: " + to.getName());
         }

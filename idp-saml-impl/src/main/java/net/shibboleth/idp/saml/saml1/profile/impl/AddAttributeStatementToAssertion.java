@@ -19,7 +19,6 @@ package net.shibboleth.idp.saml.saml1.profile.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -29,9 +28,7 @@ import javax.annotation.Nullable;
 import net.shibboleth.idp.attribute.AttributeEncoder;
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
-import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
-import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
 import net.shibboleth.idp.profile.IdPEventIds;
 import net.shibboleth.idp.saml.attribute.encoding.SAML1AttributeEncoder;
 import net.shibboleth.idp.saml.profile.impl.BaseAddAttributeStatementToAssertion;
@@ -73,7 +70,7 @@ import com.google.common.collect.Collections2;
  * @event {@link EventIds#INVALID_MSG_CTX}
  * @event {@link IdPEventIds#UNABLE_ENCODE_ATTRIBUTE}
  */
-public class AddAttributeStatementToAssertion extends BaseAddAttributeStatementToAssertion {
+public class AddAttributeStatementToAssertion extends BaseAddAttributeStatementToAssertion<Attribute> {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(AddAttributeStatementToAssertion.class);
@@ -186,32 +183,14 @@ public class AddAttributeStatementToAssertion extends BaseAddAttributeStatementT
 
         log.debug("{} Attempting to encode attribute {} as a SAML 1 Attribute", getLogPrefix(), attribute.getId());
         
-        final Collection<Properties> transcodingRules = registry.getTranscodingProperties(attribute, Attribute.class);
-        if (transcodingRules.isEmpty()) {
-            log.debug("{} Attribute {} does not have any transcoding rules, nothing to do", getLogPrefix(),
-                    attribute.getId());
-            // TODO: add return once legacy code is removed
-        }
-        
         boolean added = false;
-        
-        for (final Properties rules : transcodingRules) {
-            try {
-                final AttributeTranscoder<Attribute> transcoder = TranscoderSupport.getTranscoder(rules);
-                final Attribute encodedAttribute =
-                        transcoder.encode(profileRequestContext, attribute, Attribute.class, rules);
-                if (encodedAttribute != null) {
-                    results.add(encodedAttribute);
-                }
-            } catch (final AttributeEncodingException e) {
-                if (isIgnoringUnencodableAttributes()) {
-                    log.debug("{} Unable to encode attribute {} as SAML 1 attribute", getLogPrefix(),
-                            attribute.getId(), e);
-                } else {
-                    throw e;
-                }
-            }
+
+        // Uses the new registry.
+        if (super.encodeAttribute(registry, profileRequestContext, attribute, Attribute.class, results) > 0) {
+            added = true;
         }
+        
+        // TODO: migrate legacy code into an alternate registry call via resolver
         
         final Set<AttributeEncoder<?>> encoders = attribute.getEncoders();
         if (encoders.isEmpty()) {

@@ -56,30 +56,33 @@ public class AttributeTranscoderRegistryImplTest {
         registry = new AttributeTranscoderRegistryImpl();
         registry.setId("test");
         
-        registry.addToNamingRegistry(Pair.class, (Pair p) -> "{Pair}" + p.getFirst().toString());
+        registry.setNamingRegistry(Collections.singletonMap(Pair.class, (Pair p) -> "{Pair}" + p.getFirst().toString()));
         
         final PairTranscoder transcoder = new PairTranscoder();
         transcoder.initialize();
         
-        final Map<String,Collection<Map<String,Object>>> mappings = new HashMap<>();
-        
         final Map<String,Object> ruleset1 = new HashMap<>();
+        ruleset1.put(AttributeTranscoderRegistry.PROP_ID, "foo");
         ruleset1.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         ruleset1.put("name", "bar");
         
         final Map<String,Object> ruleset2 = new HashMap<>();
+        ruleset2.put(AttributeTranscoderRegistry.PROP_ID, "foo");
         ruleset2.put(AttributeTranscoderRegistry.PROP_TRANSCODER, "net.shibboleth.idp.attribute.transcoding.impl.PairTranscoder");
         ruleset2.put("name", "baz");
         
         final Map<String,Object> ruleset3 = new HashMap<>();
+        ruleset3.put(AttributeTranscoderRegistry.PROP_ID, "foo");
         ruleset3.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         ruleset3.put(AttributeTranscoderRegistry.PROP_CONDITION, Predicates.alwaysFalse());
         ruleset3.put("name", "ban");
+
+        final Map<String,Object> ruleset4 = new HashMap<>();
+        ruleset4.put(AttributeTranscoderRegistry.PROP_ID, "foo2");
+        ruleset4.put(AttributeTranscoderRegistry.PROP_TRANSCODER, "net.shibboleth.idp.attribute.transcoding.impl.PairTranscoder");
+        ruleset4.put("name", "baz");
         
-        mappings.put("foo", Arrays.asList(ruleset1, ruleset2, ruleset3));
-        mappings.put("foo2", Collections.singletonList(ruleset2));
-        
-        registry.addToTranscoderRegistry(mappings);
+        registry.setTranscoderRegistry(Arrays.asList(ruleset1, ruleset2, ruleset3, ruleset4));
         
         registry.initialize();
     }

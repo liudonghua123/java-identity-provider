@@ -18,7 +18,6 @@
 package net.shibboleth.idp.saml.saml1.profile.impl;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,34 +96,34 @@ public class AddAttributeStatementToAssertionTest extends OpenSAMLInitBaseTestCa
         
         registry = new AttributeTranscoderRegistryImpl();
         registry.setId("test");
-        registry.initialize();
         
-        registry.addToNamingRegistry(AttributeDesignator.class, new AbstractSAML1AttributeTranscoder.NamingFunction());
+        registry.setNamingRegistry(Collections.singletonMap(AttributeDesignator.class,
+                new AbstractSAML1AttributeTranscoder.NamingFunction()));
 
         final SAML1StringAttributeTranscoder transcoder = new SAML1StringAttributeTranscoder();
         transcoder.initialize();
         
-        final Map<String,Collection<Map<String,Object>>> rulesets = new HashMap<>();
-        
         final Map<String,Object> rule1_1 = new HashMap<>();
+        rule1_1.put(AttributeTranscoderRegistry.PROP_ID, MY_NAME_1);
         rule1_1.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         rule1_1.put(AbstractSAML1AttributeTranscoder.PROP_NAME, MY_NAME_1);
         rule1_1.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, MY_NAMESPACE);
 
         final Map<String,Object> rule1_2 = new HashMap<>();
+        rule1_2.put(AttributeTranscoderRegistry.PROP_ID, MY_NAME_1);
         rule1_2.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         rule1_2.put(AbstractSAML1AttributeTranscoder.PROP_NAME, MY_ALTNAME_1);
         rule1_2.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, MY_NAMESPACE);
 
         final Map<String,Object> rule2_1 = new HashMap<>();
+        rule2_1.put(AttributeTranscoderRegistry.PROP_ID, MY_NAME_2);
         rule2_1.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         rule2_1.put(AbstractSAML1AttributeTranscoder.PROP_NAME, MY_NAME_2);
         rule2_1.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, MY_NAMESPACE);
 
-        rulesets.put(MY_NAME_1, Arrays.asList(rule1_1, rule1_2));
-        rulesets.put(MY_NAME_2, Collections.singletonList(rule2_1));
-
-        registry.addToTranscoderRegistry(rulesets);
+        registry.setTranscoderRegistry(Arrays.asList(rule1_1, rule1_2, rule2_1));
+        
+        registry.initialize();
         
         action = new AddAttributeStatementToAssertion();
         action.setTranscoderRegistry(new RegistryService(registry));
@@ -170,15 +169,26 @@ public class AddAttributeStatementToAssertionTest extends OpenSAMLInitBaseTestCa
 
     /** Test that the action ignores attribute encoding errors. */
     @Test public void testIgnoreAttributeEncodingErrors() throws Exception {
+
+        final AttributeTranscoderRegistryImpl localregistry = new AttributeTranscoderRegistryImpl();
+        localregistry.setId("test");
+        
+        localregistry.setNamingRegistry(Collections.singletonMap(AttributeDesignator.class,
+                new AbstractSAML1AttributeTranscoder.NamingFunction()));
+        
         final MockSAML1StringAttributeTranscoder transcoder = new MockSAML1StringAttributeTranscoder();
         transcoder.initialize();
-
+        
         final Map<String,Object> rule = new HashMap<>();
+        rule.put(AttributeTranscoderRegistry.PROP_ID, MY_NAME_1);
         rule.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         rule.put(AbstractSAML1AttributeTranscoder.PROP_NAME, MY_NAME_1);
         rule.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, MY_NAMESPACE);
         
-        registry.addToTranscoderRegistry(Collections.singletonMap(MY_NAME_1, Collections.singletonList(rule)));
+        localregistry.setTranscoderRegistry(Collections.singletonList(rule));
+        localregistry.initialize();
+        
+        action.setTranscoderRegistry(new RegistryService(localregistry));
 
         final IdPAttribute attribute = new IdPAttribute(MY_NAME_1);
         attribute.setValues(Arrays.asList(new StringAttributeValue(MY_VALUE_1)));
@@ -195,15 +205,26 @@ public class AddAttributeStatementToAssertionTest extends OpenSAMLInitBaseTestCa
 
     /** Test that the action returns the correct transition when an attribute encoding error occurs. */
     @Test public void failOnAttributeEncodingErrors() throws Exception {
+        
+        final AttributeTranscoderRegistryImpl localregistry = new AttributeTranscoderRegistryImpl();
+        localregistry.setId("test");
+        
+        localregistry.setNamingRegistry(Collections.singletonMap(AttributeDesignator.class,
+                new AbstractSAML1AttributeTranscoder.NamingFunction()));
+
         final MockSAML1StringAttributeTranscoder transcoder = new MockSAML1StringAttributeTranscoder();
         transcoder.initialize();
 
         final Map<String,Object> rule = new HashMap<>();
+        rule.put(AttributeTranscoderRegistry.PROP_ID, MY_NAME_1);
         rule.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         rule.put(AbstractSAML1AttributeTranscoder.PROP_NAME, MY_NAME_1);
         rule.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, MY_NAMESPACE);
         
-        registry.addToTranscoderRegistry(Collections.singletonMap(MY_NAME_1, Collections.singletonList(rule)));
+        localregistry.setTranscoderRegistry(Collections.singletonList(rule));
+        localregistry.initialize();
+        
+        action.setTranscoderRegistry(new RegistryService(localregistry));
 
         final IdPAttribute attribute = new IdPAttribute(MY_NAME_1);
         attribute.setValues(Arrays.asList(new StringAttributeValue(MY_VALUE_1)));

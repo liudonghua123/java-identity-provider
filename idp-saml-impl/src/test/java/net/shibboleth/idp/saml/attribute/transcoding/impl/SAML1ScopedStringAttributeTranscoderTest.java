@@ -96,22 +96,19 @@ public class SAML1ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
         final SAML1ScopedStringAttributeTranscoder transcoder = new SAML1ScopedStringAttributeTranscoder();
         transcoder.initialize();
         
-        registry.addToNamingRegistry(transcoder.getEncodedType(), new AbstractSAML1AttributeTranscoder.NamingFunction());
-                
-        final Map<String,Collection<Map<String,Object>>> mappings = new HashMap<>();
+        registry.setNamingRegistry(Collections.singletonMap(transcoder.getEncodedType(),
+                new AbstractSAML1AttributeTranscoder.NamingFunction()));
         
         final Map<String,Object> ruleset1 = new HashMap<>();
+        ruleset1.put(AttributeTranscoderRegistry.PROP_ID, ATTR_NAME);
         ruleset1.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
         ruleset1.put(AbstractSAMLAttributeTranscoder.PROP_ENCODE_TYPE, true);
-        ruleset1.put(AbstractSAMLAttributeTranscoder.PROP_NAME, ATTR_NAME);
         ruleset1.put(AbstractSAMLAttributeTranscoder.PROP_NAME, ATTR_NAME);
         ruleset1.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, ATTR_NAMESPACE);
         ruleset1.put(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_DELIMITER, DELIMITER);
         ruleset1.put(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_TYPE, "attribute");
         
-        mappings.put(ATTR_NAME, Collections.singletonList(ruleset1));
-        
-        registry.addToTranscoderRegistry(mappings);
+        registry.setTranscoderRegistry(Collections.singletonList(ruleset1));
         
         registry.initialize();
     }

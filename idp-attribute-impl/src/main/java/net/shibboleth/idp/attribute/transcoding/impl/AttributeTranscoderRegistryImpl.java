@@ -77,27 +77,16 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     @Override @Nonnull public AttributeTranscoderRegistry getComponent() {
         return this;
     }
-
-    /**
-     * Installs registry of naming functions mapped against the types of objects they support.
-     * 
-     * @param <T> type of object
-     * @param type class of object
-     * @param f naming function to install
-     */
-    public <T> void addToNamingRegistry(@Nonnull final Class<T> type, @Nonnull final Function<T,String> f) {
-        Constraint.isNotNull(type, "Type cannot be null");
-        Constraint.isNotNull(f, "Naming function cannot be null");
-        
-        namingFunctionRegistry.put(type, f);
-    }
     
     /**
      * Installs registry of naming functions mapped against the types of objects they support.
      * 
      * @param registry map of types to naming functions
      */
-    public void addToNamingRegistry(@Nonnull @NonnullElements final Map<Class<?>,Function<?,String>> registry) {
+    public void setNamingRegistry(@Nonnull @NonnullElements final Map<Class<?>,Function<?,String>> registry) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        
+        namingFunctionRegistry.clear();
         
         if (registry == null) {
             return;
@@ -113,33 +102,41 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     /**
      * Installs the transcoder mappings en masse.
      * 
-     * <p>Each map entry connects an {@link IdPAttribute} name to the rules for transcoding to/from it.</p>
+     * <p>Each map connects an {@link IdPAttribute} name to the rules for transcoding to/from it.</p>
      * 
-     * @param registry mappings from internal name to transcoding rules
+     * <p>The rules MUST contain at least:</p>
+     * <ul>
+     *  <li>{@link #PROP_ID} - an {@link AttributeTranscoder} instance supporting the type</li>
+     *  <li>{@link #PROP_TRANSCODER} - an {@link AttributeTranscoder} instance supporting the type</li>
+     * </ul>
+     * 
+     * Transcoders will generally require particular properties in their own right to function.
+     * 
+     * @param mappings transcoding rulesets
      */
-    public void addToTranscoderRegistry(
-            @Nonnull @NonnullElements final Map<String,Collection<Map<String,Object>>> registry) {
+    public void setTranscoderRegistry(@Nonnull @NonnullElements final Collection<Map<String,Object>> mappings) {
+        ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
+        
+       transcodingRegistry.clear();
 
-        if (registry == null) {
+        if (mappings == null) {
             return;
         }
         
-        for (final Map.Entry<String,Collection<Map<String,Object>>> entry : registry.entrySet()) {
+        for (final Map<String,Object> mapping : Collections2.filter(mappings, Predicates.notNull())) {
             
-            final String internalId = StringSupport.trimOrNull(entry.getKey());
-            if (internalId != null && entry.getValue() != null && !entry.getValue().isEmpty()) {
+            final Object prop = mapping.get(PROP_ID);
+            final String internalId = StringSupport.trimOrNull(prop instanceof String ? (String) prop : null);
+            if (internalId != null) {
 
-                for (final Map<String,Object> props : Collections2.filter(entry.getValue(), Predicates.notNull())) {
-                    
-                    final Predicate activationCondition = buildActivationCondition(props);
-                    if (activationCondition != null) {
-                        props.put(PROP_CONDITION, activationCondition);
-                    } else {
-                        props.remove(PROP_CONDITION);
-                    }
-                    
-                    addMapping(internalId, props);
+                final Predicate activationCondition = buildActivationCondition(mapping);
+                if (activationCondition != null) {
+                    mapping.put(PROP_CONDITION, activationCondition);
+                } else {
+                    mapping.remove(PROP_CONDITION);
                 }
+                
+                addMapping(internalId, mapping);
             }
         }
     }
@@ -202,7 +199,6 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * 
      * <p>The rules MUST contain at least:</p>
      * <ul>
-     *  <li>{@link #PROP_TYPE} - a source/target class for the transcoding rules</li>
      *  <li>{@link #PROP_TRANSCODER} - an {@link AttributeTranscoder} instance supporting the type</li>
      * </ul>
      * 
@@ -238,7 +234,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             
             log.debug("Attribute mapping: {} <-> {} via {}", id, targetName, transcoder.getClass().getSimpleName());
             
-            // Install mapping back to IdPAttribute's name.
+            // Install mapping back to IdPAttribute's trimmed name.
             copy.setProperty(PROP_ID, id);
             
             Multimap<Class<?>,Properties> rulesetsForIdPName = transcodingRegistry.get(id);

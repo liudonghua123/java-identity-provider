@@ -68,10 +68,10 @@ public class AttributeResolverParser implements BeanDefinitionParser {
         List<Element> children;
 
         children = configChildren.get(BaseAttributeDefinitionParser.ELEMENT_NAME);
-        SpringSupport.parseCustomElements(children, context);
+        SpringSupport.parseLazyInitCustomElements(children, context);
 
         children = configChildren.get(AbstractDataConnectorParser.ELEMENT_NAME);
-        SpringSupport.parseCustomElements(children, context);
+        SpringSupport.parseLazyInitCustomElements(children, context);
 
         return null;
     }

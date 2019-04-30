@@ -12,11 +12,6 @@
        default-init-method="initialize"
        default-destroy-method="destroy">
 
-    <bean id="AttributeTranscoderRegistry"
-        class="net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl"
-        p:namingRegistry-ref="DefaultNamingRegistry"
-        p:transcoderRegistry-ref="DefaultAttributeRegistry" />
-
     <bean id="SAML2StringTranscoder"
         class="net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2StringAttributeTranscoder" />
     <bean id="SAML2ScopedStringTranscoder"

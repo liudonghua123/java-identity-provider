@@ -4,6 +4,10 @@
 	xmlns="urn:mace:shibboleth:2.0:resolver"
 	name="SAML1_BASE64_ATTRIBUTE_NAME" 
 	namespace="SAML1_BASE64_ATTRIBUTE_NAME_SPACE"
-	xsi:schemaLocation="urn:mace:shibboleth:2.0:resolver http://shibboleth.net/schema/idp/shibboleth-attribute-resolver.xsd"
-/> 
- 
+	xsi:schemaLocation="urn:mace:shibboleth:2.0:resolver http://shibboleth.net/schema/idp/shibboleth-attribute-resolver.xsd">
+
+    <ActivationConditionScript>
+        <Script>false</Script>
+    </ActivationConditionScript>
+
+</AttributeEncoder>

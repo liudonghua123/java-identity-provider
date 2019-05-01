@@ -79,6 +79,7 @@
     </bean>
     <util:list id ="shibboleth.DefaultAttributeRegistryResources">
         <value>%{idp.home}/conf/attribute-registry.xml</value>
+        <value>%{idp.home}/conf/attribute-resolver.xml</value>
     </util:list>
 
     <bean id="shibboleth.RelyingPartyResolverService" class="net.shibboleth.ext.spring.service.ReloadableSpringService"

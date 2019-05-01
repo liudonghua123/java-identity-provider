@@ -12,6 +12,7 @@
        default-init-method="initialize"
        default-destroy-method="destroy">
 
+    <!--
     <bean id="SAML2StringTranscoder"
         class="net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2StringAttributeTranscoder" />
     <bean id="SAML2ScopedStringTranscoder"
@@ -45,6 +46,7 @@
         </map>
 
     </util:list>
+    -->
     
     <util:map id="DefaultNamingRegistry">
         <entry key="#{T(org.opensaml.saml.saml2.core.Attribute)}">

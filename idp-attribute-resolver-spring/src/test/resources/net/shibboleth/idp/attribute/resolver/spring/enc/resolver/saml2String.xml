@@ -9,5 +9,6 @@
 
     <ActivationConditionScript>
         <Script>false</Script>
-    </ActivationConditionScript>	
+    </ActivationConditionScript>
+    
 </AttributeEncoder>

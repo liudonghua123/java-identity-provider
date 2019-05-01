@@ -19,18 +19,15 @@ package net.shibboleth.idp.saml.saml2.profile.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import net.shibboleth.idp.attribute.AttributeEncoder;
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.profile.IdPEventIds;
-import net.shibboleth.idp.saml.attribute.encoding.SAML2AttributeEncoder;
 import net.shibboleth.idp.saml.profile.impl.BaseAddAttributeStatementToAssertion;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NullableElements;
@@ -43,7 +40,6 @@ import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.action.EventIds;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.SAMLObjectBuilder;
-import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AttributeStatement;
@@ -184,44 +180,10 @@ public class AddAttributeStatementToAssertion extends BaseAddAttributeStatementT
                     throws AttributeEncodingException {
 
         log.debug("{} Attempting to encode attribute {} as a SAML 2 Attribute", getLogPrefix(), attribute.getId());
-        
-        boolean added = false;
 
         // Uses the new registry.
-        if (super.encodeAttribute(registry, profileRequestContext, attribute, Attribute.class, results) > 0) {
-            added = true;
-        }
-        
-        // TODO: migrate legacy code into an alternate registry call via resolver
-        
-        final Set<AttributeEncoder<?>> encoders = attribute.getEncoders();
-        if (encoders.isEmpty()) {
-            log.debug("{} Attribute {} does not have any encoders, nothing to do", getLogPrefix(), attribute.getId());
-            return;
-        }
-
-        for (final AttributeEncoder<?> encoder : encoders) {
-            if (SAMLConstants.SAML20P_NS.equals(encoder.getProtocol())
-                    && encoder instanceof SAML2AttributeEncoder
-                    && encoder.getActivationCondition().test(profileRequestContext)) {
-                log.debug("{} Encoding attribute {} as a SAML 2 Attribute", getLogPrefix(), attribute.getId());
-                try {
-                    results.add((Attribute) encoder.encode(attribute));
-                    added = true;
-                } catch (final AttributeEncodingException e) {
-                    if (isIgnoringUnencodableAttributes()) {
-                        log.debug("{} Unable to encode attribute {} as SAML 2 attribute", getLogPrefix(),
-                                attribute.getId(), e);
-                    } else {
-                        throw e;
-                    }
-                }
-            }
-        }
-
-        if (!added) {
-            log.debug(
-                    "{} Attribute {} did not have a usable SAML 2 Attribute encoder associated with it, nothing to do",
+        if (super.encodeAttribute(registry, profileRequestContext, attribute, Attribute.class, results) == 0) {
+            log.debug("{} Attribute {} did not have SAML 2 Attribute transcoder instructions associated, nothing to do",
                     getLogPrefix(), attribute.getId());
         }
     }

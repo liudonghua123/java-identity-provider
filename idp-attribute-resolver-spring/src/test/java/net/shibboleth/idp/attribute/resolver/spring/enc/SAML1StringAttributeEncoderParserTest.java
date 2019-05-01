@@ -17,39 +17,55 @@
 
 package net.shibboleth.idp.attribute.resolver.spring.enc;
 
-import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.*;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Predicate;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.testng.annotations.Test;
 
 import net.shibboleth.idp.attribute.resolver.spring.BaseAttributeDefinitionParserTest;
 import net.shibboleth.idp.attribute.resolver.spring.enc.impl.SAML1StringAttributeEncoderParser;
-import net.shibboleth.idp.saml.attribute.encoding.impl.SAML1StringAttributeEncoder;
-import net.shibboleth.idp.saml.xml.SAMLConstants;
+import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML1AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML1StringAttributeTranscoder;
 
 /**
  * Test for {@link SAML1StringAttributeEncoderParser}.
  */
 public class SAML1StringAttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
 
-    @Test public void newNameSpace() {
-        final SAML1StringAttributeEncoder encoder =
-                getAttributeEncoder("resolver/saml1String.xml", SAML1StringAttributeEncoder.class);
+    @Test public void newNamespace() {
+        final Collection<Map<String,Object>> rules =
+                getAttributeTranscoderRule("resolver/saml1String.xml", Collection.class);
+        assertEquals(rules.size(), 1);
+        
+        final Map<String,Object> rule = rules.iterator().next();
 
-        assertEquals(encoder.getName(), "SAML1_STRING_ATTRIBUTE_NAME");
-        assertEquals(encoder.getNamespace(),"SAML1_STRING_ATTRIBUTE_NAME_SPACE");
+        assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML1StringAttributeTranscoder);
+        assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "SAML1_STRING_ATTRIBUTE_NAME");
+        assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE), "SAML1_STRING_ATTRIBUTE_NAME_SPACE");
+        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
 
     
     @Test public void defaultCase() {
-        final SAML1StringAttributeEncoder encoder =
-                getAttributeEncoder("resolver/saml1StringDefault.xml", SAML1StringAttributeEncoder.class);
+        final Collection<Map<String,Object>> rules =
+                getAttributeTranscoderRule("resolver/saml1StringDefault.xml", Collection.class);
+        assertEquals(rules.size(), 1);
+        
+        final Map<String,Object> rule = rules.iterator().next();
 
-        assertEquals(encoder.getName(), "ATTRIBUTE");
-        assertEquals(encoder.getNamespace(), SAMLConstants.SAML1_ATTR_NAMESPACE_URI);
+        assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML1StringAttributeTranscoder);
+        assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "ATTRIBUTE");
+        assertNull(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE));
+        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {
-        getAttributeEncoder("resolver/saml1StringNoName.xml", SAML1StringAttributeEncoder.class);
+        getAttributeTranscoderRule("resolver/saml1StringNoName.xml", Collection.class);
     }
+    
 }

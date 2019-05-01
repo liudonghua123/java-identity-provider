@@ -17,41 +17,56 @@
 
 package net.shibboleth.idp.attribute.resolver.spring.enc;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
+import static org.testng.Assert.*;
 
-import org.opensaml.saml.saml2.core.Attribute;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Predicate;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.testng.annotations.Test;
 
 import net.shibboleth.idp.attribute.resolver.spring.BaseAttributeDefinitionParserTest;
 import net.shibboleth.idp.attribute.resolver.spring.enc.impl.SAML2XMLObjectAttributeEncoderParser;
-import net.shibboleth.idp.saml.attribute.encoding.impl.SAML2XMLObjectAttributeEncoder;
+import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2XMLObjectAttributeTranscoder;
 
 /**
  * Test for {@link SAML2XMLObjectAttributeEncoderParser}.
  */
 public class SAML2XMLObjectAttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
 
-    @Test public void resolver() {
-        final SAML2XMLObjectAttributeEncoder encoder =
-                getAttributeEncoder("resolver/saml2XmlObject.xml", SAML2XMLObjectAttributeEncoder.class);
+    @Test public void newNameFormat() {
+        final Collection<Map<String,Object>> rules =
+                getAttributeTranscoderRule("resolver/saml2XmlObject.xml", Collection.class);
+        assertEquals(rules.size(), 1);
+        
+        final Map<String,Object> rule = rules.iterator().next();
 
-        assertEquals(encoder.getName(), "Saml2XmlObject_ATTRIBUTE_NAME");
-        assertEquals(encoder.getFriendlyName(),"Saml2XmlObject_ATTRIBUTE_FRIENDLY_NAME"); 
-        assertEquals(encoder.getNameFormat(),"Saml2XmlObject_ATTRIBUTE_NAME_FORMAT");
+        assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML2XMLObjectAttributeTranscoder);
+        assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME), "Saml2XmlObject_ATTRIBUTE_NAME");
+        assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT), "Saml2XmlObject_ATTRIBUTE_NAME_FORMAT");
+        assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME), "Saml2XmlObject_ATTRIBUTE_FRIENDLY_NAME");
+        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
 
     @Test public void defaultCase() {
-        final SAML2XMLObjectAttributeEncoder encoder =
-                getAttributeEncoder("resolver/saml2XmlObjectDefault.xml", SAML2XMLObjectAttributeEncoder.class);
+        final Collection<Map<String,Object>> rules =
+                getAttributeTranscoderRule("resolver/saml2XmlObjectDefault.xml", Collection.class);
+        assertEquals(rules.size(), 1);
+        
+        final Map<String,Object> rule = rules.iterator().next();
 
-        assertEquals(encoder.getName(), "XmlObjectName");
-        assertNull(encoder.getFriendlyName()); 
-        assertEquals(encoder.getNameFormat(), Attribute.URI_REFERENCE);
+        assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML2XMLObjectAttributeTranscoder);
+        assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME), "XmlObjectName");
+        assertNull(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT));
+        assertNull(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME));
+        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {
-        getAttributeEncoder("resolver/saml2XmlObjectNoName.xml", SAML2XMLObjectAttributeEncoder.class);
+        getAttributeTranscoderRule("resolver/saml2XmlObjectNoName.xml", Collection.class);
     }
+
 }

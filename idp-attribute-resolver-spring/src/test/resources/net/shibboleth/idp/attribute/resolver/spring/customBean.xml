@@ -10,12 +10,16 @@
                            
        default-init-method="initialize"
        default-destroy-method="destroy">
+       
     <util:map id="shibboleth.CustomScriptObject">
         <entry key="foo" value="bar"/>
-    </util:map>    
+    </util:map>
+        
     <util:map id="other.CustomScriptObject">
         <entry key="bar" value="foo"/>
-    </util:map>    
+    </util:map>
+    
+    <bean id="shibboleth.Predicate" class="com.google.common.base.Predicates" factory-method="alwaysFalse"/>
     
     <bean id="shibboleth.PropertySourcesPlaceholderConfigurer"
         class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"

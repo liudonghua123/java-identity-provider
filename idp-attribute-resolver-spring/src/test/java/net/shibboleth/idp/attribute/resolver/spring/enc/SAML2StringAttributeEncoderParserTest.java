@@ -17,75 +17,56 @@
 
 package net.shibboleth.idp.attribute.resolver.spring.enc;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertSame;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
-import org.opensaml.saml.saml2.core.Attribute;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Predicate;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.context.support.GenericApplicationContext;
 import org.testng.annotations.Test;
-
-import com.google.common.base.Predicates;
 
 import net.shibboleth.idp.attribute.resolver.spring.BaseAttributeDefinitionParserTest;
 import net.shibboleth.idp.attribute.resolver.spring.enc.impl.SAML2StringAttributeEncoderParser;
-import net.shibboleth.idp.profile.logic.ScriptedPredicate;
-import net.shibboleth.idp.saml.attribute.encoding.impl.SAML2StringAttributeEncoder;
+import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2StringAttributeTranscoder;
 
 /**
  * Test for {@link SAML2StringAttributeEncoderParser}.
  */
 public class SAML2StringAttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
   
-    @Test public void resolver() {
-        final SAML2StringAttributeEncoder encoder =
-                getAttributeEncoder("resolver/saml2String.xml", SAML2StringAttributeEncoder.class);
+    @Test public void newNameFormat() {
+        final Collection<Map<String,Object>> rules =
+                getAttributeTranscoderRule("resolver/saml2String.xml", Collection.class);
+        assertEquals(rules.size(), 1);
+        
+        final Map<String,Object> rule = rules.iterator().next();
 
-        assertEquals(encoder.getName(), "Saml2String_ATTRIBUTE_NAME");
-        assertEquals(encoder.getFriendlyName(),"Saml2String_ATTRIBUTE_FRIENDLY_NAME"); 
-        assertEquals(encoder.getNameFormat(),"Saml2String_ATTRIBUTE_NAME_FORMAT");
+        assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML2StringAttributeTranscoder);
+        assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME), "Saml2String_ATTRIBUTE_NAME");
+        assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT), "Saml2String_ATTRIBUTE_NAME_FORMAT");
+        assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME), "Saml2String_ATTRIBUTE_FRIENDLY_NAME");
+        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
     
     @Test public void defaultCase() {
-        final SAML2StringAttributeEncoder encoder =
-                getAttributeEncoder("resolver/saml2StringDefault.xml", SAML2StringAttributeEncoder.class);
+        final Collection<Map<String,Object>> rules =
+                getAttributeTranscoderRule("resolver/saml2StringDefault.xml", Collection.class);
+        assertEquals(rules.size(), 1);
+        
+        final Map<String,Object> rule = rules.iterator().next();
 
-        assertSame(encoder.getActivationCondition(), Predicates.alwaysTrue());
-        assertTrue(encoder.getActivationCondition().test(null));
-        assertEquals(encoder.getName(), "Saml2StringName");
-        assertNull(encoder.getFriendlyName()); 
-        assertEquals(encoder.getNameFormat(), Attribute.URI_REFERENCE);
+        assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML2StringAttributeTranscoder);
+        assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME), "Saml2StringName");
+        assertNull(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT));
+        assertNull(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME));
+        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {
-        getAttributeEncoder("resolver/saml2StringNoName.xml", SAML2StringAttributeEncoder.class);
+        getAttributeTranscoderRule("resolver/saml2StringNoName.xml", Collection.class);
     }
     
-    @Test public void conditional() {
-        final GenericApplicationContext context = new GenericApplicationContext();
-        setTestContext(context);
-
-        loadFile(ENCODER_FILE_PATH + "predicates.xml", context);
-        
-        final SAML2StringAttributeEncoder encoder =
-                getAttributeEncoder("resolver/saml2StringConditional.xml", SAML2StringAttributeEncoder.class, context);
-
-        assertSame(encoder.getActivationCondition(), Predicates.alwaysFalse());
-        assertFalse(encoder.getActivationCondition().test(null));
-    }
-
-    @Test public void conditionalScript() {
-        final GenericApplicationContext context = new GenericApplicationContext();
-        setTestContext(context);
-        
-        final SAML2StringAttributeEncoder encoder =
-                getAttributeEncoder("resolver/saml2String.xml", SAML2StringAttributeEncoder.class, context);
-
-        assertTrue(encoder.getActivationCondition() instanceof ScriptedPredicate);
-        assertFalse(encoder.getActivationCondition().test(null));
-    }
-
 }

@@ -224,7 +224,7 @@ public class FilterByQueriedAttributeDesignators extends AbstractProfileAction {
      * 
      * @throws AttributeDecodingException if an error occurs or no results were obtained
      */
-    protected void decodeAttributeDesignator(@Nonnull final AttributeTranscoderRegistry registry,
+    private void decodeAttributeDesignator(@Nonnull final AttributeTranscoderRegistry registry,
             @Nonnull final ProfileRequestContext profileRequestContext, @Nonnull final AttributeDesignator input,
             @Nonnull @NonnullElements @Live final Collection<String> results)
                     throws AttributeDecodingException {

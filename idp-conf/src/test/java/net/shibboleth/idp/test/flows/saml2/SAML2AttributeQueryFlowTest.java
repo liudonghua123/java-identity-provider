@@ -170,11 +170,6 @@ public class SAML2AttributeQueryFlowTest extends AbstractSAML2FlowTest {
             XSAny value = valueBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME);
             value.setTextContent("jdoe@example.org");
             designator.getAttributeValues().add(value);
-    
-            designator = designatorBuilder.buildObject();
-            designator.setNameFormat(Attribute.URI_REFERENCE);
-            designator.setName("urn:mace:dir:attribute-def:foo");
-            attributeQuery.getAttributes().add(designator);
         }
 
         final Envelope envelope = buildSOAP11Envelope(attributeQuery);

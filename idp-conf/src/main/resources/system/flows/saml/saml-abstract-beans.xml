@@ -239,10 +239,6 @@
         p:maskFailures="%{idp.service.attribute.filter.maskFailures:true}"
         p:metadataResolver-ref="shibboleth.MetadataResolver" />
 
-    <bean id="FilterByQueriedAttributes"
-        class="net.shibboleth.idp.saml.saml2.profile.impl.FilterByQueriedAttributes" scope="prototype"
-        c:mapper-ref="shibboleth.SAML2AttributesMapperService" />
-
     <bean id="PopulatePostAuthnInterceptContext"
             class="net.shibboleth.idp.profile.interceptor.impl.PopulateProfileInterceptorContext" scope="prototype"
             p:availableFlows-ref="shibboleth.AvailableInterceptFlows">

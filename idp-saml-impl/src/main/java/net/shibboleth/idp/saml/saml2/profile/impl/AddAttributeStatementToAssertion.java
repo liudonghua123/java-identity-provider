@@ -141,6 +141,9 @@ public class AddAttributeStatementToAssertion extends BaseAddAttributeStatementT
         ServiceableComponent<AttributeTranscoderRegistry> component = null;
         try {
             component = getTranscoderRegistry().getServiceableComponent();
+            if (component == null) {
+                throw new AttributeEncodingException("Attribute transoding service unavailable");
+            }
             for (final IdPAttribute attribute : Collections2.filter(attributes, Predicates.notNull())) {
                 encodeAttribute(component.getComponent(), profileRequestContext, attribute, encodedAttributes);
             }

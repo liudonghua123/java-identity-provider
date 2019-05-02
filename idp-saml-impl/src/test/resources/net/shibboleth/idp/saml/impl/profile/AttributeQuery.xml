@@ -4,6 +4,10 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xmlns="urn:oasis:names:tc:SAML:2.0:assertion" 
    Version="2.0"  ID="AQ" IssueInstant="2018-03-14T17:31:00Z">
+   <Issuer>me</Issuer>
+   <Subject>
+    <NameID>you</NameID>
+   </Subject>
    <Attribute  Name="urn:oid:1.3.6.1.4.1.5923.1.1.1.11" FriendlyName="eduPersonAssurance">
     <AttributeValue  xsi:type="xs:string">turquoise</AttributeValue>
    </Attribute>

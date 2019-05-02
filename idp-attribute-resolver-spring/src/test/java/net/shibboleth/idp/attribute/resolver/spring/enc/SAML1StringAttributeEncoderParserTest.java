@@ -37,9 +37,13 @@ import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML1StringAttributeTr
  */
 public class SAML1StringAttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
 
-    @Test public void newNamespace() {
+    @Test public void newNameFormat() {
+        newNameFormat(true);
+        newNameFormat(false);
+    }
+    private void newNameFormat(boolean value) {
         final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml1String.xml", Collection.class);
+                getAttributeTranscoderRule("resolver/saml1String.xml", Collection.class, value?"true":"false");
         assertEquals(rules.size(), 1);
         
         final Map<String,Object> rule = rules.iterator().next();
@@ -47,7 +51,7 @@ public class SAML1StringAttributeEncoderParserTest extends BaseAttributeDefiniti
         assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML1StringAttributeTranscoder);
         assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "SAML1_STRING_ATTRIBUTE_NAME");
         assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE), "SAML1_STRING_ATTRIBUTE_NAME_SPACE");
-        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
 
     

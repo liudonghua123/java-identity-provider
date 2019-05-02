@@ -38,8 +38,13 @@ import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2ByteAttributeTran
 public class SAML2Base64AttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
 
     @Test public void newNameFormat() {
+        boolTest(true);
+        boolTest(false);
+    }
+
+    private void boolTest(boolean value) {
         final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml2Base64.xml", Collection.class);
+                getAttributeTranscoderRule("resolver/saml2Base64.xml", Collection.class, value?"true":"false");
         assertEquals(rules.size(), 1);
         
         final Map<String,Object> rule = rules.iterator().next();
@@ -48,7 +53,7 @@ public class SAML2Base64AttributeEncoderParserTest extends BaseAttributeDefiniti
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME), "Saml2Base64_ATTRIBUTE_NAME");
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT), "Saml2Base64_ATTRIBUTE_NAME_FORMAT");
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME), "Saml2Base64_ATTRIBUTE_FRIENDLY_NAME");
-        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
     
     @Test public void defaultCase() {

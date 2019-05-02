@@ -38,8 +38,13 @@ import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML1ScopedStringAttri
 public class SAML1ScopedStringAttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
 
     @Test public void newNamespace() {
+        boolTest(true);
+        boolTest(false);
+    }
+
+    private void boolTest(boolean value) {
         final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml1Scoped.xml", Collection.class);
+                getAttributeTranscoderRule("resolver/saml1Scoped.xml", Collection.class, value?"true":"false");
         assertEquals(rules.size(), 1);
         
         final Map<String,Object> rule = rules.iterator().next();
@@ -50,7 +55,7 @@ public class SAML1ScopedStringAttributeEncoderParserTest extends BaseAttributeDe
         assertEquals(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_TYPE), "attribute");
         assertEquals(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_ATTR_NAME), "saml1ScopeAttrib");
         assertEquals(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_DELIMITER), "#@#");
-        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
 }
 
     

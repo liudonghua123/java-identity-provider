@@ -29,6 +29,9 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ConversionServiceFactoryBean;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.mock.env.MockPropertySource;
 import org.testng.annotations.AfterMethod;
 
 import net.shibboleth.ext.spring.config.IdentifiableBeanPostProcessor;
@@ -192,8 +195,20 @@ public abstract class BaseAttributeDefinitionParserTest extends OpenSAMLInitBase
     }
 
     protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName, final Class<Collection> claz) {
+        return getAttributeTranscoderRule(fileName, claz, (String)null);
+    }
+
+    protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName, final Class<Collection> claz, String propValue) {
 
         final GenericApplicationContext context = new GenericApplicationContext();
+
+        if (propValue != null) {
+            final MockPropertySource mockEnvVars = new MockPropertySource();
+            mockEnvVars.setProperty("the.boolean.variable", propValue);
+            final MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
+            propertySources.replace(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, mockEnvVars);
+        }
+
         setTestContext(context);
         context.setDisplayName("ApplicationContext: " + claz);
 

@@ -38,8 +38,12 @@ import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2XMLObjectAttribut
 public class SAML2XMLObjectAttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
 
     @Test public void newNameFormat() {
+        newNameFormat(true);
+        newNameFormat(false);
+    }
+    private void newNameFormat(boolean value) {
         final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml2XmlObject.xml", Collection.class);
+                getAttributeTranscoderRule("resolver/saml2XmlObject.xml", Collection.class, value?"true":"false");
         assertEquals(rules.size(), 1);
         
         final Map<String,Object> rule = rules.iterator().next();
@@ -48,7 +52,7 @@ public class SAML2XMLObjectAttributeEncoderParserTest extends BaseAttributeDefin
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME), "Saml2XmlObject_ATTRIBUTE_NAME");
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT), "Saml2XmlObject_ATTRIBUTE_NAME_FORMAT");
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME), "Saml2XmlObject_ATTRIBUTE_FRIENDLY_NAME");
-        assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
     }
 
     @Test public void defaultCase() {

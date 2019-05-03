@@ -87,7 +87,7 @@
 
     <bean id="MapRequestedAttributesInAttributeConsumingService" scope="prototype"
             class="net.shibboleth.idp.saml.saml2.profile.impl.MapRequestedAttributesInAttributeConsumingService"
-            p:resolverService-ref="shibboleth.AttributeResolverService" />
+            p:transcoderRegistry-ref="shibboleth.AttributeRegistryService" />
 
     <bean id="InitializeRelyingPartyContexFromSAMLPeer"
         class="net.shibboleth.idp.saml.profile.impl.InitializeRelyingPartyContextFromSAMLPeer" scope="prototype" />

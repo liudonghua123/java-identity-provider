@@ -96,7 +96,7 @@
     </bean>
 
     <bean id="shibboleth.MetadataResolverService" class="net.shibboleth.ext.spring.service.ReloadableSpringService"
-            depends-on="shibboleth.AttributeResolverService" 
+            depends-on="shibboleth.AttributeRegistryService" 
             p:serviceConfigurations-ref="#{'%{idp.service.metadata.resources:shibboleth.MetadataResolverResources}'.trim()}"
             p:failFast="%{idp.service.metadata.failFast:%{idp.service.failFast:false}}"
             p:reloadCheckDelay="%{idp.service.metadata.checkInterval:PT0S}"
@@ -109,7 +109,7 @@
             <list>
                 <ref bean="shibboleth.IdentifiableBeanPostProcessor" />
                 <bean class="net.shibboleth.idp.profile.spring.relyingparty.metadata.impl.NodeProcessingAttachingBeanPostProcessor"
-                    c:service-ref="shibboleth.AttributeResolverService" />
+                    c:service-ref="shibboleth.AttributeRegistryService" />
             </list>
         </property>
     </bean>

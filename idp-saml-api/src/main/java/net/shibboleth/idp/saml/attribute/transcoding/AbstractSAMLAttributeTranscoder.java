@@ -132,8 +132,10 @@ public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAML
                 idpAttributeValues.add(idpAttributeValue);
             }
         }
-        
-        log.debug("Decoded {} values for attribute {}", idpAttributeValues.size(), attributeName);
+
+        if (!idpAttributeValues.isEmpty()) {
+            log.debug("Decoded {} values for attribute {}", idpAttributeValues.size(), attributeName);
+        }
         return buildIdPAttribute(profileRequestContext, input, properties, idpAttributeValues);
     }
 

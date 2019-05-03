@@ -30,11 +30,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>net.shibboleth.ext</groupId>
-            <artifactId>spring-extensions</artifactId>
-        </dependency>
-
         <!-- Provided Dependencies -->
 
         <!-- Runtime Dependencies -->

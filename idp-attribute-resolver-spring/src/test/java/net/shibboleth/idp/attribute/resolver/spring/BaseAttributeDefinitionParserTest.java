@@ -204,7 +204,7 @@ public abstract class BaseAttributeDefinitionParserTest extends OpenSAMLInitBase
 
         if (propValue != null) {
             final MockPropertySource mockEnvVars = new MockPropertySource();
-            mockEnvVars.setProperty("the.boolean.variable", propValue);
+            mockEnvVars.setProperty("the.activation.property", propValue);
             final MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
             propertySources.replace(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, mockEnvVars);
         }

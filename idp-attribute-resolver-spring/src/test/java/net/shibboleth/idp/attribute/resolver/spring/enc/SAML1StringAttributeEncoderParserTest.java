@@ -52,6 +52,7 @@ public class SAML1StringAttributeEncoderParserTest extends BaseAttributeDefiniti
         assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "SAML1_STRING_ATTRIBUTE_NAME");
         assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE), "SAML1_STRING_ATTRIBUTE_NAME_SPACE");
         assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, true);
     }
 
     
@@ -66,6 +67,7 @@ public class SAML1StringAttributeEncoderParserTest extends BaseAttributeDefiniti
         assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "ATTRIBUTE");
         assertNull(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE));
         assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, true);
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {

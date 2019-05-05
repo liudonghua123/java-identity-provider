@@ -56,6 +56,7 @@ public class SAML1ScopedStringAttributeEncoderParserTest extends BaseAttributeDe
         assertEquals(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_ATTR_NAME), "saml1ScopeAttrib");
         assertEquals(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_DELIMITER), "#@#");
         assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, false);
 }
 
     
@@ -73,6 +74,7 @@ public class SAML1ScopedStringAttributeEncoderParserTest extends BaseAttributeDe
         assertNull(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_ATTR_NAME));
         assertNull(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_DELIMITER));
         assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, true);
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {

@@ -7,6 +7,7 @@
 	scopeType="attribute"
 	scopeAttribute="saml1ScopeAttrib"
 	scopeDelimiter="#@#"
+    encodeType="false"
 	xsi:schemaLocation="urn:mace:shibboleth:2.0:resolver http://shibboleth.net/schema/idp/shibboleth-attribute-resolver.xsd">
 
     <ActivationConditionScript>

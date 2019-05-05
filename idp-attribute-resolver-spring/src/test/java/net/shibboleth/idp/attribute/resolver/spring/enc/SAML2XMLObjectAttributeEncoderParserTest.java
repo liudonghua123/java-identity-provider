@@ -53,6 +53,7 @@ public class SAML2XMLObjectAttributeEncoderParserTest extends BaseAttributeDefin
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT), "Saml2XmlObject_ATTRIBUTE_NAME_FORMAT");
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME), "Saml2XmlObject_ATTRIBUTE_FRIENDLY_NAME");
         assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, true);
     }
 
     @Test public void defaultCase() {
@@ -67,6 +68,7 @@ public class SAML2XMLObjectAttributeEncoderParserTest extends BaseAttributeDefin
         assertNull(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT));
         assertNull(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME));
         assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, true);
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {

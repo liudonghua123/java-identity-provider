@@ -53,6 +53,7 @@ public class SAML1XMLObjectAttributeEncoderParserTest extends BaseAttributeDefin
         assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "SAML1_XMLObject_ATTRIBUTE_NAME");
         assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE), "SAML1_XMLObject_ATTRIBUTE_NAME_SPACE");
         assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, true);
 }
     
     @Test public void defaultCase() {
@@ -66,6 +67,7 @@ public class SAML1XMLObjectAttributeEncoderParserTest extends BaseAttributeDefin
         assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "XMLObject_ATTRIBUTE");
         assertNull(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE));
         assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, true);
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {

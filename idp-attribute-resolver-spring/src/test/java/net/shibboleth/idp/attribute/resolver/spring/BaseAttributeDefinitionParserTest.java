@@ -17,7 +17,9 @@
 
 package net.shibboleth.idp.attribute.resolver.spring;
 
+import static net.shibboleth.idp.saml.attribute.transcoding.AbstractSAMLAttributeTranscoder.PROP_ENCODE_TYPE;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -232,6 +234,12 @@ public abstract class BaseAttributeDefinitionParserTest extends OpenSAMLInitBase
             return null;
         }
         return (AttributeResolverImpl) strategy.apply(appCtx);
+    }
+
+    static public void checkEncodeType(final Map<String,Object> rule, boolean expectedValue) {
+        final Object encodeType = rule.getOrDefault(PROP_ENCODE_TYPE, Boolean.TRUE);
+        assertTrue(encodeType instanceof Boolean);
+        assertTrue(encodeType.equals(expectedValue));
     }
 
 }

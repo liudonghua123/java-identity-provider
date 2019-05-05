@@ -17,7 +17,10 @@
 
 package net.shibboleth.idp.attribute.resolver.spring.enc;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.Map;
@@ -26,7 +29,7 @@ import java.util.function.Predicate;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.testng.annotations.Test;
 
-import net.shibboleth.idp.attribute.resolver.spring.BaseAttributeDefinitionParserTest;
+import net.shibboleth.idp.attribute.resolver.spring.BaseEncoderDefinitionParserTest;
 import net.shibboleth.idp.attribute.resolver.spring.enc.impl.SAML1ScopedStringAttributeEncoderParser;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML1AttributeTranscoder;
@@ -35,16 +38,12 @@ import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML1ScopedStringAttri
 /**
  * Test for {@link SAML1ScopedStringAttributeEncoderParser}.
  */
-public class SAML1ScopedStringAttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
+public class SAML1ScopedStringAttributeEncoderParserTest extends BaseEncoderDefinitionParserTest {
 
-    @Test public void newNamespace() {
-        boolTest(true);
-        boolTest(false);
-    }
-
-    private void boolTest(boolean value) {
+    protected void testWithProperties(final boolean activation, final Boolean encodeType) {
+        
         final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml1Scoped.xml", Collection.class, value?"true":"false");
+                getAttributeTranscoderRule("resolver/saml1Scoped.xml", activation, encodeType);
         assertEquals(rules.size(), 1);
         
         final Map<String,Object> rule = rules.iterator().next();
@@ -55,14 +54,14 @@ public class SAML1ScopedStringAttributeEncoderParserTest extends BaseAttributeDe
         assertEquals(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_TYPE), "attribute");
         assertEquals(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_ATTR_NAME), "saml1ScopeAttrib");
         assertEquals(rule.get(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_DELIMITER), "#@#");
-        assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
-        checkEncodeType(rule, false);
+        assertEquals(activation, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, encodeType!=null ? encodeType : false);
 }
 
     
     @Test public void defaultCase() {
         final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml1ScopedDefault.xml", Collection.class);
+                getAttributeTranscoderRule("resolver/saml1ScopedDefault.xml");
         assertEquals(rules.size(), 1);
         
         final Map<String,Object> rule = rules.iterator().next();
@@ -78,7 +77,7 @@ public class SAML1ScopedStringAttributeEncoderParserTest extends BaseAttributeDe
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {
-        getAttributeTranscoderRule("resolver/saml1ScopedNoName.xml", Collection.class);
+        getAttributeTranscoderRule("resolver/saml1ScopedNoName.xml");
     }
 
 }

@@ -17,7 +17,10 @@
 
 package net.shibboleth.idp.attribute.resolver.spring.enc;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.Map;
@@ -26,7 +29,7 @@ import java.util.function.Predicate;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.testng.annotations.Test;
 
-import net.shibboleth.idp.attribute.resolver.spring.BaseAttributeDefinitionParserTest;
+import net.shibboleth.idp.attribute.resolver.spring.BaseEncoderDefinitionParserTest;
 import net.shibboleth.idp.attribute.resolver.spring.enc.impl.SAML2Base64AttributeEncoderParser;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
@@ -35,16 +38,12 @@ import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2ByteAttributeTran
 /**
  * Test for {@link SAML2Base64AttributeEncoderParser}.
  */
-public class SAML2Base64AttributeEncoderParserTest extends BaseAttributeDefinitionParserTest {
+public class SAML2Base64AttributeEncoderParserTest extends BaseEncoderDefinitionParserTest {
 
-    @Test public void newNameFormat() {
-        boolTest(true);
-        boolTest(false);
-    }
-
-    private void boolTest(boolean value) {
+    protected void testWithProperties(final boolean activation, final Boolean encodeType) {
+        
         final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml2Base64.xml", Collection.class, value?"true":"false");
+                getAttributeTranscoderRule("resolver/saml2Base64.xml", activation, encodeType);
         assertEquals(rules.size(), 1);
         
         final Map<String,Object> rule = rules.iterator().next();
@@ -53,13 +52,13 @@ public class SAML2Base64AttributeEncoderParserTest extends BaseAttributeDefiniti
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME), "Saml2Base64_ATTRIBUTE_NAME");
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT), "Saml2Base64_ATTRIBUTE_NAME_FORMAT");
         assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME), "Saml2Base64_ATTRIBUTE_FRIENDLY_NAME");
-        assertEquals(value, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
-        checkEncodeType(rule, true);
+        assertEquals(activation, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
+        checkEncodeType(rule, encodeType!=null ? encodeType : true);
     }
     
     @Test public void defaultCase() {
         final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml2Base64Default.xml", Collection.class);
+                getAttributeTranscoderRule("resolver/saml2Base64Default.xml");
         assertEquals(rules.size(), 1);
         
         final Map<String,Object> rule = rules.iterator().next();
@@ -73,6 +72,6 @@ public class SAML2Base64AttributeEncoderParserTest extends BaseAttributeDefiniti
     }
     
     @Test(expectedExceptions={BeanDefinitionStoreException.class,})  public void noName() {
-        getAttributeTranscoderRule("resolver/saml2Base64NoName.xml", Collection.class);
+        getAttributeTranscoderRule("resolver/saml2Base64NoName.xml");
     }
 }

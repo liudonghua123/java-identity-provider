@@ -25,6 +25,7 @@ import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML1AttributeTrans
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
@@ -50,9 +51,12 @@ public abstract class BaseSAML1AttributeEncoderParser extends BaseAttributeEncod
                     StringSupport.trimOrNull(config.getAttributeNS(null, "namespace")));
         }
 
-        if (config.hasAttributeNS(null, "encodeType")) {
-            rule.put(AbstractSAML1AttributeTranscoder.PROP_ENCODE_TYPE,
-                    Boolean.valueOf(StringSupport.trimOrNull(config.getAttributeNS(null, "encodeType"))));
+        final String value = StringSupport.trimOrNull(config.getAttributeNS(null, "encodeType"));
+        if (value != null) {
+            final BeanDefinitionBuilder booleanBuilder =
+                BeanDefinitionBuilder.rootBeanDefinition(Boolean.class, "valueOf");
+            booleanBuilder.addConstructorArgValue(value);
+            rule.put(AbstractSAML1AttributeTranscoder.PROP_ENCODE_TYPE,booleanBuilder.getBeanDefinition());
         }
     }
     

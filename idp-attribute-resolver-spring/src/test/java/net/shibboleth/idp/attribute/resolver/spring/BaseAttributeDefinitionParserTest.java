@@ -17,23 +17,17 @@
 
 package net.shibboleth.idp.attribute.resolver.spring;
 
-import static net.shibboleth.idp.saml.attribute.transcoding.AbstractSAMLAttributeTranscoder.PROP_ENCODE_TYPE;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 
 import org.opensaml.core.OpenSAMLInitBaseTestCase;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ConversionServiceFactoryBean;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.StandardEnvironment;
-import org.springframework.mock.env.MockPropertySource;
 import org.testng.annotations.AfterMethod;
 
 import net.shibboleth.ext.spring.config.IdentifiableBeanPostProcessor;
@@ -183,8 +177,6 @@ public abstract class BaseAttributeDefinitionParserTest extends OpenSAMLInitBase
         return getDataConnector(fileName, claz, false);
     }
     
-    
-
     private <Type extends DataConnector> Type
             getDataConnector(final String fileName, final Class<Type> claz, final boolean supressValid) {
 
@@ -196,35 +188,6 @@ public abstract class BaseAttributeDefinitionParserTest extends OpenSAMLInitBase
         return getBean(DATACONNECTOR_FILE_PATH + fileName, claz, context, supressValid);
     }
 
-    protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName, final Class<Collection> claz) {
-        return getAttributeTranscoderRule(fileName, claz, (String)null);
-    }
-
-    protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName, final Class<Collection> claz, String propValue) {
-
-        final GenericApplicationContext context = new GenericApplicationContext();
-
-        if (propValue != null) {
-            final MockPropertySource mockEnvVars = new MockPropertySource();
-            mockEnvVars.setProperty("the.activation.property", propValue);
-            final MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
-            propertySources.replace(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, mockEnvVars);
-        }
-
-        setTestContext(context);
-        context.setDisplayName("ApplicationContext: " + claz);
-
-        return getAttributeTranscoderRule(fileName, claz, context);
-
-    }
-
-    protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName, final Class<Collection> claz,
-            final GenericApplicationContext context) {
-
-        return getBean(ENCODER_FILE_PATH + fileName, claz, context);
-
-    }
-
     static public AttributeResolverImpl getResolver(final ApplicationContext appCtx) {
         final AttributeResolverServiceStrategy strategy = new AttributeResolverServiceStrategy();
         strategy.setId("testResolver");
@@ -234,12 +197,6 @@ public abstract class BaseAttributeDefinitionParserTest extends OpenSAMLInitBase
             return null;
         }
         return (AttributeResolverImpl) strategy.apply(appCtx);
-    }
-
-    static public void checkEncodeType(final Map<String,Object> rule, boolean expectedValue) {
-        final Object encodeType = rule.getOrDefault(PROP_ENCODE_TYPE, Boolean.TRUE);
-        assertTrue(encodeType instanceof Boolean);
-        assertTrue(encodeType.equals(expectedValue));
     }
 
 }

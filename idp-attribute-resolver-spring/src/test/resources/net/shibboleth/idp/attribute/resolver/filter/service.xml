@@ -19,8 +19,7 @@
 		</constructor-arg>
 		<property name="serviceConfigurations">
 			<util:list>
-				<value>/net/shibboleth/idp/attribute/resolver/filter/resolver.xml
-				</value>
+				<value>/net/shibboleth/idp/attribute/resolver/filter/resolver.xml</value>
 			</util:list>
 		</property>
 	</bean>

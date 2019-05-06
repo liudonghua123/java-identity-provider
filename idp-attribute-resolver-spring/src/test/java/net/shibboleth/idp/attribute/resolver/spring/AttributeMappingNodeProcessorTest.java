@@ -97,7 +97,9 @@ public class AttributeMappingNodeProcessorTest extends XMLObjectBaseTestCase {
         SchemaTypeAwareXMLBeanDefinitionReader beanDefinitionReader =
                 new SchemaTypeAwareXMLBeanDefinitionReader(context);
 
-        beanDefinitionReader.loadBeanDefinitions("/net/shibboleth/idp/attribute/resolver/filter/service.xml");
+        beanDefinitionReader.loadBeanDefinitions(
+                "/net/shibboleth/idp/attribute/resolver/spring/customBean.xml",
+                "/net/shibboleth/idp/attribute/resolver/filter/service.xml");
         context.refresh();
 
         return context.getBean(ReloadableService.class);

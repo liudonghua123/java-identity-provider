@@ -20,8 +20,8 @@ package net.shibboleth.idp.attribute.resolver.spring.enc.impl;
 import javax.annotation.Nonnull;
 import javax.xml.namespace.QName;
 
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.config.BeanReference;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 
 import net.shibboleth.idp.attribute.resolver.spring.enc.BaseSAML1AttributeEncoderParser;
 import net.shibboleth.idp.attribute.resolver.spring.impl.AttributeResolverNamespaceHandler;
@@ -38,8 +38,8 @@ public class SAML1StringAttributeEncoderParser extends BaseSAML1AttributeEncoder
 
     /** {@inheritDoc} */
     @Override
-    protected BeanDefinition buildTranscoder() {
-        return BeanDefinitionBuilder.genericBeanDefinition(SAML1StringAttributeTranscoder.class).getBeanDefinition();
+    protected BeanReference buildTranscoder() {
+        return new RuntimeBeanReference("SAML1StringTranscoder");
     }
 
 }

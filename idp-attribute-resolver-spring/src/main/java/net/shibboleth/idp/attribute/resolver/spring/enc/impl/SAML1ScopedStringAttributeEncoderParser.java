@@ -22,8 +22,8 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.xml.namespace.QName;
 
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.config.BeanReference;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
@@ -64,9 +64,8 @@ public class SAML1ScopedStringAttributeEncoderParser extends BaseSAML1AttributeE
 
     /** {@inheritDoc} */
     @Override
-    protected BeanDefinition buildTranscoder() {
-        return BeanDefinitionBuilder.genericBeanDefinition(
-                SAML1ScopedStringAttributeTranscoder.class).getBeanDefinition();
+    protected BeanReference buildTranscoder() {
+        return new RuntimeBeanReference("SAML1ScopedStringTranscoder");
     }
 
 }

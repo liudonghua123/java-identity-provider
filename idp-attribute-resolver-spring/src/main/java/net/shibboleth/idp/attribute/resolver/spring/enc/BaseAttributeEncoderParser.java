@@ -32,7 +32,7 @@ import net.shibboleth.utilities.java.support.xml.ElementSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanReference;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedMap;
@@ -102,12 +102,7 @@ public abstract class BaseAttributeEncoderParser extends AbstractSingleBeanDefin
             }
         }
 
-        final BeanDefinition transcoder = buildTranscoder();
-        
-        transcoder.setInitMethodName("initialize");
-        transcoder.setDestroyMethodName("destroy");
-        
-        rule.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
+        rule.put(AttributeTranscoderRegistry.PROP_TRANSCODER, buildTranscoder());
         
         doParse(config, context, rule);
     }
@@ -128,6 +123,6 @@ public abstract class BaseAttributeEncoderParser extends AbstractSingleBeanDefin
      * 
      * @return bean definition for an AttributeTranscoder
      */
-    @Nonnull protected abstract BeanDefinition buildTranscoder();
+    @Nonnull protected abstract BeanReference buildTranscoder();
     
 }

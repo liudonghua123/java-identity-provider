@@ -8,6 +8,9 @@
                             http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
         default-init-method="initialize"
         default-destroy-method="destroy">
+        
+    <import resource="customBean.xml" />
+    
     <bean id="shibboleth.VelocityEngine" class="net.shibboleth.ext.spring.velocity.VelocityEngineFactoryBean">
         <property name="velocityProperties">
             <props>

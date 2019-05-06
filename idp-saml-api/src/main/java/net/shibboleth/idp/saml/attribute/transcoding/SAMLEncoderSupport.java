@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.saml.attribute.encoding;
+package net.shibboleth.idp.saml.attribute.transcoding;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

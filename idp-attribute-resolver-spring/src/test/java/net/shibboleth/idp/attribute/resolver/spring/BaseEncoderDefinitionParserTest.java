@@ -17,7 +17,7 @@
 
 package net.shibboleth.idp.attribute.resolver.spring;
 
-import static net.shibboleth.idp.saml.attribute.transcoding.AbstractSAMLAttributeTranscoder.PROP_ENCODE_TYPE;
+import static net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder.PROP_ENCODE_TYPE;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Collection;

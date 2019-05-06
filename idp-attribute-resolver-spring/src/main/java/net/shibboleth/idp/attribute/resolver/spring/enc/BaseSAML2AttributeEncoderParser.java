@@ -21,7 +21,8 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.SAML2AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -40,19 +41,19 @@ public abstract class BaseSAML2AttributeEncoderParser extends BaseAttributeEncod
             @Nonnull final Map<String,Object> rule) {
 
         if (config.hasAttributeNS(null, "name")) {
-            rule.put(AbstractSAML2AttributeTranscoder.PROP_NAME,
+            rule.put(SAMLAttributeTranscoder.PROP_NAME,
                     StringSupport.trimOrNull(config.getAttributeNS(null, "name")));
         } else {
             throw new BeanDefinitionStoreException("Missing 'name' attribute, cannot create transcoder rule");
         }
 
         if (config.hasAttributeNS(null, "nameFormat")) {
-            rule.put(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT,
+            rule.put(SAML2AttributeTranscoder.PROP_NAME_FORMAT,
                     StringSupport.trimOrNull(config.getAttributeNS(null, "nameFormat")));
         }
         
         if (config.hasAttributeNS(null, "friendlyName")) {
-            rule.put(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME,
+            rule.put(SAML2AttributeTranscoder.PROP_FRIENDLY_NAME,
                     StringSupport.trimOrNull(config.getAttributeNS(null, "friendlyName")));
         }
         
@@ -62,7 +63,7 @@ public abstract class BaseSAML2AttributeEncoderParser extends BaseAttributeEncod
                 BeanDefinitionBuilder.rootBeanDefinition(Boolean.class, "valueOf");
             booleanBuilder.addConstructorArgValue(value);
                 
-            rule.put(AbstractSAML2AttributeTranscoder.PROP_ENCODE_TYPE,booleanBuilder.getBeanDefinition());
+            rule.put(SAMLAttributeTranscoder.PROP_ENCODE_TYPE,booleanBuilder.getBeanDefinition());
         }
     }
 }

@@ -38,6 +38,7 @@ import net.shibboleth.idp.profile.context.navigate.ResponderIdLookupFunction;
 import org.opensaml.profile.action.ActionSupport;
 import org.opensaml.profile.action.EventIds;
 import org.opensaml.profile.context.ProfileRequestContext;
+import org.opensaml.saml.common.SAMLObject;
 
 import net.shibboleth.utilities.java.support.annotation.constraint.Live;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullAfterInit;
@@ -66,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * @event {@link EventIds#INVALID_MSG_CTX}
  * @event {@link EventIds#INVALID_PROFILE_CTX}
  */
-public abstract class BaseAddAttributeStatementToAssertion<T> extends AbstractProfileAction {
+public abstract class BaseAddAttributeStatementToAssertion<T extends SAMLObject> extends AbstractProfileAction {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(BaseAddAttributeStatementToAssertion.class);
@@ -326,7 +327,7 @@ public abstract class BaseAddAttributeStatementToAssertion<T> extends AbstractPr
         
         for (final Properties rules : transcodingRules) {
             try {
-                final AttributeTranscoder<T> transcoder = TranscoderSupport.getTranscoder(rules);
+                final AttributeTranscoder<T> transcoder = TranscoderSupport.<T>getTranscoder(rules);
                 final T encodedAttribute = transcoder.encode(profileRequestContext, attribute, to, rules);
                 if (encodedAttribute != null) {
                     results.add(encodedAttribute);

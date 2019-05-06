@@ -36,7 +36,8 @@ import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML1AttributeTranscoder;
-import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAMLAttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.SAML1AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder;
 import net.shibboleth.idp.saml.xmlobject.ScopedValue;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 
@@ -102,9 +103,9 @@ public class SAML1ScopedStringAttributeTranscoderTest extends OpenSAMLInitBaseTe
         final Map<String,Object> ruleset1 = new HashMap<>();
         ruleset1.put(AttributeTranscoderRegistry.PROP_ID, ATTR_NAME);
         ruleset1.put(AttributeTranscoderRegistry.PROP_TRANSCODER, transcoder);
-        ruleset1.put(AbstractSAMLAttributeTranscoder.PROP_ENCODE_TYPE, true);
-        ruleset1.put(AbstractSAMLAttributeTranscoder.PROP_NAME, ATTR_NAME);
-        ruleset1.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE, ATTR_NAMESPACE);
+        ruleset1.put(SAMLAttributeTranscoder.PROP_ENCODE_TYPE, true);
+        ruleset1.put(SAMLAttributeTranscoder.PROP_NAME, ATTR_NAME);
+        ruleset1.put(SAML1AttributeTranscoder.PROP_NAMESPACE, ATTR_NAMESPACE);
         ruleset1.put(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_DELIMITER, DELIMITER);
         ruleset1.put(SAML1ScopedStringAttributeTranscoder.PROP_SCOPE_TYPE, "attribute");
         

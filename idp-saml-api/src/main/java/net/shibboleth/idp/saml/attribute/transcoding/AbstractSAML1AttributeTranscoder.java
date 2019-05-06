@@ -33,7 +33,6 @@ import net.shibboleth.idp.attribute.IdPRequestedAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.saml.xml.SAMLConstants;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
-import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -51,11 +50,9 @@ import com.google.common.base.Strings;
  * 
  * @param <EncodedType> the type of data that can be handled by the transcoder
  */
-public abstract class AbstractSAML1AttributeTranscoder<EncodedType extends IdPAttributeValue> extends
-        AbstractSAMLAttributeTranscoder<AttributeDesignator,EncodedType> {
-
-    /** The namespace of the attribute name. */
-    @Nonnull @NotEmpty public static final String PROP_NAMESPACE = "namespace";
+public abstract class AbstractSAML1AttributeTranscoder<EncodedType extends IdPAttributeValue>
+        extends AbstractSAMLAttributeTranscoder<AttributeDesignator,EncodedType>
+        implements SAML1AttributeTranscoder<EncodedType> {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAML1AttributeTranscoder.class);

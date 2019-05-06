@@ -32,7 +32,8 @@ import org.testng.annotations.Test;
 import net.shibboleth.idp.attribute.resolver.spring.BaseEncoderDefinitionParserTest;
 import net.shibboleth.idp.attribute.resolver.spring.enc.impl.SAML1Base64AttributeEncoderParser;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
-import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML1AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.SAML1AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML1ByteAttributeTranscoder;
 
 /**
@@ -49,8 +50,8 @@ public class SAML1Base64AttributeEncoderParserTest extends BaseEncoderDefinition
         final Map<String,Object> rule = rules.iterator().next();
 
         assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML1ByteAttributeTranscoder);
-        assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "SAML1_BASE64_ATTRIBUTE_NAME");
-        assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE), "SAML1_BASE64_ATTRIBUTE_NAME_SPACE");
+        assertEquals(rule.get(SAMLAttributeTranscoder.PROP_NAME), "SAML1_BASE64_ATTRIBUTE_NAME");
+        assertEquals(rule.get(SAML1AttributeTranscoder.PROP_NAMESPACE), "SAML1_BASE64_ATTRIBUTE_NAME_SPACE");
         assertEquals(activation, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
         checkEncodeType(rule, encodeType==null ? false: encodeType);
     }
@@ -64,8 +65,8 @@ public class SAML1Base64AttributeEncoderParserTest extends BaseEncoderDefinition
         final Map<String,Object> rule = rules.iterator().next();
 
         assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML1ByteAttributeTranscoder);
-        assertEquals(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAME), "Base64_ATTRIBUTE");
-        assertNull(rule.get(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE));
+        assertEquals(rule.get(SAML1AttributeTranscoder.PROP_NAME), "Base64_ATTRIBUTE");
+        assertNull(rule.get(SAML1AttributeTranscoder.PROP_NAMESPACE));
         assertFalse(((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
         checkEncodeType(rule, true);
     }

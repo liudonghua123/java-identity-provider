@@ -32,7 +32,6 @@ import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.IdPRequestedAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
-import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -49,13 +48,7 @@ import com.google.common.base.Strings;
  * @param <EncodedType> the type of data that can be handled by the transcoder
  */
 public abstract class AbstractSAML2AttributeTranscoder<EncodedType extends IdPAttributeValue> extends
-        AbstractSAMLAttributeTranscoder<Attribute,EncodedType> {
-
-    /** A friendly, human readable, name for the attribute. */
-    @Nonnull @NotEmpty public static final String PROP_FRIENDLY_NAME = "friendlyName";
-
-    /** The format of the attribute name. */
-    @Nonnull @NotEmpty public static final String PROP_NAME_FORMAT = "nameFormat";
+        AbstractSAMLAttributeTranscoder<Attribute,EncodedType> implements SAML2AttributeTranscoder<EncodedType> {
     
     /** Builder used to construct {@link Attribute} objects. */
     @Nonnull private final SAMLObjectBuilder<Attribute> attributeBuilder;

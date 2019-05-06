@@ -32,7 +32,6 @@ import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.transcoding.AbstractAttributeTranscoder;
 import net.shibboleth.idp.saml.xmlobject.ScopedValue;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
-import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.xml.DOMTypeSupport;
 
 import org.opensaml.core.xml.XMLObject;
@@ -55,13 +54,8 @@ import org.slf4j.LoggerFactory;
  * @param <EncodedType> the type of data that can be handled by the transcoder
  */
 public abstract class AbstractSAMLAttributeTranscoder<AttributeType extends SAMLObject,
-        EncodedType extends IdPAttributeValue> extends AbstractAttributeTranscoder<AttributeType> {
-
-    /** The attribute name. */
-    @Nonnull @NotEmpty public static final String PROP_NAME = "name";
-
-    /** Whether to encode the xsi:type. */
-    @Nonnull @NotEmpty public static final String PROP_ENCODE_TYPE = "encodeType";
+        EncodedType extends IdPAttributeValue> extends AbstractAttributeTranscoder<AttributeType>
+        implements SAMLAttributeTranscoder<AttributeType> {
 
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(AbstractSAMLAttributeTranscoder.class);

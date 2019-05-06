@@ -21,7 +21,8 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML1AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.SAML1AttributeTranscoder;
+import net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -40,14 +41,14 @@ public abstract class BaseSAML1AttributeEncoderParser extends BaseAttributeEncod
             @Nonnull final Map<String,Object> rule) {
         
         if (config.hasAttributeNS(null, "name")) {
-            rule.put(AbstractSAML1AttributeTranscoder.PROP_NAME,
+            rule.put(SAMLAttributeTranscoder.PROP_NAME,
                     StringSupport.trimOrNull(config.getAttributeNS(null, "name")));
         } else {
             throw new BeanDefinitionStoreException("Missing 'name' attribute, cannot create transcoder rule");
         }
 
         if (config.hasAttributeNS(null, "namespace")) {
-            rule.put(AbstractSAML1AttributeTranscoder.PROP_NAMESPACE,
+            rule.put(SAML1AttributeTranscoder.PROP_NAMESPACE,
                     StringSupport.trimOrNull(config.getAttributeNS(null, "namespace")));
         }
 
@@ -56,7 +57,7 @@ public abstract class BaseSAML1AttributeEncoderParser extends BaseAttributeEncod
             final BeanDefinitionBuilder booleanBuilder =
                 BeanDefinitionBuilder.rootBeanDefinition(Boolean.class, "valueOf");
             booleanBuilder.addConstructorArgValue(value);
-            rule.put(AbstractSAML1AttributeTranscoder.PROP_ENCODE_TYPE,booleanBuilder.getBeanDefinition());
+            rule.put(SAMLAttributeTranscoder.PROP_ENCODE_TYPE,booleanBuilder.getBeanDefinition());
         }
     }
     

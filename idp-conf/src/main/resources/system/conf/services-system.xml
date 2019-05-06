@@ -54,14 +54,6 @@
         </constructor-arg>
     </bean>
 
-    <bean id="shibboleth.NameIdentifierGenerationService" class="net.shibboleth.ext.spring.service.ReloadableSpringService" 
-        c:claz="net.shibboleth.idp.saml.nameid.NameIdentifierGenerationService"
-        p:serviceConfigurations-ref="#{'%{idp.service.nameidGeneration.resources:shibboleth.NameIdentifierGenerationResources}'.trim()}"
-        p:failFast="%{idp.service.nameidGeneration.failFast:%{idp.service.failFast:false}}"
-        p:reloadCheckDelay="%{idp.service.nameidGeneration.checkInterval:PT0S}"
-        p:beanPostProcessors-ref="shibboleth.IdentifiableBeanPostProcessor"
-        p:beanFactoryPostProcessors-ref="shibboleth.PropertySourcesPlaceholderConfigurer" />
-
     <bean id="shibboleth.AttributeRegistryService" class="net.shibboleth.ext.spring.service.ReloadableSpringService" 
             p:serviceConfigurations-ref="#{
  	            getObject('%{idp.service.attribute.registry.resources:shibboleth.AttributeRegistryResources}'.trim()) != null
@@ -74,13 +66,22 @@
 	    <constructor-arg name="claz" value="net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry" />
 	    <constructor-arg name="strategy">
 	       <bean class="net.shibboleth.idp.attribute.transcoding.spring.impl.AttributeRegistryServiceStrategy"
-	           p:namingRegistry="DefaultNamingRegistry" />
+	           p:namingRegistry="#{'%{idp.service.attribute.registry.namingRegistry:DefaultNamingRegistry}'.trim()}" />
 	    </constructor-arg>
     </bean>
     <util:list id ="shibboleth.DefaultAttributeRegistryResources">
         <value>%{idp.home}/conf/attribute-registry.xml</value>
+        <value>%{idp.home}/system/conf/attribute-registry-system.xml</value>
         <value>%{idp.home}/conf/attribute-resolver.xml</value>
     </util:list>
+
+    <bean id="shibboleth.NameIdentifierGenerationService" class="net.shibboleth.ext.spring.service.ReloadableSpringService" 
+        c:claz="net.shibboleth.idp.saml.nameid.NameIdentifierGenerationService"
+        p:serviceConfigurations-ref="#{'%{idp.service.nameidGeneration.resources:shibboleth.NameIdentifierGenerationResources}'.trim()}"
+        p:failFast="%{idp.service.nameidGeneration.failFast:%{idp.service.failFast:false}}"
+        p:reloadCheckDelay="%{idp.service.nameidGeneration.checkInterval:PT0S}"
+        p:beanPostProcessors-ref="shibboleth.IdentifiableBeanPostProcessor"
+        p:beanFactoryPostProcessors-ref="shibboleth.PropertySourcesPlaceholderConfigurer" />
 
     <bean id="shibboleth.RelyingPartyResolverService" class="net.shibboleth.ext.spring.service.ReloadableSpringService"
             p:serviceConfigurations-ref="#{'%{idp.service.relyingparty.resources:shibboleth.RelyingPartyResolverResources}'.trim()}"

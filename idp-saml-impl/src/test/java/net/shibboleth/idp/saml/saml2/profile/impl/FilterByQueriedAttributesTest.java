@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 
 import org.opensaml.core.xml.XMLObjectBaseTestCase;
 import org.opensaml.core.xml.io.UnmarshallingException;
-import org.opensaml.profile.action.EventIds;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.saml2.core.AttributeQuery;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -111,23 +110,6 @@ public class FilterByQueriedAttributesTest extends XMLObjectBaseTestCase {
         ActionTestingSupport.assertProceedEvent(event);
     }
 
-    @Test public void unmappedAttributes() throws XMLParserException, UnmarshallingException {
-        query = unmarshallElement(PATH + "UnmappedAttributeQuery.xml", true);
-        
-        prc.getInboundMessageContext().setMessage(query);
-
-        final RelyingPartyContext rpc = prc.getSubcontext(RelyingPartyContext.class,true);
-        final AttributeContext ac = rpc.getSubcontext(AttributeContext.class,true);
-        final List<IdPAttribute> attributes = List.of(
-                new IdPAttribute("eduPersonAssurance"),
-                new IdPAttribute("flooby"),
-                new IdPAttribute("eduPersonScopedAffiliation"), 
-                new IdPAttribute("eduPersonTargetedID"));
-        ac.setIdPAttributes(attributes);
-        final Event event = action.execute(rc);
-        ActionTestingSupport.assertEvent(event, EventIds.MESSAGE_PROC_ERROR);
-    }
-    
     @Test public void noValues() {
         final RelyingPartyContext rpc = prc.getSubcontext(RelyingPartyContext.class,true);
         final AttributeContext ac = rpc.getSubcontext(AttributeContext.class,true);

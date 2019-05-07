@@ -182,13 +182,12 @@ public class FilterByQueriedAttributes extends AbstractProfileAction {
             }
 
             for (final Attribute designator : query.getAttributes()) {
-                decodeAttribute(component.getComponent(), profileRequestContext, designator, mapped);                
+                try {
+                    decodeAttribute(component.getComponent(), profileRequestContext, designator, mapped);
+                } catch (final AttributeDecodingException e) {
+                    log.error("{} Error decoding queried Attribute", getLogPrefix(), e);
+                }
             }
-            
-        } catch (final AttributeDecodingException e) {
-            log.error("{} Error decoding queried Attribute, cannot process query", getLogPrefix(), e);
-            ActionSupport.buildEvent(profileRequestContext, EventIds.MESSAGE_PROC_ERROR);
-            return;
         } finally {
             if (component != null) {
                 component.unpinComponent();
@@ -241,8 +240,7 @@ public class FilterByQueriedAttributes extends AbstractProfileAction {
         
         final Collection<Properties> transcodingRules = registry.getTranscodingProperties(input);
         if (transcodingRules.isEmpty()) {
-            throw new AttributeDecodingException("Attribute '" + input.getName() +
-                    "' does not have transcoding rules, cannot process query");
+            throw new AttributeDecodingException("No transcoding rule for Attribute '" + input.getName() + "'");
         }
         
         for (final Properties rules : transcodingRules) {

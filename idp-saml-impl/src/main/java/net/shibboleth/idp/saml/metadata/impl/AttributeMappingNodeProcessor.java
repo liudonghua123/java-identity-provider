@@ -19,7 +19,6 @@ package net.shibboleth.idp.saml.metadata.impl;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -30,6 +29,7 @@ import net.shibboleth.idp.attribute.IdPRequestedAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.saml.attribute.transcoding.AttributesMapContainer;
 import net.shibboleth.utilities.java.support.annotation.constraint.Live;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
@@ -185,9 +185,9 @@ public class AttributeMappingNodeProcessor implements MetadataNodeProcessor {
             @Nonnull final T input, @Nonnull @NonnullElements @Live final Multimap<String,IdPAttribute> results)
                     throws AttributeDecodingException {
         
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(input);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(input);
         
-        for (final Properties rules : rulesets) {
+        for (final TranscodingRule rules : rulesets) {
             final AttributeTranscoder<T> transcoder = TranscoderSupport.getTranscoder(rules);
             final IdPAttribute decodedAttribute = transcoder.decode(null, input, rules);
             if (decodedAttribute != null) {

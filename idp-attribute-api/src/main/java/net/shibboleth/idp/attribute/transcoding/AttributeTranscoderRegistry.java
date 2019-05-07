@@ -18,7 +18,6 @@
 package net.shibboleth.idp.attribute.transcoding;
 
 import java.util.Collection;
-import java.util.Properties;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
@@ -60,10 +59,10 @@ public interface AttributeTranscoderRegistry extends IdentifiedComponent {
      * @param from the input object to encode
      * @param to class of object being encoded
      * 
-     * @return a collection of {@link Properties} objects, possibly empty
+     * @return a collection of {@link TranscodingRule} objects, possibly empty
      */
     @Nonnull @NonnullElements @Unmodifiable
-    Collection<Properties> getTranscodingProperties(@Nonnull final IdPAttribute from, @Nonnull final Class<?> to);
+    Collection<TranscodingRule> getTranscodingRules(@Nonnull final IdPAttribute from, @Nonnull final Class<?> to);
 
     /**
      * Obtains a set of instructions for decoding an input object into an {@link IdPAttribute}.
@@ -75,8 +74,9 @@ public interface AttributeTranscoderRegistry extends IdentifiedComponent {
      * @param <T> the type of object to decode
      * @param from object to decode
      * 
-     * @return a collection of {@link Properties} objects, possibly empty
+     * @return a collection of {@link TranscodingRule} objects, possibly empty
      */
-    @Nonnull @NonnullElements @Unmodifiable <T> Collection<Properties> getTranscodingProperties(@Nonnull final T from);
+    @Nonnull @NonnullElements @Unmodifiable <T> Collection<TranscodingRule> getTranscodingRules(
+            @Nonnull final T from);
         
 }

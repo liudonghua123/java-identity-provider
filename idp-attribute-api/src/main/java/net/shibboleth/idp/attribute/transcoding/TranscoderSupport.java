@@ -17,8 +17,6 @@
 
 package net.shibboleth.idp.attribute.transcoding;
 
-import java.util.Properties;
-
 import javax.annotation.Nonnull;
 
 import net.shibboleth.utilities.java.support.logic.Constraint;
@@ -35,22 +33,23 @@ public final class TranscoderSupport {
     }
 
     /**
-     * Pull an {@link AttributeTranscoder} object out of the properties provided.
+     * Pull an {@link AttributeTranscoder} object out of the rule provided.
      * 
      * @param <T> type of supported target object
-     * @param ruleset transcoding rules in the form of a {@link Properties} collection
+     * @param rule transcoding rule
      * 
      * @return an {@link AttributeTranscoder}
      * 
      * @throws ConstraintViolationException if a transcoder cannot be obtained
      */
-    @Nonnull public static <T> AttributeTranscoder<T> getTranscoder(@Nonnull final Properties ruleset)
+    @Nonnull public static <T> AttributeTranscoder<T> getTranscoder(@Nonnull final TranscodingRule rule)
             throws ConstraintViolationException {
-        Constraint.isNotNull(ruleset, "Transcoding properties cannot be null");
+        Constraint.isNotNull(rule, "Transcoding rule cannot be null");
         
-        final Object transcoder = ruleset.get(AttributeTranscoderRegistry.PROP_TRANSCODER);
-        Constraint.isTrue(transcoder instanceof AttributeTranscoder<?>, "AttributeTranscoder not found in properties");
-        return (AttributeTranscoder<T>) transcoder;
+        final AttributeTranscoder<T> transcoder =
+                rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER, AttributeTranscoder.class);
+        Constraint.isNotNull(transcoder, "AttributeTranscoder not found in properties");
+        return transcoder;
     }
 
 }

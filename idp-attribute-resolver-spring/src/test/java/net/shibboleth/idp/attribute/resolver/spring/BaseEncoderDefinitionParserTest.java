@@ -28,7 +28,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.mock.env.MockPropertySource;
 import org.testng.annotations.Test;
 
-import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 
 /**
  * Base class for testing Attribute Encoding Parsers

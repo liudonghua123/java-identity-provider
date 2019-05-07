@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.ByteAttributeValue;
@@ -34,8 +33,8 @@ import net.shibboleth.idp.attribute.ScopedStringAttributeValue;
 import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
-import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML1AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.SAML1AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder;
@@ -111,9 +110,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
     @Test(expectedExceptions = {AttributeEncodingException.class,}) public void emptyEncode() throws Exception {
         final IdPAttribute inputAttribute = new IdPAttribute(ATTR_NAME);
 
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(inputAttribute, Attribute.class);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(inputAttribute, Attribute.class);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         TranscoderSupport.<Attribute>getTranscoder(ruleset).encode(
                 null, inputAttribute, Attribute.class, ruleset);
@@ -122,9 +121,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
     @Test public void emptyRequestedEncode() throws Exception {
         final IdPAttribute inputAttribute = new IdPAttribute(ATTR_NAME);
 
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(inputAttribute, AttributeDesignator.class);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(inputAttribute, AttributeDesignator.class);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         final AttributeDesignator attr = TranscoderSupport.<AttributeDesignator>getTranscoder(ruleset).encode(
                 null, inputAttribute, AttributeDesignator.class, ruleset);
@@ -141,9 +140,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         samlAttribute.setAttributeName(ATTR_NAME);
         samlAttribute.setAttributeNamespace(ATTR_NAMESPACE);
 
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(samlAttribute);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(samlAttribute);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         final IdPAttribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
         
@@ -158,9 +157,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         samlAttribute.setAttributeName(ATTR_NAME);
         samlAttribute.setAttributeNamespace(ATTR_NAMESPACE);
 
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(samlAttribute);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(samlAttribute);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         final IdPAttribute attr = TranscoderSupport.<AttributeDesignator>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
         
@@ -187,9 +186,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         final IdPAttribute inputAttribute = new IdPAttribute(ATTR_NAME);
         inputAttribute.setValues(values);
 
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(inputAttribute, Attribute.class);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(inputAttribute, Attribute.class);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         TranscoderSupport.<Attribute>getTranscoder(ruleset).encode(null, inputAttribute, Attribute.class, ruleset);
     }
@@ -201,9 +200,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         final IdPAttribute inputAttribute = new IdPAttribute(ATTR_NAME);
         inputAttribute.setValues(values);
         
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(inputAttribute, Attribute.class);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(inputAttribute, Attribute.class);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         final Attribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).encode(
                 null, inputAttribute, Attribute.class, ruleset);
@@ -235,9 +234,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         final IdPRequestedAttribute inputAttribute = new IdPRequestedAttribute(ATTR_NAME);
         inputAttribute.setValues(values);
         
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(inputAttribute, Attribute.class);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(inputAttribute, Attribute.class);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
 
         final AttributeDesignator attr = TranscoderSupport.<AttributeDesignator>getTranscoder(ruleset).encode(
                 null, inputAttribute, AttributeDesignator.class, ruleset);
@@ -257,9 +256,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         samlAttribute.setAttributeNamespace(ATTR_NAMESPACE);
         samlAttribute.getAttributeValues().add(stringValue);
 
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(samlAttribute);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(samlAttribute);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         final IdPAttribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
         
@@ -279,9 +278,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         final IdPAttribute inputAttribute = new IdPAttribute(ATTR_NAME);
         inputAttribute.setValues(values);
 
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(inputAttribute, Attribute.class);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(inputAttribute, Attribute.class);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         final Attribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).encode(
                 null, inputAttribute, Attribute.class, ruleset);
@@ -312,9 +311,9 @@ public class SAML1StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         samlAttribute.getAttributeValues().add(stringValue);
         samlAttribute.getAttributeValues().add(stringValue2);
 
-        final Collection<Properties> rulesets = registry.getTranscodingProperties(samlAttribute);
+        final Collection<TranscodingRule> rulesets = registry.getTranscodingRules(samlAttribute);
         Assert.assertEquals(rulesets.size(), 1);
-        final Properties ruleset = rulesets.iterator().next();
+        final TranscodingRule ruleset = rulesets.iterator().next();
         
         final IdPAttribute attr = TranscoderSupport.<Attribute>getTranscoder(ruleset).decode(null, samlAttribute, ruleset);
         

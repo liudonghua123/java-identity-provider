@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.attribute.transcoding.impl;
+package net.shibboleth.idp.attribute.transcoding;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
-import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.utilities.java.support.annotation.ParameterName;
 import net.shibboleth.utilities.java.support.annotation.constraint.Live;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
+import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 
 /**
  * Wrapper around a {@link Map} representing a rule for transcoding, used to
@@ -55,7 +55,7 @@ public class TranscodingRule {
     public TranscodingRule(@Nonnull @NonnullElements @ParameterName(name="map") final Map<String,Object> map) {
         rule = new HashMap<>(map);
     }
- 
+
     /**
      * Access the underlying mapping rule.
      * 
@@ -65,4 +65,43 @@ public class TranscodingRule {
         return rule;
     }
     
+    /**
+     * Get the value of a property key in the rule.
+     * 
+     * @param <T> type of property value
+     * @param key key of property
+     * @param type class type of property
+     * 
+     * @return the mapped value, or null
+     */
+    @Nullable public <T> T get(@Nonnull @NotEmpty final String key, @Nonnull final Class<T> type) {
+        final Object value = rule.get(key);
+        if (type.isInstance(value)) {
+            return (T) value;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Get the value of a property key in the rule or a default value if no property exists.
+     * 
+     * @param <T> type of property value
+     * @param key key of property
+     * @param type class type of property
+     * @param defValue default value
+     * 
+     * @return the mapped value, or the default
+     */
+    @Nullable public <T> T getOrDefault(@Nonnull @NotEmpty final String key, @Nonnull final Class<T> type,
+            @Nullable final T defValue) {
+        
+        final T value = get(key, type);
+        if (value != null) {
+            return value;
+        } else {
+            return defValue;
+        }
+    }
+
 }

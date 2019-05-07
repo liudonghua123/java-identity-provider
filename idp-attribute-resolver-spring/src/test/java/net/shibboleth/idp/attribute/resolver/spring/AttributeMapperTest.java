@@ -22,7 +22,6 @@ import static org.testng.Assert.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Properties;
 
 import org.opensaml.core.OpenSAMLInitBaseTestCase;
 import org.opensaml.saml.saml2.core.Attribute;
@@ -35,8 +34,10 @@ import net.shibboleth.ext.spring.config.StringToDurationConverter;
 import net.shibboleth.ext.spring.util.SchemaTypeAwareXMLBeanDefinitionReader;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
+import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
-import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
+import net.shibboleth.idp.saml.attribute.transcoding.SAML2AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2ScopedStringAttributeTranscoder;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.service.ReloadableService;
@@ -88,15 +89,15 @@ public class AttributeMapperTest extends OpenSAMLInitBaseTestCase {
         try {
             serviceableComponent = transcoderRegistry.getServiceableComponent();
             
-            Collection<Properties> rulesets = serviceableComponent.getComponent().getTranscodingProperties(
+            Collection<TranscodingRule> rulesets = serviceableComponent.getComponent().getTranscodingRules(
                     new IdPAttribute("eduPersonScopedAffiliation"), Attribute.class);
             assertEquals(rulesets.size(), 1);
-            final Properties rule = rulesets.iterator().next();
-            assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME), "urn:oid:1.3.6.1.4.1.5923.1.1.1.9");
-            assertNull(rule.get(AbstractSAML2AttributeTranscoder.PROP_NAME_FORMAT));
-            assertEquals(rule.get(AbstractSAML2AttributeTranscoder.PROP_FRIENDLY_NAME), "feduPersonScopedAffiliation");
-            assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML2ScopedStringAttributeTranscoder);
-            assertEquals(rule.get(SAML2ScopedStringAttributeTranscoder.PROP_SCOPE_DELIMITER), "#");
+            final TranscodingRule rule = rulesets.iterator().next();
+            assertEquals(rule.get(SAML2AttributeTranscoder.PROP_NAME, String.class), "urn:oid:1.3.6.1.4.1.5923.1.1.1.9");
+            assertNull(rule.get(SAML2AttributeTranscoder.PROP_NAME_FORMAT, String.class));
+            assertEquals(rule.get(SAML2AttributeTranscoder.PROP_FRIENDLY_NAME, String.class), "feduPersonScopedAffiliation");
+            assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER, AttributeTranscoder.class) instanceof SAML2ScopedStringAttributeTranscoder);
+            assertEquals(rule.get(SAML2ScopedStringAttributeTranscoder.PROP_SCOPE_DELIMITER, String.class), "#");
         } finally {
             serviceableComponent.unpinComponent();
         }

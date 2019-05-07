@@ -40,6 +40,6 @@
     </util:map>
     
     <bean id="shibboleth.TranscodingRule"
-        class="net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule" abstract="true" />
+        class="net.shibboleth.idp.attribute.transcoding.TranscodingRule" abstract="true" />
     
 </beans>

@@ -19,7 +19,7 @@
         class="net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2XMLObjectAttributeTranscoder" />
 
     <bean id="shibboleth.TranscodingRule"
-        class="net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule" abstract="true" />
+        class="net.shibboleth.idp.attribute.transcoding.TranscodingRule" abstract="true" />
 
     <util:list id="DefaultAttributeRegistry">
     

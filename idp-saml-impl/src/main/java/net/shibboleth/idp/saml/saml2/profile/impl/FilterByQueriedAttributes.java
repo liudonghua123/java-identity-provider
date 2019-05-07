@@ -19,7 +19,6 @@ package net.shibboleth.idp.saml.saml2.profile.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
@@ -46,6 +45,7 @@ import net.shibboleth.idp.attribute.context.AttributeContext;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.context.RelyingPartyContext;
 import net.shibboleth.utilities.java.support.annotation.constraint.Live;
@@ -238,12 +238,12 @@ public class FilterByQueriedAttributes extends AbstractProfileAction {
             @Nonnull @NonnullElements @Live final Multimap<String,IdPAttribute> results)
                     throws AttributeDecodingException {
         
-        final Collection<Properties> transcodingRules = registry.getTranscodingProperties(input);
+        final Collection<TranscodingRule> transcodingRules = registry.getTranscodingRules(input);
         if (transcodingRules.isEmpty()) {
             throw new AttributeDecodingException("No transcoding rule for Attribute '" + input.getName() + "'");
         }
         
-        for (final Properties rules : transcodingRules) {
+        for (final TranscodingRule rules : transcodingRules) {
             final AttributeTranscoder<Attribute> transcoder = TranscoderSupport.getTranscoder(rules);
             final IdPAttribute decodedAttribute = transcoder.decode(profileRequestContext, input, rules);
             if (decodedAttribute != null) {

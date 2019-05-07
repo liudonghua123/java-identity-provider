@@ -18,7 +18,6 @@
 package net.shibboleth.idp.saml.attribute.transcoding.impl;
 
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,6 +26,7 @@ import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.XMLObjectAttributeValue;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML1AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.SAMLEncoderSupport;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
@@ -58,7 +58,7 @@ public class SAML1XMLObjectAttributeTranscoder extends AbstractSAML1AttributeTra
 
     /** {@inheritDoc} */
     @Override @Nullable protected XMLObject encodeValue(@Nullable final ProfileRequestContext profileRequestContext,
-            @Nonnull final IdPAttribute attribute, @Nonnull final Properties properties,
+            @Nonnull final IdPAttribute attribute, @Nonnull final TranscodingRule rule,
             @Nonnull final XMLObjectAttributeValue value) throws AttributeEncodingException {
 
         return SAMLEncoderSupport.encodeXMLObjectValue(attribute, AttributeValue.DEFAULT_ELEMENT_NAME,
@@ -68,14 +68,14 @@ public class SAML1XMLObjectAttributeTranscoder extends AbstractSAML1AttributeTra
     /** {@inheritDoc} */
     @Override @Nullable protected IdPAttributeValue<?> decodeValue(
             @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final AttributeDesignator attribute,
-            @Nonnull final Properties properties, @Nullable final XMLObject value) {
+            @Nonnull final TranscodingRule rule, @Nullable final XMLObject value) {
 
         if (value == null) {
             return null;
         }
         
-        final Object includeAttributeValue = properties.getOrDefault(PROP_INCLUDE_ATTR_VALUE, Boolean.FALSE);
-        if (includeAttributeValue instanceof Boolean && (Boolean) includeAttributeValue) {
+        final Boolean includeAttributeValue = rule.getOrDefault(PROP_INCLUDE_ATTR_VALUE, Boolean.class, Boolean.FALSE);
+        if (includeAttributeValue) {
             return new XMLObjectAttributeValue(value);
         }
         

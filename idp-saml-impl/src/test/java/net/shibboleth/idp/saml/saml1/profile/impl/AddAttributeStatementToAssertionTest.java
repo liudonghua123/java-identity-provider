@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,8 +30,8 @@ import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.context.AttributeContext;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
-import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 import net.shibboleth.idp.profile.IdPEventIds;
 import net.shibboleth.idp.profile.RequestContextBuilder;
@@ -386,7 +385,7 @@ public class AddAttributeStatementToAssertionTest extends OpenSAMLInitBaseTestCa
         @Override
         @Nullable public Attribute encode(@Nullable final ProfileRequestContext profileRequestContext,
                 @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends AttributeDesignator> to,
-                @Nonnull final Properties properties) throws AttributeEncodingException {
+                @Nonnull final TranscodingRule rule) throws AttributeEncodingException {
             throw new AttributeEncodingException("Always thrown.");
         }
     }

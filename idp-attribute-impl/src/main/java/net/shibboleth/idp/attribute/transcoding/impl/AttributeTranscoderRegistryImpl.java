@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -34,6 +33,7 @@ import net.shibboleth.ext.spring.service.AbstractServiceableComponent;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.profile.logic.RelyingPartyIdPredicate;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
@@ -62,7 +62,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     @Nonnull private final Logger log = LoggerFactory.getLogger(AttributeTranscoderRegistryImpl.class);
     
     /** Registry of transcoding instructions for a given "name" and type of object. */
-    @Nonnull private final Map<String,Multimap<Class<?>,Properties>> transcodingRegistry;
+    @Nonnull private final Map<String,Multimap<Class<?>,TranscodingRule>> transcodingRegistry;
     
     /** Registry of naming functions for supported object types. */
     @Nonnull private final Map<Class<?>,Function<?,String>> namingFunctionRegistry;
@@ -142,13 +142,13 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     }
     
     /** {@inheritDoc} */
-    @Nonnull @NonnullElements @Unmodifiable public Collection<Properties> getTranscodingProperties(
+    @Nonnull @NonnullElements @Unmodifiable public Collection<TranscodingRule> getTranscodingRules(
             @Nonnull final IdPAttribute from, @Nonnull final Class<?> to) {
         ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
         Constraint.isNotNull(from, "IdPAttribute cannot be null");
         Constraint.isNotNull(to, "Target type cannot be null");
         
-        final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(from.getId());
+        final Multimap<Class<?>,TranscodingRule> propertyCollections = transcodingRegistry.get(from.getId());
         if (propertyCollections == null) {
             return Collections.emptyList();
         }
@@ -165,7 +165,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     }
 
     /** {@inheritDoc} */
-    @Nonnull @NonnullElements @Unmodifiable public <T> Collection<Properties> getTranscodingProperties(
+    @Nonnull @NonnullElements @Unmodifiable public <T> Collection<TranscodingRule> getTranscodingRules(
             @Nonnull final T from) {
         ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
         Constraint.isNotNull(from, "Input object cannot be null");
@@ -183,7 +183,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         // Don't know if we can work around this cast or not.
         final String id = ((Function<? super T,String>) namingFunction).apply(from);
         if (id != null) {
-            final Multimap<Class<?>,Properties> propertyCollections = transcodingRegistry.get(id);
+            final Multimap<Class<?>,TranscodingRule> propertyCollections = transcodingRegistry.get(id);
             
             return propertyCollections != null ? ImmutableList.copyOf(propertyCollections.get(effectiveType))
                     : Collections.emptyList();
@@ -224,9 +224,8 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             return;
         }
 
-        final Properties copy = new Properties();
-        copy.putAll(ruleset);
-        copy.put(PROP_TRANSCODER, transcoder);
+        final TranscodingRule copy = new TranscodingRule(ruleset);
+        copy.getMap().put(PROP_TRANSCODER, transcoder);
 
         final Class<?> type = ((AttributeTranscoder) transcoder).getEncodedType();
         final String targetName = ((AttributeTranscoder) transcoder).getEncodedName(copy);
@@ -235,9 +234,9 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             log.debug("Attribute mapping: {} <-> {} via {}", id, targetName, transcoder.getClass().getSimpleName());
             
             // Install mapping back to IdPAttribute's trimmed name.
-            copy.setProperty(PROP_ID, id);
+            copy.getMap().put(PROP_ID, id);
             
-            Multimap<Class<?>,Properties> rulesetsForIdPName = transcodingRegistry.get(id);
+            Multimap<Class<?>,TranscodingRule> rulesetsForIdPName = transcodingRegistry.get(id);
             if (rulesetsForIdPName == null) {
                 rulesetsForIdPName = ArrayListMultimap.create();
                 transcodingRegistry.put(id, rulesetsForIdPName);
@@ -245,7 +244,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             
             rulesetsForIdPName.put(type, copy);
 
-            Multimap<Class<?>,Properties> rulesetsForEncodedName = transcodingRegistry.get(targetName);
+            Multimap<Class<?>,TranscodingRule> rulesetsForEncodedName = transcodingRegistry.get(targetName);
             if (rulesetsForEncodedName == null) {
                 rulesetsForEncodedName = ArrayListMultimap.create();
                 transcodingRegistry.put(targetName, rulesetsForEncodedName);

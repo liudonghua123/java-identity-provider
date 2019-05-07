@@ -18,7 +18,6 @@
 package net.shibboleth.idp.saml.profile.impl;
 
 import java.util.Collection;
-import java.util.Properties;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
@@ -30,6 +29,7 @@ import net.shibboleth.idp.attribute.context.AttributeContext;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.shibboleth.idp.profile.config.navigate.IdentifierGenerationStrategyLookupFunction;
 import net.shibboleth.idp.profile.context.RelyingPartyContext;
@@ -316,7 +316,7 @@ public abstract class BaseAddAttributeStatementToAssertion<T extends SAMLObject>
             @Nonnull final Class<T> to, @Nonnull @NonnullElements @Live final Collection<T> results)
                     throws AttributeEncodingException {
         
-        final Collection<Properties> transcodingRules = registry.getTranscodingProperties(attribute, to);
+        final Collection<TranscodingRule> transcodingRules = registry.getTranscodingRules(attribute, to);
         if (transcodingRules.isEmpty()) {
             log.debug("{} Attribute {} does not have any transcoding rules, nothing to do", getLogPrefix(),
                     attribute.getId());
@@ -325,7 +325,7 @@ public abstract class BaseAddAttributeStatementToAssertion<T extends SAMLObject>
         
         int count = 0;
         
-        for (final Properties rules : transcodingRules) {
+        for (final TranscodingRule rules : transcodingRules) {
             try {
                 final AttributeTranscoder<T> transcoder = TranscoderSupport.<T>getTranscoder(rules);
                 final T encodedAttribute = transcoder.encode(profileRequestContext, attribute, to, rules);

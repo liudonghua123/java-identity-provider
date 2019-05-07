@@ -19,7 +19,6 @@ package net.shibboleth.idp.attribute.transcoding.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
-import java.util.Properties;
 
 import org.opensaml.profile.context.ProfileRequestContext;
 
@@ -30,6 +29,7 @@ import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.transcoding.AbstractAttributeTranscoder;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
@@ -44,9 +44,10 @@ public class PairTranscoder extends AbstractAttributeTranscoder<Pair> {
     }
 
     /** {@inheritDoc} */
-    public String getEncodedName(Properties properties) {
-        if (properties.containsKey("name")) {
-            return "{Pair}" + properties.getProperty("name");
+    public String getEncodedName(TranscodingRule rule) {
+        final String name = rule.get("name", String.class);
+        if (name != null) {
+            return "{Pair}" + name;
         } else {
             return null;
         }
@@ -54,10 +55,10 @@ public class PairTranscoder extends AbstractAttributeTranscoder<Pair> {
 
     /** {@inheritDoc} */
     @Override
-    public Pair doEncode(ProfileRequestContext profileRequestContext, IdPAttribute attribute, Class<? extends Pair> to, Properties properties)
+    public Pair doEncode(ProfileRequestContext profileRequestContext, IdPAttribute attribute, Class<? extends Pair> to, TranscodingRule rule)
             throws AttributeEncodingException {
         
-        final String name = StringSupport.trimOrNull(properties.getProperty("name"));
+        final String name = StringSupport.trimOrNull(rule.get("name", String.class));
         if (name == null) {
             throw new AttributeEncodingException("No name property");
         }
@@ -76,10 +77,10 @@ public class PairTranscoder extends AbstractAttributeTranscoder<Pair> {
 
     /** {@inheritDoc} */
     @Override
-    public IdPAttribute doDecode(ProfileRequestContext profileRequestContext, Pair input, Properties properties)
+    public IdPAttribute doDecode(ProfileRequestContext profileRequestContext, Pair input, TranscodingRule rule)
             throws AttributeDecodingException {
        
-        final String id = StringSupport.trimOrNull(properties.getProperty(AttributeTranscoderRegistry.PROP_ID));
+        final String id = StringSupport.trimOrNull(rule.get(AttributeTranscoderRegistry.PROP_ID, String.class));
         if (id == null) {
             throw new AttributeDecodingException("No id property");
         }

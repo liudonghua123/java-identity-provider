@@ -19,7 +19,6 @@ package net.shibboleth.idp.saml.attribute.transcoding;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
@@ -31,6 +30,7 @@ import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.IdPRequestedAttribute;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.saml.xml.SAMLConstants;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 
@@ -79,11 +79,11 @@ public abstract class AbstractSAML1AttributeTranscoder<EncodedType extends IdPAt
     }
     
     /** {@inheritDoc} */
-    @Nullable public String getEncodedName(@Nonnull final Properties properties) {
+    @Nullable public String getEncodedName(@Nonnull final TranscodingRule rule) {
         
         try {
             // SAML 1 naming should be based on only what needs to be available from the properties alone.
-            return new NamingFunction().apply(buildAttribute(null, null, AttributeDesignator.class, properties,
+            return new NamingFunction().apply(buildAttribute(null, null, AttributeDesignator.class, rule,
                     Collections.emptyList()));
         } catch (final AttributeEncodingException e) {
             return null;
@@ -94,14 +94,14 @@ public abstract class AbstractSAML1AttributeTranscoder<EncodedType extends IdPAt
     @Override
     @Nonnull protected AttributeDesignator buildAttribute(@Nullable final ProfileRequestContext profileRequestContext,
             @Nullable final IdPAttribute attribute, @Nonnull final Class<? extends AttributeDesignator> to,
-            @Nonnull final Properties properties, @Nonnull @NonnullElements final List<XMLObject> attributeValues)
+            @Nonnull final TranscodingRule rule, @Nonnull @NonnullElements final List<XMLObject> attributeValues)
                     throws AttributeEncodingException {
 
         if (attribute != null && !attribute.getValues().isEmpty() && attributeValues.isEmpty()) {
             throw new AttributeEncodingException("Failed to encode any values for attribute " + attribute.getId());
         }
 
-        final String name = properties.getProperty(PROP_NAME);
+        final String name = rule.get(PROP_NAME, String.class);
         if (Strings.isNullOrEmpty(name)) {
             throw new AttributeEncodingException("Required transcoder property 'name' not found");
         }
@@ -126,7 +126,7 @@ public abstract class AbstractSAML1AttributeTranscoder<EncodedType extends IdPAt
 
         samlAttribute.setAttributeName(name);
         samlAttribute.setAttributeNamespace(
-                properties.getProperty(PROP_NAMESPACE, SAMLConstants.SAML1_ATTR_NAMESPACE_URI));
+                rule.getOrDefault(PROP_NAMESPACE, String.class, SAMLConstants.SAML1_ATTR_NAMESPACE_URI));
         
         return samlAttribute;
     }
@@ -135,11 +135,11 @@ public abstract class AbstractSAML1AttributeTranscoder<EncodedType extends IdPAt
     @Override
     @Nonnull protected IdPAttribute buildIdPAttribute(
             @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final AttributeDesignator attribute,
-            @Nonnull final Properties properties,
+            @Nonnull final TranscodingRule rule,
             @Nonnull @NonnullElements final List<IdPAttributeValue<?>> attributeValues)
                     throws AttributeDecodingException {
         
-        final String id = properties.getProperty(AttributeTranscoderRegistry.PROP_ID);
+        final String id = rule.get(AttributeTranscoderRegistry.PROP_ID, String.class);
         if (Strings.isNullOrEmpty(id)) {
             throw new AttributeDecodingException("Required transcoder property 'id' not found");
         }

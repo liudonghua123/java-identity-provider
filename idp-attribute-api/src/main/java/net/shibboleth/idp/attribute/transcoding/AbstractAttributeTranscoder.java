@@ -17,7 +17,6 @@
 
 package net.shibboleth.idp.attribute.transcoding;
 
-import java.util.Properties;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -69,38 +68,28 @@ public abstract class AbstractAttributeTranscoder<T> extends AbstractInitializab
     /** {@inheritDoc} */
     @Nullable public T encode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends T> to,
-            @Nonnull final Properties properties) throws AttributeEncodingException {
+            @Nonnull final TranscodingRule rule) throws AttributeEncodingException {
         ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
         Constraint.isNotNull(attribute, "Attribute to encode cannot be null");
 
-        if (!checkActivation(profileRequestContext, properties)) {
+        if (!checkActivation(profileRequestContext, rule)) {
             return null;
         }
 
-        return doEncode(profileRequestContext, attribute, to, properties);
+        return doEncode(profileRequestContext, attribute, to, rule);
     }
     
-    /**
-     * Decode the supplied object into a protocol-neutral representation.
-     * 
-     * @param profileRequestContext current profile request context
-     * @param input the object to decode
-     * @param properties properties governing the decoding process, principally the resulting attribute's naming
-     * 
-     * @return the attribute the object was decoded into
-     * 
-     * @throws AttributeDecodingException if unable to successfully decode object
-     */
+    /** {@inheritDoc} */
     @Nullable public IdPAttribute decode(@Nullable final ProfileRequestContext profileRequestContext,
-            @Nonnull final T input, @Nonnull final Properties properties) throws AttributeDecodingException {
+            @Nonnull final T input, @Nonnull final TranscodingRule rule) throws AttributeDecodingException {
         ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
         Constraint.isNotNull(input, "Attribute to decode cannot be null");
 
-        if (!checkActivation(profileRequestContext, properties)) {
+        if (!checkActivation(profileRequestContext, rule)) {
             return null;
         }
         
-        return doDecode(profileRequestContext, input, properties);
+        return doDecode(profileRequestContext, input, rule);
     }
     
     
@@ -110,7 +99,7 @@ public abstract class AbstractAttributeTranscoder<T> extends AbstractInitializab
      * @param profileRequestContext current profile request context
      * @param attribute the attribute to encode
      * @param to specific type of object to encode
-     * @param properties properties governing the encoding process, principally the resulting object's naming
+     * @param rule properties governing the encoding process, principally the resulting object's naming
      * 
      * @return the Object the attribute was encoded into
      * 
@@ -118,7 +107,7 @@ public abstract class AbstractAttributeTranscoder<T> extends AbstractInitializab
      */
     @Nullable protected abstract T doEncode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends T> to,
-            @Nonnull final Properties properties) throws AttributeEncodingException;
+            @Nonnull final TranscodingRule rule) throws AttributeEncodingException;
     
 
     /**
@@ -126,14 +115,14 @@ public abstract class AbstractAttributeTranscoder<T> extends AbstractInitializab
      * 
      * @param profileRequestContext current profile request context
      * @param input the object to decode
-     * @param properties properties governing the decoding process, principally the resulting attribute's naming
+     * @param rule properties governing the decoding process, principally the resulting attribute's naming
      * 
      * @return the attribute the object was decoded into
      * 
      * @throws AttributeDecodingException if unable to successfully decode object
      */
     @Nullable protected abstract IdPAttribute doDecode(@Nullable final ProfileRequestContext profileRequestContext,
-            @Nonnull final T input, @Nonnull final Properties properties) throws AttributeDecodingException;
+            @Nonnull final T input, @Nonnull final TranscodingRule rule) throws AttributeDecodingException;
 
 
     /**
@@ -141,21 +130,21 @@ public abstract class AbstractAttributeTranscoder<T> extends AbstractInitializab
      * Apply any activation rules to the request.
      * 
      * @param profileRequestContext current profile request context
-     * @param properties properties governing the transoding process
+     * @param rule properties governing the transoding process
      * 
      * @return true iff the process should continue
      */
     private boolean checkActivation(@Nullable final ProfileRequestContext profileRequestContext,
-            @Nonnull final Properties properties) {
+            @Nonnull final TranscodingRule rule) {
         
         if (!activationCondition.test(profileRequestContext)) {
             log.debug("Transcoder inactive");
             return false;
         }
 
-        final Object condition = properties.get(AttributeTranscoderRegistry.PROP_CONDITION);
-        if (condition instanceof Predicate) {
-            if (!((Predicate) condition).test(profileRequestContext)) {
+        final Predicate condition = rule.get(AttributeTranscoderRegistry.PROP_CONDITION, Predicate.class);
+        if (condition != null) {
+            if (!condition.test(profileRequestContext)) {
                 log.debug("Transcoder inactive");
                 return false;
             }

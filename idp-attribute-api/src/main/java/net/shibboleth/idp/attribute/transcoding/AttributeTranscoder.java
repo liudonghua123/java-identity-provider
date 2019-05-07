@@ -17,7 +17,6 @@
 
 package net.shibboleth.idp.attribute.transcoding;
 
-import java.util.Properties;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -59,12 +58,12 @@ public interface AttributeTranscoder<T> extends InitializableComponent {
      * Get the name of the encoded object that would be created by a given set of
      * instructions.
      * 
-     * @param properties properties governing the encoding process
+     * @param rule properties governing the encoding process
      * 
      * @return a canonical name for objects produced by this transcoder for the
      *  given instructions
      */
-    @Nullable @NotEmpty String getEncodedName(@Nonnull final Properties properties);
+    @Nullable @NotEmpty String getEncodedName(@Nonnull final TranscodingRule rule);
     
     /**
      * Encode the supplied attribute into a protocol specific representation.
@@ -72,7 +71,7 @@ public interface AttributeTranscoder<T> extends InitializableComponent {
      * @param profileRequestContext current profile request context
      * @param attribute the attribute to encode
      * @param to specific type of object to encode
-     * @param properties properties governing the encoding process, principally the resulting object's naming
+     * @param rule properties governing the encoding process, principally the resulting object's naming
      * 
      * @return the Object the attribute was encoded into
      * 
@@ -80,20 +79,20 @@ public interface AttributeTranscoder<T> extends InitializableComponent {
      */
     @Nullable T encode(@Nullable final ProfileRequestContext profileRequestContext,
             @Nonnull final IdPAttribute attribute, @Nonnull final Class<? extends T> to,
-            @Nonnull final Properties properties) throws AttributeEncodingException;
+            @Nonnull final TranscodingRule rule) throws AttributeEncodingException;
     
     /**
      * Decode the supplied object into a protocol-neutral representation.
      * 
      * @param profileRequestContext current profile request context
      * @param input the object to decode
-     * @param properties properties governing the decoding process, principally the resulting attribute's naming
+     * @param rule properties governing the decoding process, principally the resulting attribute's naming
      * 
      * @return the attribute the object was decoded into
      * 
      * @throws AttributeDecodingException if unable to successfully decode object
      */
     @Nullable IdPAttribute decode(@Nullable final ProfileRequestContext profileRequestContext,
-            @Nonnull final T input, @Nonnull final Properties properties) throws AttributeDecodingException;
+            @Nonnull final T input, @Nonnull final TranscodingRule rule) throws AttributeDecodingException;
     
 }

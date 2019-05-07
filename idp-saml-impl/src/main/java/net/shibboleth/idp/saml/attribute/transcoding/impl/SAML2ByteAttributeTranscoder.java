@@ -17,8 +17,6 @@
 
 package net.shibboleth.idp.saml.attribute.transcoding.impl;
 
-import java.util.Properties;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -26,6 +24,7 @@ import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.ByteAttributeValue;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.SAMLEncoderSupport;
 import net.shibboleth.utilities.java.support.codec.Base64Support;
@@ -54,20 +53,19 @@ public class SAML2ByteAttributeTranscoder extends AbstractSAML2AttributeTranscod
 
     /** {@inheritDoc} */
     @Override @Nullable protected XMLObject encodeValue(@Nullable final ProfileRequestContext profileRequestContext,
-            @Nonnull final IdPAttribute attribute, @Nonnull final Properties properties,
+            @Nonnull final IdPAttribute attribute, @Nonnull final TranscodingRule rule,
             @Nonnull final ByteAttributeValue value) throws AttributeEncodingException {
                 
-        final Object encodeType = properties.getOrDefault(PROP_ENCODE_TYPE, Boolean.TRUE);
+        final Boolean encodeType = rule.getOrDefault(PROP_ENCODE_TYPE, Boolean.class, Boolean.TRUE);
 
-        return SAMLEncoderSupport.encodeByteArrayValue(attribute,
-                AttributeValue.DEFAULT_ELEMENT_NAME, value.getValue(),
-                encodeType instanceof Boolean ? (Boolean) encodeType : true);
+        return SAMLEncoderSupport.encodeByteArrayValue(attribute, AttributeValue.DEFAULT_ELEMENT_NAME, value.getValue(),
+                encodeType);
     }
 
     /** {@inheritDoc} */
     @Override @Nullable protected IdPAttributeValue<?> decodeValue(
             @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
-            @Nonnull final Properties properties, @Nullable final XMLObject value) {
+            @Nonnull final TranscodingRule rule, @Nullable final XMLObject value) {
         
         final String s = getStringValue(value);
         if (null == s) {

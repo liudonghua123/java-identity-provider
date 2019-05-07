@@ -17,8 +17,6 @@
 
 package net.shibboleth.idp.saml.attribute.transcoding.impl;
 
-import java.util.Properties;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
@@ -27,6 +25,7 @@ import net.shibboleth.idp.attribute.AttributeEncodingException;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.ScopedStringAttributeValue;
+import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.SAMLEncoderSupport;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
@@ -65,23 +64,21 @@ public class SAML2ScopedStringAttributeTranscoder extends AbstractSAML2Attribute
 
     /** {@inheritDoc} */
     @Override @Nullable protected XMLObject encodeValue(@Nullable final ProfileRequestContext profileRequestContext,
-            @Nonnull final IdPAttribute attribute, @Nonnull final Properties properties,
+            @Nonnull final IdPAttribute attribute, @Nonnull final TranscodingRule rule,
             @Nonnull final ScopedStringAttributeValue value) throws AttributeEncodingException {
                 
-        final Object encodeType = properties.getOrDefault(PROP_ENCODE_TYPE, Boolean.TRUE);
+        final Boolean encodeType = rule.getOrDefault(PROP_ENCODE_TYPE, Boolean.class, Boolean.TRUE);
 
-        final String scopeType = properties.getProperty(PROP_SCOPE_TYPE, "inline");
+        final String scopeType = rule.getOrDefault(PROP_SCOPE_TYPE, String.class, "inline");
         
         if ("attribute".equals(scopeType)) {
-            final String scopeAttributeName = properties.getProperty(PROP_SCOPE_ATTR_NAME, "Scope");
+            final String scopeAttributeName = rule.getOrDefault(PROP_SCOPE_ATTR_NAME, String.class, "Scope");
             return SAMLEncoderSupport.encodeScopedStringValueAttribute(attribute,
-                    AttributeValue.DEFAULT_ELEMENT_NAME, value, scopeAttributeName,
-                    encodeType instanceof Boolean ? (Boolean) encodeType : true);
+                    AttributeValue.DEFAULT_ELEMENT_NAME, value, scopeAttributeName, encodeType);
         } else if ("inline".equals(scopeType)) {
-            final String scopeDelimiter = properties.getProperty(PROP_SCOPE_DELIMITER, "@");
+            final String scopeDelimiter = rule.getOrDefault(PROP_SCOPE_DELIMITER, String.class, "@");
             return SAMLEncoderSupport.encodeScopedStringValueInline(
-                    attribute, AttributeValue.DEFAULT_ELEMENT_NAME, value, scopeDelimiter,
-                    encodeType instanceof Boolean ? (Boolean) encodeType : true);
+                    attribute, AttributeValue.DEFAULT_ELEMENT_NAME, value, scopeDelimiter, encodeType);
         } else {
             throw new AttributeEncodingException("Invalid scopeType property (must be inline or attribute)");
         }
@@ -90,7 +87,7 @@ public class SAML2ScopedStringAttributeTranscoder extends AbstractSAML2Attribute
     /** {@inheritDoc} */
     @Override @Nullable protected IdPAttributeValue<?> decodeValue(
             @Nullable final ProfileRequestContext profileRequestContext, @Nonnull final Attribute attribute,
-            @Nonnull final Properties properties, @Nullable final XMLObject value) {
+            @Nonnull final TranscodingRule rule, @Nullable final XMLObject value) {
         
         if (value == null) {
             return null;
@@ -101,12 +98,12 @@ public class SAML2ScopedStringAttributeTranscoder extends AbstractSAML2Attribute
             return null;
         }
 
-        final String scopeType = properties.getProperty(PROP_SCOPE_TYPE, "inline");
+        final String scopeType = rule.getOrDefault(PROP_SCOPE_TYPE, String.class, "inline");
         if ("attribute".equals(scopeType)) {
             
             if (value instanceof AttributeExtensibleXMLObject) {
                 final String scopeValue = ((AttributeExtensibleXMLObject) value).getUnknownAttributes().get(
-                        new QName(null, properties.getProperty(PROP_SCOPE_ATTR_NAME, "Scope")));
+                        new QName(null, rule.getOrDefault(PROP_SCOPE_ATTR_NAME, String.class, "Scope")));
                 if (scopeValue == null) {
                     log.warn("Scope not found in designated XML attribute");
                     return null;
@@ -119,7 +116,7 @@ public class SAML2ScopedStringAttributeTranscoder extends AbstractSAML2Attribute
                 return null;
             }
         } else if ("inline".equals(scopeType)) {
-            final String scopeDelimiter = properties.getProperty(PROP_SCOPE_DELIMITER, "@");
+            final String scopeDelimiter = rule.getOrDefault(PROP_SCOPE_DELIMITER, String.class, "@");
             final int offset = stringValue.indexOf(scopeDelimiter);
             if (offset < 0) {
                 log.warn("Ignoring value with no scope delimiter ({})", scopeDelimiter);

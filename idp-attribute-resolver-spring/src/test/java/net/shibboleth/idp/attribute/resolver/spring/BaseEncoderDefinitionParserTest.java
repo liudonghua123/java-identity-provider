@@ -56,17 +56,16 @@ public abstract class BaseEncoderDefinitionParserTest extends BaseAttributeDefin
 
         final GenericApplicationContext context = new GenericApplicationContext();
 
-        if (activationValue != null || encodeType != null) {
-            final MockPropertySource mockEnvVars = new MockPropertySource();
-            if (activationValue != null) {
-                mockEnvVars.setProperty("the.activation.property", activationValue);
-            }
-            if (encodeType != null) {
-                mockEnvVars.setProperty("the.encodeType.property", encodeType);
-            }
-            final MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
-            propertySources.replace(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, mockEnvVars);
+        final MockPropertySource mockEnvVars = new MockPropertySource();
+        if (activationValue != null) {
+            mockEnvVars.setProperty("the.activation.property", activationValue);
         }
+        if (encodeType != null) {
+            mockEnvVars.setProperty("the.encodeType.property", encodeType);
+        }
+        mockEnvVars.setProperty("the.empty.property", "");
+        final MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
+        propertySources.replace(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, mockEnvVars);
 
         return getAttributeTranscoderRule(fileName, context);
     }
@@ -74,7 +73,7 @@ public abstract class BaseEncoderDefinitionParserTest extends BaseAttributeDefin
     protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName, final GenericApplicationContext context) {
 
         setTestContext(context);
-        context.setDisplayName("ApplicationContext for encocder");
+        context.setDisplayName("ApplicationContext for enccoder");
 
         return getBean(ENCODER_FILE_PATH + fileName, Collection.class, context);
 
@@ -82,8 +81,11 @@ public abstract class BaseEncoderDefinitionParserTest extends BaseAttributeDefin
 
     static protected void checkEncodeType(final Map<String,Object> rule, boolean expectedValue) {
         final Object encodeType = rule.getOrDefault(PROP_ENCODE_TYPE, Boolean.TRUE);
-        assertTrue(encodeType instanceof Boolean);
-        assertTrue(encodeType.equals(expectedValue));
+        if (encodeType instanceof Boolean) {
+            assertTrue(encodeType.equals(expectedValue));
+        } else {
+            assertTrue(expectedValue);
+        }
     }
     
     abstract protected void testWithProperties(final boolean activation, final Boolean encodeType);

@@ -21,14 +21,14 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.w3c.dom.Element;
+
+import net.shibboleth.ext.spring.util.SpringSupport;
 import net.shibboleth.idp.saml.attribute.transcoding.SAML2AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
-
-import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.xml.ParserContext;
-import org.w3c.dom.Element;
 
 /**
  * Base class for Spring bean definition parser for SAML 1 attribute encoders.
@@ -59,11 +59,7 @@ public abstract class BaseSAML2AttributeEncoderParser extends BaseAttributeEncod
         
         final String value = StringSupport.trimOrNull(config.getAttributeNS(null, "encodeType"));
         if (value != null) {
-            final BeanDefinitionBuilder booleanBuilder =
-                BeanDefinitionBuilder.rootBeanDefinition(Boolean.class, "valueOf");
-            booleanBuilder.addConstructorArgValue(value);
-                
-            rule.put(SAMLAttributeTranscoder.PROP_ENCODE_TYPE,booleanBuilder.getBeanDefinition());
+            rule.put(SAMLAttributeTranscoder.PROP_ENCODE_TYPE,SpringSupport.getStringValueAsBoolean(value));
         }
     }
 }

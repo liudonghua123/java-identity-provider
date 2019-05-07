@@ -53,7 +53,7 @@ public class SAML1StringAttributeEncoderParserTest extends BaseEncoderDefinition
         assertEquals(rule.get(SAMLAttributeTranscoder.PROP_NAME), "SAML1_STRING_ATTRIBUTE_NAME");
         assertEquals(rule.get(SAML1AttributeTranscoder.PROP_NAMESPACE), "SAML1_STRING_ATTRIBUTE_NAME_SPACE");
         assertEquals(activation, ((Predicate) rule.get(AttributeTranscoderRegistry.PROP_CONDITION)).test(null));
-        checkEncodeType(rule, encodeType!=null ? encodeType : true);
+        checkEncodeType(rule, true);
     }
 
     

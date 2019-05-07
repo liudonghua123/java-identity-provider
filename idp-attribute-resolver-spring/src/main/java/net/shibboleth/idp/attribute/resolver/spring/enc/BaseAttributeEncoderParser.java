@@ -17,13 +17,13 @@
 
 package net.shibboleth.idp.attribute.resolver.spring.enc;
 
-import java.util.Collections;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
 
 import net.shibboleth.idp.attribute.resolver.spring.impl.AttributeResolverNamespaceHandler;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
 import net.shibboleth.idp.profile.logic.ScriptedPredicate;
 import net.shibboleth.idp.profile.spring.relyingparty.metadata.ScriptTypeBeanParser;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
@@ -53,8 +53,8 @@ public abstract class BaseAttributeEncoderParser extends AbstractSingleBeanDefin
 
     /** {@inheritDoc} */
     @Override
-    protected Class<?> getBeanClass(final Element element) {
-        return Collections.class;
+    protected Class<TranscodingRule> getBeanClass(final Element element) {
+        return TranscodingRule.class;
     }
     
     /** {@inheritDoc} */
@@ -75,7 +75,6 @@ public abstract class BaseAttributeEncoderParser extends AbstractSingleBeanDefin
 
         final ManagedMap rule = new ManagedMap();
 
-        builder.setFactoryMethod("singletonList");
         builder.addConstructorArgValue(rule);
         
         if (config.getParentNode() instanceof Element && ((Element)config.getParentNode()).hasAttributeNS(null, "id")) {

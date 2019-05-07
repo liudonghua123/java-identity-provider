@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 import net.shibboleth.idp.attribute.resolver.AttributeDefinition;
 import net.shibboleth.idp.attribute.resolver.spring.BaseAttributeDefinitionParserTest;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
+import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
 import net.shibboleth.idp.saml.attribute.transcoding.impl.SAML2StringAttributeTranscoder;
 
 /**
@@ -42,13 +43,12 @@ public class Regressions extends BaseAttributeDefinitionParserTest {
         context.refresh();
      
         Collection<AttributeDefinition> definitions = context.getBeansOfType(AttributeDefinition.class).values();
-        Collection<Collection> transcoderRules = context.getBeansOfType(Collection.class).values();
+        Collection<TranscodingRule> transcoderRules = context.getBeansOfType(TranscodingRule.class).values();
         
         assertEquals(definitions.size(), 1);
         assertEquals(transcoderRules.size(), 1);
-        assertEquals(transcoderRules.iterator().next().size(), 1);
         
-        final Map<String,Object> rule = (Map<String, Object>) transcoderRules.iterator().next().iterator().next();
+        final Map<String,Object> rule = transcoderRules.iterator().next().getMap();
         assertEquals(rule.get(AttributeTranscoderRegistry.PROP_ID), "skillsoftdept");
         assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML2StringAttributeTranscoder);
     }

@@ -20,7 +20,6 @@ package net.shibboleth.idp.attribute.resolver.spring;
 import static net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder.PROP_ENCODE_TYPE;
 import static org.testng.Assert.assertTrue;
 
-import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.context.support.GenericApplicationContext;
@@ -29,16 +28,18 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.mock.env.MockPropertySource;
 import org.testng.annotations.Test;
 
+import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
+
 /**
  * Base class for testing Attribute Encoding Parsers
  */
 public abstract class BaseEncoderDefinitionParserTest extends BaseAttributeDefinitionParserTest {
 
-    protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName) {
+    protected TranscodingRule getAttributeTranscoderRule(final String fileName) {
         return getAttributeTranscoderRule(fileName, null, null);
     }
     
-    protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName,final boolean activation, final Boolean encodeType) {
+    protected TranscodingRule getAttributeTranscoderRule(final String fileName,final boolean activation, final Boolean encodeType) {
         final String encodeTypeString;
         if (null == encodeType) {
             encodeTypeString = null;
@@ -50,7 +51,7 @@ public abstract class BaseEncoderDefinitionParserTest extends BaseAttributeDefin
         return getAttributeTranscoderRule(fileName, activation?"true":"false", encodeTypeString);
     }
 
-    private Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName,
+    private TranscodingRule getAttributeTranscoderRule(final String fileName,
             final String activationValue,
             final String encodeType) {
 
@@ -70,12 +71,12 @@ public abstract class BaseEncoderDefinitionParserTest extends BaseAttributeDefin
         return getAttributeTranscoderRule(fileName, context);
     }
     
-    protected Collection<Map<String,Object>> getAttributeTranscoderRule(final String fileName, final GenericApplicationContext context) {
+    protected TranscodingRule getAttributeTranscoderRule(final String fileName, final GenericApplicationContext context) {
 
         setTestContext(context);
         context.setDisplayName("ApplicationContext for enccoder");
 
-        return getBean(ENCODER_FILE_PATH + fileName, Collection.class, context);
+        return getBean(ENCODER_FILE_PATH + fileName, TranscodingRule.class, context);
 
     }
 

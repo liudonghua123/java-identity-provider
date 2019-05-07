@@ -106,7 +106,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * 
      * <p>The rules MUST contain at least:</p>
      * <ul>
-     *  <li>{@link #PROP_ID} - an {@link AttributeTranscoder} instance supporting the type</li>
+     *  <li>{@link #PROP_ID} - internal attribute ID to map to/from</li>
      *  <li>{@link #PROP_TRANSCODER} - an {@link AttributeTranscoder} instance supporting the type</li>
      * </ul>
      * 
@@ -114,7 +114,7 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
      * 
      * @param mappings transcoding rulesets
      */
-    public void setTranscoderRegistry(@Nonnull @NonnullElements final Collection<Map<String,Object>> mappings) {
+    public void setTranscoderRegistry(@Nonnull @NonnullElements final Collection<TranscodingRule> mappings) {
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
         
        transcodingRegistry.clear();
@@ -123,20 +123,20 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
             return;
         }
         
-        for (final Map<String,Object> mapping : Collections2.filter(mappings, Predicates.notNull())) {
+        for (final TranscodingRule mapping : Collections2.filter(mappings, Predicates.notNull())) {
             
-            final Object prop = mapping.get(PROP_ID);
+            final Object prop = mapping.getMap().get(PROP_ID);
             final String internalId = StringSupport.trimOrNull(prop instanceof String ? (String) prop : null);
             if (internalId != null) {
 
-                final Predicate activationCondition = buildActivationCondition(mapping);
+                final Predicate activationCondition = buildActivationCondition(mapping.getMap());
                 if (activationCondition != null) {
-                    mapping.put(PROP_CONDITION, activationCondition);
+                    mapping.getMap().put(PROP_CONDITION, activationCondition);
                 } else {
-                    mapping.remove(PROP_CONDITION);
+                    mapping.getMap().remove(PROP_CONDITION);
                 }
                 
-                addMapping(internalId, mapping);
+                addMapping(internalId, mapping.getMap());
             }
         }
     }

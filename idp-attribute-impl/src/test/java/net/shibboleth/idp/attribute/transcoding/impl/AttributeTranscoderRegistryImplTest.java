@@ -82,7 +82,11 @@ public class AttributeTranscoderRegistryImplTest {
         ruleset4.put(AttributeTranscoderRegistry.PROP_TRANSCODER, "net.shibboleth.idp.attribute.transcoding.impl.PairTranscoder");
         ruleset4.put("name", "baz");
         
-        registry.setTranscoderRegistry(Arrays.asList(ruleset1, ruleset2, ruleset3, ruleset4));
+        registry.setTranscoderRegistry(Arrays.asList(
+                new TranscodingRule(ruleset1),
+                new TranscodingRule(ruleset2),
+                new TranscodingRule(ruleset3),
+                new TranscodingRule(ruleset4)));
         
         registry.initialize();
     }

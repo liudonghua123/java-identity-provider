@@ -22,7 +22,6 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -43,11 +42,8 @@ public class SAML1Base64AttributeEncoderParserTest extends BaseEncoderDefinition
   
     protected void testWithProperties(final boolean activation, final Boolean encodeType) {
         
-        final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml1Base64.xml", activation, encodeType);
-        assertEquals(rules.size(), 1);
-        
-        final Map<String,Object> rule = rules.iterator().next();
+        final Map<String,Object> rule =
+                getAttributeTranscoderRule("resolver/saml1Base64.xml", activation, encodeType).getMap();
 
         assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML1ByteAttributeTranscoder);
         assertEquals(rule.get(SAMLAttributeTranscoder.PROP_NAME), "SAML1_BASE64_ATTRIBUTE_NAME");
@@ -58,11 +54,7 @@ public class SAML1Base64AttributeEncoderParserTest extends BaseEncoderDefinition
 
     
     @Test public void defaultCase() {
-        final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml1Base64Default.xml");
-        assertEquals(rules.size(), 1);
-        
-        final Map<String,Object> rule = rules.iterator().next();
+        final Map<String,Object> rule = getAttributeTranscoderRule("resolver/saml1Base64Default.xml").getMap();
 
         assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML1ByteAttributeTranscoder);
         assertEquals(rule.get(SAML1AttributeTranscoder.PROP_NAME), "Base64_ATTRIBUTE");

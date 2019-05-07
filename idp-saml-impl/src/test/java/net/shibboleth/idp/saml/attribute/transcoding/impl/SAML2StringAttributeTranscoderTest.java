@@ -35,6 +35,7 @@ import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.TranscoderSupport;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
+import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
 import net.shibboleth.idp.saml.attribute.transcoding.AbstractSAML2AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.SAML2AttributeTranscoder;
 import net.shibboleth.idp.saml.attribute.transcoding.SAMLAttributeTranscoder;
@@ -99,7 +100,7 @@ public class SAML2StringAttributeTranscoderTest extends OpenSAMLInitBaseTestCase
         ruleset1.put(SAML2AttributeTranscoder.PROP_NAME_FORMAT, ATTR_NAMEFORMAT);
         ruleset1.put(SAML2AttributeTranscoder.PROP_FRIENDLY_NAME, ATTR_FRIENDLYNAME);
         
-        registry.setTranscoderRegistry(Collections.singletonList(ruleset1));
+        registry.setTranscoderRegistry(Collections.singletonList(new TranscodingRule(ruleset1)));
         
         registry.initialize();
     }

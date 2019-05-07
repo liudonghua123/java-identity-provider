@@ -22,7 +22,6 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -43,11 +42,8 @@ public class SAML2ScopedStringAttributeEncoderParserTest extends BaseEncoderDefi
 
     protected void testWithProperties(final boolean activation, final Boolean encodeType) {
         
-        final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml2Scoped.xml", activation, encodeType);
-        assertEquals(rules.size(), 1);
-        
-        final Map<String,Object> rule = rules.iterator().next();
+        final Map<String,Object> rule =
+                getAttributeTranscoderRule("resolver/saml2Scoped.xml", activation, encodeType).getMap();
 
         assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML2ScopedStringAttributeTranscoder);
         assertEquals(rule.get(SAMLAttributeTranscoder.PROP_NAME), "ATTRIBUTE_NAME");
@@ -61,11 +57,7 @@ public class SAML2ScopedStringAttributeEncoderParserTest extends BaseEncoderDefi
     }
     
     @Test public void defaultCase() {
-        final Collection<Map<String,Object>> rules =
-                getAttributeTranscoderRule("resolver/saml2ScopedDefault.xml");
-        assertEquals(rules.size(), 1);
-        
-        final Map<String,Object> rule = rules.iterator().next();
+        final Map<String,Object> rule = getAttributeTranscoderRule("resolver/saml2ScopedDefault.xml").getMap();
 
         assertTrue(rule.get(AttributeTranscoderRegistry.PROP_TRANSCODER) instanceof SAML2ScopedStringAttributeTranscoder);
         assertEquals(rule.get(SAMLAttributeTranscoder.PROP_NAME), "name");

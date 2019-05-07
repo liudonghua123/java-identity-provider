@@ -32,6 +32,7 @@ import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.attribute.context.AttributeContext;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
+import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
 import net.shibboleth.idp.profile.ActionTestingSupport;
 import net.shibboleth.idp.profile.IdPEventIds;
 import net.shibboleth.idp.profile.RequestContextBuilder;
@@ -123,7 +124,10 @@ public class AddAttributeStatementToAssertionTest extends OpenSAMLInitBaseTestCa
         rule2_1.put(SAMLAttributeTranscoder.PROP_NAME, MY_NAME_2);
         rule2_1.put(SAML1AttributeTranscoder.PROP_NAMESPACE, MY_NAMESPACE);
 
-        registry.setTranscoderRegistry(Arrays.asList(rule1_1, rule1_2, rule2_1));
+        registry.setTranscoderRegistry(Arrays.asList(
+                new TranscodingRule(rule1_1),
+                new TranscodingRule(rule1_2),
+                new TranscodingRule(rule2_1)));
         
         registry.initialize();
         
@@ -187,7 +191,7 @@ public class AddAttributeStatementToAssertionTest extends OpenSAMLInitBaseTestCa
         rule.put(SAMLAttributeTranscoder.PROP_NAME, MY_NAME_1);
         rule.put(SAML1AttributeTranscoder.PROP_NAMESPACE, MY_NAMESPACE);
         
-        localregistry.setTranscoderRegistry(Collections.singletonList(rule));
+        localregistry.setTranscoderRegistry(Collections.singletonList(new TranscodingRule(rule)));
         localregistry.initialize();
         
         action.setTranscoderRegistry(new RegistryService(localregistry));
@@ -223,7 +227,7 @@ public class AddAttributeStatementToAssertionTest extends OpenSAMLInitBaseTestCa
         rule.put(SAMLAttributeTranscoder.PROP_NAME, MY_NAME_1);
         rule.put(SAML1AttributeTranscoder.PROP_NAMESPACE, MY_NAMESPACE);
         
-        localregistry.setTranscoderRegistry(Collections.singletonList(rule));
+        localregistry.setTranscoderRegistry(Collections.singletonList(new TranscodingRule(rule)));
         localregistry.initialize();
         
         action.setTranscoderRegistry(new RegistryService(localregistry));

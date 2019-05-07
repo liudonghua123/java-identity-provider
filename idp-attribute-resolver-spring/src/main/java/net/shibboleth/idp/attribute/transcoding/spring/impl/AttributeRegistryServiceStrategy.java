@@ -17,7 +17,6 @@
 
 package net.shibboleth.idp.attribute.transcoding.spring.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
@@ -29,11 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
-
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
+import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRule;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.AbstractIdentifiableInitializableComponent;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
@@ -71,21 +68,11 @@ public class AttributeRegistryServiceStrategy extends AbstractIdentifiableInitia
 
         final Map<Class<?>,Function<?,String>> namingRegistryBean = appContext.getBean(namingRegistry, Map.class);
         
-        final Collection<Collection> mappingBeans = appContext.getBeansOfType(Collection.class).values();
-        
-        final Collection<Map<String,Object>> mappings = new ArrayList<>();
-        
-        for (final Collection c : Collections2.filter(mappingBeans, Predicates.notNull())) {
-            for (final Object o : c) {
-                if (o instanceof Map) {
-                    mappings.add((Map<String,Object>) o);
-                }
-            }
-        }
+        final Collection<TranscodingRule> mappingBeans = appContext.getBeansOfType(TranscodingRule.class).values();
 
         final AttributeTranscoderRegistryImpl registry = new AttributeTranscoderRegistryImpl();
         registry.setNamingRegistry(namingRegistryBean);
-        registry.setTranscoderRegistry(mappings);
+        registry.setTranscoderRegistry(mappingBeans);
         registry.setId(getId());
         registry.setApplicationContext(appContext);
 

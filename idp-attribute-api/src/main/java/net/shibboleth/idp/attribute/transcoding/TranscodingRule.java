@@ -17,11 +17,16 @@
 
 package net.shibboleth.idp.attribute.transcoding;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import org.springframework.core.io.Resource;
 
 import net.shibboleth.utilities.java.support.annotation.ParameterName;
 import net.shibboleth.utilities.java.support.annotation.constraint.Live;
@@ -54,6 +59,31 @@ public class TranscodingRule {
      */
     public TranscodingRule(@Nonnull @NonnullElements @ParameterName(name="map") final Map<String,Object> map) {
         rule = new HashMap<>(map);
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param properties a property set to initialize the map
+     * 
+     * <p>The rule MUST contain at least:</p>
+     * <ul>
+     *  <li>
+     *  {@link AttributeTranscoderRegistry#PROP_ID} - internal attribute ID to map to/from
+     *  </li>
+     *  <li>
+     *  {@link AttributeTranscoderRegistry#PROP_TRANSCODER} - {@link AttributeTranscoder} class name
+     *  </li>
+     * </ul>
+     */
+    public TranscodingRule(@Nonnull @NonnullElements @ParameterName(name="properties") final Properties properties) {
+        rule = new HashMap<>(properties.size());
+        properties.forEach(
+                (k,v) -> {
+                    if (k instanceof String && v != null) {
+                        rule.put((String) k, v);
+                    }
+                });
     }
 
     /**
@@ -102,6 +132,27 @@ public class TranscodingRule {
         } else {
             return defValue;
         }
+    }
+
+    /**
+     * Build a new rule from a property set resource.
+     * 
+     * @param resource a property set to initialize the map
+     * 
+     * @return the new rule 
+     * 
+     * @throws IOException if an error occurs
+     */
+    @Nonnull public static TranscodingRule fromResource(
+            @Nonnull @ParameterName(name="resource") final Resource resource) throws IOException {
+        
+        final Properties props = new Properties();
+    
+        try (final InputStream is = resource.getInputStream()) {
+            props.load(is);
+        }
+        
+        return new TranscodingRule(props);
     }
 
 }

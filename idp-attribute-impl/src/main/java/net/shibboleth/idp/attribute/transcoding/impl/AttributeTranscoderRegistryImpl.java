@@ -58,6 +58,9 @@ import com.google.common.collect.Multimap;
 public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponent<AttributeTranscoderRegistry>
         implements AttributeTranscoderRegistry {
 
+    /** Bean name for identifying an {@link AttributeTranscoder} object to install. */
+    @Nonnull @NotEmpty static final String PROP_TRANSCODER_BEAN = "transcoder_bean";
+    
     /** Class logger. */
     @Nonnull private final Logger log = LoggerFactory.getLogger(AttributeTranscoderRegistryImpl.class);
     
@@ -125,10 +128,8 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
         
         for (final TranscodingRule mapping : Collections2.filter(mappings, Predicates.notNull())) {
             
-            final Object prop = mapping.getMap().get(PROP_ID);
-            final String internalId = StringSupport.trimOrNull(prop instanceof String ? (String) prop : null);
+            final String internalId = StringSupport.trimOrNull(mapping.get(PROP_ID, String.class));
             if (internalId != null) {
-
                 final Predicate activationCondition = buildActivationCondition(mapping.getMap());
                 if (activationCondition != null) {
                     mapping.getMap().put(PROP_CONDITION, activationCondition);
@@ -136,7 +137,13 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
                     mapping.getMap().remove(PROP_CONDITION);
                 }
                 
-                addMapping(internalId, mapping.getMap());
+                final AttributeTranscoder transcoder = buildAttributeTranscoder(mapping);
+                if (transcoder != null) {
+                    mapping.getMap().put(PROP_TRANSCODER, transcoder);
+                    addMapping(internalId, transcoder, mapping.getMap());
+                } else {
+                    log.warn("Unable to locate or build an AttributeTranscoder in rule for {}", internalId);
+                }
             }
         }
     }
@@ -195,40 +202,63 @@ public class AttributeTranscoderRegistryImpl extends AbstractServiceableComponen
     }
     
     /**
-     * Add a mapping between an {@link IdPAttribute} name and a set of transcoding rules.
+     * Get the appropriate {@link AttributeTranscoder} to use.
      * 
-     * <p>The rules MUST contain at least:</p>
-     * <ul>
-     *  <li>{@link #PROP_TRANSCODER} - an {@link AttributeTranscoder} instance supporting the type</li>
-     * </ul>
+     * @param rule transcoding rule
      * 
-     * @param id name of the {@link IdPAttribute} to map to/from
-     * @param ruleset transcoding rules
+     * @return a transcoder to install under the ruleset's {@link #PROP_TRANSCODER}
      */
-    private void addMapping(@Nonnull @NotEmpty final String id, @Nonnull final Map<String,Object> ruleset) {
-
-        Object transcoder = ruleset.get(PROP_TRANSCODER);
-        if (transcoder instanceof String) {
+    @Nullable private AttributeTranscoder buildAttributeTranscoder(@Nonnull final TranscodingRule rule) {
+        
+        AttributeTranscoder transcoder = rule.get(PROP_TRANSCODER, AttributeTranscoder.class);
+        if (transcoder != null) {
+            return transcoder;
+        }
+        
+        final String type = rule.get(PROP_TRANSCODER_CLASS, String.class);
+        if (type != null) {
             try {
-                transcoder = Class.forName((String) transcoder).getDeclaredConstructor().newInstance();
-                ((AttributeTranscoder) transcoder).initialize();
+                transcoder = (AttributeTranscoder) Class.forName(type).getDeclaredConstructor().newInstance();
+                transcoder.initialize();
+                return transcoder;
             } catch (final InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException
                     | ClassNotFoundException | ComponentInitializationException e) {
-                log.warn("Unable to create AttributeTranscoder of specified type {} in transcoding rule for {}",
-                        transcoder, id, e);
-                return;
+                log.warn("Unable to create AttributeTranscoder of specified type {}", type, e);
+                return null;
             }
-        } else if (!(transcoder instanceof AttributeTranscoder)) {
-            log.warn("Transcoding rule for {} missing {} property", id, PROP_TRANSCODER);
-            return;
+        }
+        
+        final String id = rule.get(PROP_TRANSCODER_BEAN, String.class);
+        if (id != null) {
+            try {
+                transcoder = getApplicationContext().getBean(id, AttributeTranscoder.class);
+                transcoder.initialize();
+                return transcoder;
+            } catch (final Exception e) {
+                log.warn("Unable to locate AttributeTranscoder bean named {}", id, e);
+                return null;
+            }
         }
 
-        final TranscodingRule copy = new TranscodingRule(ruleset);
-        copy.getMap().put(PROP_TRANSCODER, transcoder);
+        return null;
+    }
+    
+    /**
+     * Add a mapping between an {@link IdPAttribute} name and a set of transcoding rules.
+     * 
+     * @param id name of the {@link IdPAttribute} to map to/from
+     * @param transcoder the transcoder for this rule
+     * @param ruleset transcoding rules
+     */
+    private void addMapping(@Nonnull @NotEmpty final String id, @Nonnull final AttributeTranscoder transcoder,
+            @Nonnull final Map<String,Object> ruleset) {
 
-        final Class<?> type = ((AttributeTranscoder) transcoder).getEncodedType();
-        final String targetName = ((AttributeTranscoder) transcoder).getEncodedName(copy);
+        
+        final TranscodingRule copy = new TranscodingRule(ruleset);
+
+        final Class<?> type = transcoder.getEncodedType();
+        final String targetName = transcoder.getEncodedName(copy);
         if (targetName != null) {
             
             log.debug("Attribute mapping: {} <-> {} via {}", id, targetName, transcoder.getClass().getSimpleName());

@@ -71,10 +71,10 @@ public class AttributeRegistryServiceStrategy extends AbstractIdentifiableInitia
         final Collection<TranscodingRule> mappingBeans = appContext.getBeansOfType(TranscodingRule.class).values();
 
         final AttributeTranscoderRegistryImpl registry = new AttributeTranscoderRegistryImpl();
-        registry.setNamingRegistry(namingRegistryBean);
-        registry.setTranscoderRegistry(mappingBeans);
         registry.setId(getId());
         registry.setApplicationContext(appContext);
+        registry.setNamingRegistry(namingRegistryBean);
+        registry.setTranscoderRegistry(mappingBeans);
 
         try {
             registry.initialize();

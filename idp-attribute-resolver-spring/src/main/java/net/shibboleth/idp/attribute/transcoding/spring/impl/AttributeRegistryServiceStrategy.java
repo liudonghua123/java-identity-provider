@@ -17,6 +17,7 @@
 
 package net.shibboleth.idp.attribute.transcoding.spring.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
@@ -31,6 +32,7 @@ import org.springframework.context.ApplicationContext;
 import net.shibboleth.idp.attribute.transcoding.AttributeTranscoderRegistry;
 import net.shibboleth.idp.attribute.transcoding.TranscodingRule;
 import net.shibboleth.idp.attribute.transcoding.impl.AttributeTranscoderRegistryImpl;
+import net.shibboleth.idp.attribute.transcoding.impl.TranscodingRuleLoader;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.component.AbstractIdentifiableInitializableComponent;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
@@ -69,12 +71,22 @@ public class AttributeRegistryServiceStrategy extends AbstractIdentifiableInitia
         final Map<Class<?>,Function<?,String>> namingRegistryBean = appContext.getBean(namingRegistry, Map.class);
         
         final Collection<TranscodingRule> mappingBeans = appContext.getBeansOfType(TranscodingRule.class).values();
+        final Collection<TranscodingRuleLoader> loaderBeans =
+                appContext.getBeansOfType(TranscodingRuleLoader.class).values();
 
+        final Collection<TranscodingRule> holder = new ArrayList<>();
+        if (mappingBeans != null) {
+            holder.addAll(mappingBeans);
+        }
+        if (loaderBeans != null) {
+            loaderBeans.forEach(loader -> holder.addAll(loader.getRules()));
+        }
+        
         final AttributeTranscoderRegistryImpl registry = new AttributeTranscoderRegistryImpl();
         registry.setId(getId());
         registry.setApplicationContext(appContext);
         registry.setNamingRegistry(namingRegistryBean);
-        registry.setTranscoderRegistry(mappingBeans);
+        registry.setTranscoderRegistry(holder);
 
         try {
             registry.initialize();

@@ -41,5 +41,8 @@
     
     <bean id="shibboleth.TranscodingRule"
         class="net.shibboleth.idp.attribute.transcoding.TranscodingRule" abstract="true" />
+        
+    <bean id="shibboleth.TranscodingRuleLoader"
+        class="net.shibboleth.idp.attribute.transcoding.impl.TranscodingRuleLoader" abstract="true" />
     
 </beans>

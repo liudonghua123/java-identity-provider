@@ -108,6 +108,8 @@ public class TranscodingRule {
         final Object value = rule.get(key);
         if (type.isInstance(value)) {
             return (T) value;
+        } else if (type == Boolean.class && value instanceof String) {
+            return (T) Boolean.valueOf((String) value);
         } else {
             return null;
         }

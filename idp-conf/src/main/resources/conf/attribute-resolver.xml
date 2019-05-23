@@ -60,7 +60,6 @@
                ${uid}@example.org
           ]]>
         </Template>
-        <SourceAttribute>uid</SourceAttribute>
     </AttributeDefinition>
 
     <!--

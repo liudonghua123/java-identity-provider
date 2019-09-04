@@ -36,6 +36,7 @@ import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotLive;
 import net.shibboleth.utilities.java.support.annotation.constraint.Unmodifiable;
 import net.shibboleth.utilities.java.support.logic.Constraint;
+import net.shibboleth.utilities.java.support.logic.ConstraintViolationException;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.slf4j.Logger;
@@ -276,11 +277,16 @@ public abstract class AbstractProfileConfiguration implements ProfileConfigurati
      */
     @Nullable protected ProfileRequestContext getProfileRequestContext() {
         if (servletRequest != null) {
-            final Object object = servletRequest.getAttribute(ProfileRequestContext.BINDING_KEY);
-            if (object instanceof ProfileRequestContext) {
-                return (ProfileRequestContext) object;
+            try {
+                final Object object = servletRequest.getAttribute(ProfileRequestContext.BINDING_KEY);
+                if (object instanceof ProfileRequestContext) {
+                    return (ProfileRequestContext) object;
+                }
+                log.warn("ProfileConfiguration {}: No ProfileRequestContext in request", getId());
+            } catch (final ConstraintViolationException e) {
+                // This traps the condition on IdP startup before a servlet request exists.
+                // It's a workaround for IDP-1480 and is moot in V4 as this code is gone.
             }
-            log.warn("ProfileConfiguration {}: No ProfileRequestContext in request", getId());
         } else {
             log.warn("ProfileConfiguration {}: ServletRequest was null", getId());
         }

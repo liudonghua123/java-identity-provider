@@ -41,6 +41,9 @@
                 <ref bean="SAML2.Logout.MDDriven" />
                 <ref bean="SAML2.AttributeQuery.MDDriven" />
                 <ref bean="SAML2.ArtifactResolution.MDDriven" />
+                <ref bean="CAS.LoginConfiguration.MDDriven" />
+                <ref bean="CAS.ProxyConfiguration.MDDriven" />
+                <ref bean="CAS.ValidateConfiguration.MDDriven" />
             </list>
         </property>
     </bean>

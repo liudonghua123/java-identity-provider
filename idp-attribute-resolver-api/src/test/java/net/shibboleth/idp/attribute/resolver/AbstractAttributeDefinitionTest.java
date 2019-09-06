@@ -220,6 +220,14 @@ public class AbstractAttributeDefinitionTest {
         definition.initialize();
         definition = new MockAttributeDefinition("Name\rWith\tnonprinters", (IdPAttribute) null);
         definition.initialize();
+        definition = new MockAttributeDefinition("Namebad1\'", (IdPAttribute) null);
+        definition.initialize();
+        definition = new MockAttributeDefinition("Namebad2%", (IdPAttribute) null);
+        definition.initialize();
+        definition = new MockAttributeDefinition("Namebad3{", (IdPAttribute) null);
+        definition.initialize();
+        definition = new MockAttributeDefinition("Namebad4}", (IdPAttribute) null);
+        definition.initialize();
     }
     
     @Test public void initDestroyValidate() throws ComponentInitializationException {

@@ -30,6 +30,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import net.shibboleth.idp.attribute.AttributeEncoder;
 import net.shibboleth.idp.attribute.IdPAttribute;
 import net.shibboleth.idp.attribute.resolver.context.AttributeResolutionContext;
@@ -44,14 +51,6 @@ import net.shibboleth.utilities.java.support.component.ComponentSupport;
 import net.shibboleth.utilities.java.support.primitive.DeprecationSupport;
 import net.shibboleth.utilities.java.support.primitive.DeprecationSupport.ObjectType;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.PatternMatchUtils;
-
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 /** Base class for attribute definition resolver plugins. */
 @ThreadSafe
@@ -209,6 +208,18 @@ public abstract class AbstractAttributeDefinition extends AbstractResolverPlugin
         sourceAttributeID = StringSupport.trimOrNull(attributeId);
     }
 
+    /** Detect whether the attribute contains 'bad characters'.
+     * @return if the name is deprecated
+     */
+    private boolean hasDeprecatedId() {
+        @NotEmpty final String id = StringSupport.trimOrNull(getId());
+        return id == null ||
+                id.indexOf('\'') >= 0 ||
+                id.indexOf('%') >= 0 ||
+                id.indexOf('{') >= 0 ||
+                id.indexOf('}') >= 0;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void doInitialize() throws ComponentInitializationException {
@@ -236,6 +247,13 @@ public abstract class AbstractAttributeDefinition extends AbstractResolverPlugin
                     getLogPrefix(), 
                     null);
             
+        }
+        if (hasDeprecatedId()) {
+            DeprecationSupport.warnOnce(ObjectType.CONFIGURATION,
+                    "Use of IdP Attributes names with with special characters (\\'\\\"%{})", 
+                    getLogPrefix(), 
+                    null);
+            log.debug("{} - deprecated character in attribute name", getId());
         }
     }
 

@@ -27,7 +27,9 @@ import java.util.Map;
 import org.ldaptive.BindConnectionInitializer;
 import org.ldaptive.ConnectionConfig;
 import org.ldaptive.DefaultConnectionFactory;
+import org.ldaptive.DerefAliases;
 import org.ldaptive.SearchExecutor;
+import org.ldaptive.SearchScope;
 import org.ldaptive.pool.BlockingConnectionPool;
 import org.ldaptive.pool.IdlePruneStrategy;
 import org.ldaptive.pool.PoolConfig;
@@ -163,6 +165,8 @@ public class LDAPDataConnectorParserTest {
                         TestSources.SP_ENTITY_ID);
         final Map<String, IdPAttribute> attrs = dataConnector.resolve(context);
         Assert.assertNotNull(attrs);
+        Assert.assertEquals(2, attrs.size());
+        Assert.assertEquals(attrs.get("employeeNumber").getValues().get(0).getValue(), "C2J20hMNp7NlUwQ+");
         Assert.assertNotNull(attrs.get("entryDN"));
     }
 
@@ -193,8 +197,6 @@ public class LDAPDataConnectorParserTest {
         Assert.assertNotNull(dataConnector);
         doTest(dataConnector);
     }
-
-
 
     @Test public void v2MinimalConfig() throws Exception {
         final LDAPDataConnector dataConnector =
@@ -326,6 +328,74 @@ public class LDAPDataConnectorParserTest {
                         TestSources.SP_ENTITY_ID);
         final Map<String, IdPAttribute> attrs = dataConnector.resolve(context);
         Assert.assertNotNull(attrs);
+        Assert.assertNotNull(attrs.get("entryDN"));
+    }
+
+    @Test public void v2JndiConfig() throws Exception {
+        final LDAPDataConnector dataConnector =
+          getLdapDataConnector(new String[] {"net/shibboleth/idp/attribute/resolver/spring/dc/ldap/resolver/ldap-attribute-resolver-v2-jndi.xml"});
+        Assert.assertNotNull(dataConnector);
+        AssertJUnit.assertEquals(300000, dataConnector.getNoRetryDelay());
+        final DefaultConnectionFactory connFactory = (DefaultConnectionFactory) dataConnector.getConnectionFactory();
+        AssertJUnit.assertNotNull(connFactory);
+
+        final ConnectionConfig connConfig = connFactory.getConnectionConfig();
+        AssertJUnit.assertNotNull(connConfig);
+        AssertJUnit.assertEquals("ldap://localhost:10389", connConfig.getLdapUrl());
+        AssertJUnit.assertEquals(false, connConfig.getUseSSL());
+        AssertJUnit.assertEquals(true, connConfig.getUseStartTLS());
+        final BindConnectionInitializer connInitializer = (BindConnectionInitializer) connConfig.getConnectionInitializer();
+        AssertJUnit.assertEquals("cn=Directory Manager", connInitializer.getBindDn());
+        AssertJUnit.assertEquals("password", connInitializer.getBindCredential().getString());
+        AssertJUnit.assertEquals(2000, connConfig.getConnectTimeout());
+        AssertJUnit.assertEquals(4000, connConfig.getResponseTimeout());
+
+        final SslConfig sslConfig = connFactory.getConnectionConfig().getSslConfig();
+        AssertJUnit.assertNotNull(sslConfig);
+        final CredentialConfig credentialConfig = sslConfig.getCredentialConfig();
+        AssertJUnit.assertNotNull(credentialConfig);
+
+        final ProviderConfig providerConfig = connFactory.getProvider().getProviderConfig();
+        AssertJUnit.assertNotNull(providerConfig);
+        AssertJUnit.assertEquals("value1", providerConfig.getProperties().get("name1"));
+        AssertJUnit.assertEquals("finding", providerConfig.getProperties().get("java.naming.ldap.derefAliases"));
+        AssertJUnit.assertEquals("jpegPhoto employeeNumber", providerConfig.getProperties().get("java.naming.ldap.attributes.binary"));
+
+        final SearchExecutor searchExecutor = dataConnector.getSearchExecutor();
+        AssertJUnit.assertNotNull(searchExecutor);
+        AssertJUnit.assertEquals("ou=people,dc=shibboleth,dc=net", searchExecutor.getBaseDn());
+        AssertJUnit.assertNull(searchExecutor.getSearchFilter());
+        AssertJUnit.assertEquals(7000, searchExecutor.getTimeLimit());
+        AssertJUnit.assertEquals(SearchScope.SUBTREE, searchExecutor.getSearchScope());
+        AssertJUnit.assertEquals(DerefAliases.FINDING, searchExecutor.getDerefAliases());
+        AssertJUnit.assertArrayEquals(new String[] {"jpegPhoto", "employeeNumber"}, searchExecutor.getBinaryAttributes());
+
+        final ConnectionFactoryValidator validator = (ConnectionFactoryValidator) dataConnector.getValidator();
+        AssertJUnit.assertNotNull(validator);
+        AssertJUnit.assertTrue(validator.isThrowValidateError());
+        AssertJUnit.assertNotNull(validator.getConnectionFactory());
+
+        final ExecutableSearchBuilder searchBuilder = dataConnector.getExecutableSearchBuilder();
+        AssertJUnit.assertNotNull(searchBuilder);
+
+        final StringAttributeValueMappingStrategy mappingStrategy =(StringAttributeValueMappingStrategy) dataConnector.getMappingStrategy();
+        AssertJUnit.assertNotNull(mappingStrategy);
+        AssertJUnit.assertTrue(mappingStrategy.isNoResultAnError());
+        AssertJUnit.assertTrue(mappingStrategy.isMultipleResultsAnError());
+
+        AssertJUnit.assertNull(dataConnector.getResultsCache());
+
+        dataConnector.initialize();
+        final AttributeResolutionContext context =
+          TestSources.createResolutionContext(TestSources.PRINCIPAL_ID, TestSources.IDP_ENTITY_ID,
+            TestSources.SP_ENTITY_ID);
+        final Map<String, IdPAttribute> attrs = dataConnector.resolve(context);
+        Assert.assertNotNull(attrs);
+        Assert.assertEquals(5, attrs.size());
+        Assert.assertNotNull(attrs.get("cn"));
+        Assert.assertNotNull(attrs.get("sn"));
+        Assert.assertNotNull(attrs.get("jpegPhoto"));
+        Assert.assertEquals(attrs.get("employeeNumber").getValues().get(0).getValue(), "C2J20hMNp7NlUwQ+");
         Assert.assertNotNull(attrs.get("entryDN"));
     }
 

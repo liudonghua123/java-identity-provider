@@ -311,7 +311,9 @@ public class RequestContextBuilder {
         }
 
         if (httpRequest == null) {
-            httpRequest = new MockHttpServletRequest();
+            final MockHttpServletRequest hdr = new MockHttpServletRequest(servletContext);
+            hdr.addHeader("Accept-Language", Locale.ENGLISH.getLanguage());
+            httpRequest = hdr;
         }
 
         if (httpResponse == null) {

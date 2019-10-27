@@ -65,8 +65,8 @@ public class TestMetadataGenerator extends XMLObjectBaseTestCase {
             final EntityDescriptor entity = (EntityDescriptor) unmarshallElement(out.getAbsolutePath());
             
             final DateTime validUntil = entity.getValidUntil();
-            Assert.assertTrue(validUntil.isBefore(1000 + System.currentTimeMillis()));
-            Assert.assertTrue(validUntil.isAfter(System.currentTimeMillis()-1000));
+            Assert.assertTrue(validUntil.isBefore(10000 + System.currentTimeMillis()));
+            Assert.assertTrue(validUntil.isAfter(System.currentTimeMillis()-10000));
             
             
             final IDPSSODescriptor idpsso = entity.getIDPSSODescriptor(SAMLConstants.SAML20P_NS);

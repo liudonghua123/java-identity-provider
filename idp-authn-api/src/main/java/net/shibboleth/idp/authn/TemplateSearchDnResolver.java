@@ -20,18 +20,12 @@ package net.shibboleth.idp.authn;
 import java.util.Arrays;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.VelocityException;
-import org.ldaptive.Connection;
 import org.ldaptive.ConnectionFactory;
-import org.ldaptive.ConnectionFactoryManager;
-import org.ldaptive.LdapException;
 
 /**
  * {@link net.shibboleth.utilities.java.support.velocity.Template}-based search dn resolver.
  */
-public class TemplateSearchDnResolver extends AbstractTemplateSearchDnResolver implements ConnectionFactoryManager {
-
-    /** Connection factory. */
-    private ConnectionFactory factory;
+public class TemplateSearchDnResolver extends AbstractTemplateSearchDnResolver {
 
     /**
      * Creates a new template search DN resolver.
@@ -60,26 +54,12 @@ public class TemplateSearchDnResolver extends AbstractTemplateSearchDnResolver i
         setConnectionFactory(cf);
     }
 
-    @Override public ConnectionFactory getConnectionFactory() {
-        return factory;
-    }
-
-    @Override public void setConnectionFactory(final ConnectionFactory cf) {
-        factory = cf;
-    }
-
-    @Override protected Connection getConnection() throws LdapException {
-        final Connection conn = factory.getConnection();
-        conn.open();
-        return conn;
-    }
-
     @Override public String toString() {
         return String.format(
                 "[%s@%d::factory=%s, templateName=%s, baseDn=%s, userFilter=%s, userFilterParameters=%s, "
-                        + "allowMultipleDns=%s, subtreeSearch=%s, derefAliases=%s, followReferrals=%s]",
-                getClass().getName(), hashCode(), factory, getTemplate().getTemplateName(), getBaseDn(),
+                        + "allowMultipleDns=%s, subtreeSearch=%s, derefAliases=%s]",
+                getClass().getName(), hashCode(), getConnectionFactory(), getTemplate().getTemplateName(), getBaseDn(),
                 getUserFilter(), Arrays.toString(getUserFilterParameters()), getAllowMultipleDns(), getSubtreeSearch(),
-                getDerefAliases(), getFollowReferrals());
+                getDerefAliases());
     }
 }

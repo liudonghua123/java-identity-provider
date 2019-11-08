@@ -20,12 +20,10 @@ package net.shibboleth.idp.attribute.resolver.dc.ldap.impl;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.ldaptive.ConnectionFactory;
+import org.ldaptive.FilterTemplate;
 import org.ldaptive.LdapException;
-import org.ldaptive.Response;
-import org.ldaptive.SearchExecutor;
-import org.ldaptive.SearchFilter;
-import org.ldaptive.SearchResult;
+import org.ldaptive.SearchOperation;
+import org.ldaptive.SearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,34 +42,33 @@ public abstract class AbstractExecutableSearchFilterBuilder extends AbstractInit
     /**
      * Creates an executable search filter that performs a search with the search filter.
      * 
-     * @param searchFilter to execute a search with
+     * @param filterTemplate to execute a search with
      * @return executable search filter
      */
     // Checkstyle: AnonInnerLength OFF
-    protected ExecutableSearchFilter build(@Nonnull final SearchFilter searchFilter) {
+    protected ExecutableSearchFilter build(@Nonnull final FilterTemplate filterTemplate) {
         return new ExecutableSearchFilter() {
 
             /** {@inheritDoc} */
             @Nullable public String getResultCacheKey() {
-                return searchFilter.format();
+                return filterTemplate.format();
             }
 
             /** {@inheritDoc} */
-            @Nonnull public SearchResult execute(@Nonnull final SearchExecutor executor,
-                    @Nonnull final ConnectionFactory factory) throws LdapException {
-                final Response<SearchResult> response = executor.search(factory, searchFilter);
+            @Nonnull public SearchResponse execute(@Nonnull final SearchOperation operation) throws LdapException {
+                final SearchResponse response = operation.execute(filterTemplate);
                 log.trace("Search returned response {}", response);
-                return response.getResult();
+                return response;
             }
 
             /** {@inheritDoc} */
-            @Nonnull public SearchFilter getSearchFilter() {
-                return searchFilter;
+            @Nonnull public FilterTemplate getFilterTemplate() {
+                return filterTemplate;
             }
 
             /** {@inheritDoc} */
             public String toString() {
-                return searchFilter.toString();
+                return filterTemplate.toString();
             }
         };
     }

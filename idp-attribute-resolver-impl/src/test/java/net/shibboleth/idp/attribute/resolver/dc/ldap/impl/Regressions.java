@@ -25,7 +25,8 @@ import java.util.Map;
 
 import org.ldaptive.ConnectionFactory;
 import org.ldaptive.DefaultConnectionFactory;
-import org.ldaptive.SearchExecutor;
+import org.ldaptive.SearchOperation;
+import org.ldaptive.SearchRequest;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -104,10 +105,9 @@ public class Regressions {
         connector.setId(TEST_CONNECTOR_NAME);
         final ConnectionFactory connectionFactory = new DefaultConnectionFactory("ldap://localhost:10390");
         connector.setConnectionFactory(connectionFactory);
-        final SearchExecutor searchExecutor = new SearchExecutor();
-        searchExecutor.setBaseDn(TEST_BASE_DN);
-        searchExecutor.setReturnAttributes(TEST_RETURN_ATTRIBUTES);
-        connector.setSearchExecutor(searchExecutor);
+        final SearchOperation searchOperation = new SearchOperation();
+        searchOperation.setRequest(SearchRequest.builder().dn(TEST_BASE_DN).returnAttributes(TEST_RETURN_ATTRIBUTES).build());
+        connector.setSearchOperation(searchOperation);
         connector.setExecutableSearchBuilder(builder == null ? LDAPDataConnectorTest.newParameterizedExecutableSearchFilterBuilder(
                 "(uid={principalName})") : builder);
         connector.setValidator(LDAPDataConnectorTest.newConnectionFactoryValidator(connectionFactory));

@@ -36,7 +36,7 @@ import net.shibboleth.utilities.java.support.logic.Constraint;
 
 import org.ldaptive.LdapAttribute;
 import org.ldaptive.LdapEntry;
-import org.ldaptive.SearchResult;
+import org.ldaptive.SearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * A simple {@link SearchResultMappingStrategy} that iterates over all result entries and includes all attribute values
  * as strings.
  */
-public class StringAttributeValueMappingStrategy extends AbstractMappingStrategy<SearchResult>
+public class StringAttributeValueMappingStrategy extends AbstractMappingStrategy<SearchResponse>
         implements SearchResultMappingStrategy {
 
     /** Class logger. */
@@ -52,21 +52,26 @@ public class StringAttributeValueMappingStrategy extends AbstractMappingStrategy
 
  // Checkstyle: CyclomaticComplexity OFF
     /** {@inheritDoc} */
-    @Override @Nullable public Map<String,IdPAttribute> map(@Nonnull final SearchResult results)
+    @Override @Nullable public Map<String,IdPAttribute> map(@Nonnull final SearchResponse results)
             throws ResolutionException {
         Constraint.isNotNull(results, "Results can not be null");
 
-        if (results.size() == 0) {
+        if (!results.isSuccess()) {
+            // It's possible for the LDAP to return partial results and report either a size limit or
+            // time limit result code. Throw if we don't receive all results.
+            throw new ResolutionException("Search operation did not return success: " + results.getResultCode());
+        }
+        if (results.entrySize() == 0) {
             log.debug("Results did not contain any entries, nothing to map");
             if (isNoResultAnError()) {
                 throw new NoResultAnErrorResolutionException("No entries returned from search");
             }
             return null;
-        } else if (results.size() > 1 && isMultipleResultsAnError()) {
+        } else if (results.entrySize() > 1 && isMultipleResultsAnError()) {
             throw new MultipleResultAnErrorResolutionException("Multiple entries returned from search");
         }
 
-        final Map<String,IdPAttribute> attributes = new HashMap<>(results.size());
+        final Map<String,IdPAttribute> attributes = new HashMap<>(results.entrySize());
         
         final Map<String,String> aliases = getResultRenamingMap();
 

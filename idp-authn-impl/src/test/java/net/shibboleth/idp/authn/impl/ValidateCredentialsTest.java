@@ -38,7 +38,7 @@ import net.shibboleth.utilities.java.support.velocity.VelocityEngine;
 import org.ldaptive.DefaultConnectionFactory;
 import org.ldaptive.auth.AuthenticationResultCode;
 import org.ldaptive.auth.Authenticator;
-import org.ldaptive.auth.BindAuthenticationHandler;
+import org.ldaptive.auth.SimpleBindAuthenticationHandler;
 import org.ldaptive.jaas.LdapPrincipal;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -65,7 +65,7 @@ public class ValidateCredentialsTest extends BaseAuthenticationContextTest {
 
     private TemplateSearchDnResolver dnResolver;
 
-    private BindAuthenticationHandler authHandler;
+    private SimpleBindAuthenticationHandler authHandler;
 
     private Authenticator authenticator;
 
@@ -93,7 +93,7 @@ public class ValidateCredentialsTest extends BaseAuthenticationContextTest {
                 VelocityEngine.newVelocityEngine(), "(uid=$usernamePasswordContext.username)");
         dnResolver.setBaseDn("ou=people,dc=shibboleth,dc=net");
 
-        authHandler = new BindAuthenticationHandler(new DefaultConnectionFactory("ldap://localhost:10389"));
+        authHandler = new SimpleBindAuthenticationHandler(new DefaultConnectionFactory("ldap://localhost:10389"));
 
         authenticator = new Authenticator(dnResolver, authHandler);
     }

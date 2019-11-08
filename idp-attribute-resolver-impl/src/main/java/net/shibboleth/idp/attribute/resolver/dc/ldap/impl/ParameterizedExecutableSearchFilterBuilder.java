@@ -22,7 +22,7 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import org.ldaptive.SearchFilter;
+import org.ldaptive.FilterTemplate;
 
 import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.resolver.ResolutionException;
@@ -69,20 +69,20 @@ public class ParameterizedExecutableSearchFilterBuilder extends AbstractExecutab
     @Override public ExecutableSearchFilter build(@Nonnull final AttributeResolutionContext resolutionContext,
             @Nonnull final Map<String, List<IdPAttributeValue>> dependencyAttributes) throws ResolutionException {
         ComponentSupport.ifNotInitializedThrowUninitializedComponentException(this);
-        final SearchFilter sf = new SearchFilter(searchFilter);
-        sf.setParameter("principalName", resolutionContext.getPrincipal());
+        final FilterTemplate template = new FilterTemplate(searchFilter);
+        template.setParameter("principalName", resolutionContext.getPrincipal());
         if (dependencyAttributes != null && !dependencyAttributes.isEmpty()) {
             for (final Map.Entry<String, List<IdPAttributeValue>> entry : dependencyAttributes.entrySet()) {
                 int i = 0;
                 for (final IdPAttributeValue value : entry.getValue()) {
                     if (i == 0) {
-                        sf.setParameter(String.format("%s", entry.getKey(), i), value.getNativeValue());
+                        template.setParameter(String.format("%s", entry.getKey(), i), value.getNativeValue());
                     }
-                    sf.setParameter(String.format("%s[%s]", entry.getKey(), i++), value.getNativeValue());
+                    template.setParameter(String.format("%s[%s]", entry.getKey(), i++), value.getNativeValue());
                 }
             }
         }
-        return super.build(sf);
+        return super.build(template);
     }
     
 }

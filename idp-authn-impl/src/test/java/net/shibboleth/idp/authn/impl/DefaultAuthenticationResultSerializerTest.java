@@ -51,7 +51,6 @@ import net.shibboleth.utilities.java.support.security.impl.BasicKeystoreKeyStrat
 
 import org.ldaptive.LdapAttribute;
 import org.ldaptive.LdapEntry;
-import org.ldaptive.SortBehavior;
 import org.ldaptive.jaas.LdapPrincipal;
 import org.springframework.core.io.ClassPathResource;
 import org.testng.Assert;
@@ -208,16 +207,26 @@ public class DefaultAuthenticationResultSerializerTest {
         serializer.initialize();
         
         final AuthenticationResult result = createResult("test", new Subject());
-        final LdapEntry entry = new LdapEntry(SortBehavior.SORTED);
-        entry.setDn("uid=1234,ou=people,dc=shibboleth,dc=net");
-        final LdapAttribute givenName = new LdapAttribute(SortBehavior.SORTED);
-        givenName.setName("givenName");
-        givenName.addStringValue("Bob", "Robert");
-        entry.addAttribute(
-                new LdapAttribute("cn", "Bob Cobb"),
-                givenName,
-                new LdapAttribute("sn", "Cobb"),
-                new LdapAttribute("mail", "bob@shibboleth.net"));
+        final LdapEntry entry = LdapEntry.sort(LdapEntry.builder()
+            .dn("uid=1234,ou=people,dc=shibboleth,dc=net")
+            .attributes(
+                LdapAttribute.builder()
+                    .name("givenName")
+                    .values("Bob", "Robert")
+                    .build(),
+                LdapAttribute.builder()
+                    .name("cn")
+                    .values("Bob Cobb")
+                    .build(),
+                LdapAttribute.builder()
+                    .name("sn")
+                    .values("Cobb")
+                    .build(),
+                LdapAttribute.builder()
+                    .name("mail")
+                    .values("bob@shibboleth.net")
+                    .build())
+            .build());
         result.getSubject().getPrincipals().add(new LdapPrincipal("bob", entry));
 
         final String s = serializer.serialize(result);

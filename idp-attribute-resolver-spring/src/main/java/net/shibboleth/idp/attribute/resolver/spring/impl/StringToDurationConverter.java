@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
-package net.shibboleth.idp.attribute.resolver.dc.ldap.impl;
+package net.shibboleth.idp.attribute.resolver.spring.impl;
 
-import org.ldaptive.SearchResponse;
-
-import net.shibboleth.idp.attribute.resolver.dc.MappingStrategy;
+import java.time.Duration;
+import org.springframework.core.convert.converter.Converter;
 
 /**
- * Strategy for mapping from a {@link SearchResponse} to a collection of
- * {@link net.shibboleth.idp.attribute.IdPAttribute}s.
+ * Spring converter that produces a {@link java.time.Duration} from it's ISO time format.
  */
-public interface SearchResultMappingStrategy extends MappingStrategy<SearchResponse> {
+public class StringToDurationConverter implements Converter<String, Duration> {
+
+    @Override
+    public Duration convert(final String s)
+    {
+        return Duration.parse(s);
+    }
 }

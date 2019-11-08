@@ -33,7 +33,8 @@ import javax.annotation.Nonnull;
 
 import org.ldaptive.ConnectionFactory;
 import org.ldaptive.DefaultConnectionFactory;
-import org.ldaptive.SearchExecutor;
+import org.ldaptive.SearchOperation;
+import org.ldaptive.SearchRequest;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -115,10 +116,9 @@ public class LDAPDataConnectorTest {
         connector.setId(TEST_CONNECTOR_NAME);
         final ConnectionFactory connectionFactory = new DefaultConnectionFactory("ldap://localhost:10389");
         connector.setConnectionFactory(connectionFactory);
-        final SearchExecutor searchExecutor = new SearchExecutor();
-        searchExecutor.setBaseDn(TEST_BASE_DN);
-        searchExecutor.setReturnAttributes(TEST_RETURN_ATTRIBUTES);
-        connector.setSearchExecutor(searchExecutor);
+        final SearchOperation searchOperation = new SearchOperation();
+        searchOperation.setRequest(SearchRequest.builder().dn(TEST_BASE_DN).returnAttributes(TEST_RETURN_ATTRIBUTES).build());
+        connector.setSearchOperation(searchOperation);
         connector.setExecutableSearchBuilder(builder == null ? 
                                              newParameterizedExecutableSearchFilterBuilder("(uid={principalName})") : builder);
         connector.setValidator(newConnectionFactoryValidator(connectionFactory));
@@ -147,10 +147,9 @@ public class LDAPDataConnectorTest {
         }
         connector.setFailFastInitialize(true);
 
-        final SearchExecutor searchExecutor = new SearchExecutor();
-        searchExecutor.setBaseDn(TEST_BASE_DN);
-        searchExecutor.setReturnAttributes(TEST_RETURN_ATTRIBUTES);
-        connector.setSearchExecutor(searchExecutor);
+        final SearchOperation searchOperation = new SearchOperation();
+        searchOperation.setRequest(SearchRequest.builder().dn(TEST_BASE_DN).returnAttributes(TEST_RETURN_ATTRIBUTES).build());
+        connector.setSearchOperation(searchOperation);
         try {
             connector.initialize();
             fail("No filter builder");
@@ -189,7 +188,7 @@ public class LDAPDataConnectorTest {
             // OK
         }
         assertEquals(connector.getConnectionFactory(), connectionFactory);
-        assertEquals(connector.getSearchExecutor(), searchExecutor);
+        assertEquals(connector.getSearchOperation(), searchOperation);
         assertEquals(connector.getExecutableSearchBuilder(), requestBuilder);
         assertEquals(connector.getMappingStrategy(), mappingStrategy);
     }
@@ -200,7 +199,7 @@ public class LDAPDataConnectorTest {
 
         final ConnectionFactory connectionFactory = new DefaultConnectionFactory("ldap://localhost:55555");
         connector.setConnectionFactory(connectionFactory);
-        connector.setSearchExecutor(new SearchExecutor());
+        connector.setSearchOperation(new SearchOperation());
         connector.setExecutableSearchBuilder(newParameterizedExecutableSearchFilterBuilder("(uid={principalName})"));
         connector.setFailFastInitialize(true);
 
@@ -239,7 +238,7 @@ public class LDAPDataConnectorTest {
         attributeValues.add(new StringAttributeValue("student"));
         dependsAttributes.put("affiliation", attributeValues);
         final ExecutableSearchFilter filter = builder.build(context, dependsAttributes);
-        assertEquals(filter.getSearchFilter().format(), "(&(cn=PETER_THE_PRINCIPAL)(eduPersonAffiliation=student))");
+        assertEquals(filter.getFilterTemplate().format(), "(&(cn=PETER_THE_PRINCIPAL)(eduPersonAffiliation=student))");
         assertEquals(filter.getResultCacheKey(), "(&(cn=PETER_THE_PRINCIPAL)(eduPersonAffiliation=student))");
     }
 
@@ -258,11 +257,11 @@ public class LDAPDataConnectorTest {
         dependsAttributes.put("entitlement", attributeValues);
         final ExecutableSearchFilter filter = builder.build(context, dependsAttributes);
         assertEquals(
-                filter.getSearchFilter().format(),
-                "(&(cn=PETER_THE_PRINCIPAL)(eduPersonEntitlement=entitlement1)(eduPersonEntitlement=entitlement\\2a))");
+                filter.getFilterTemplate().format(),
+                "(&(cn=PETER_THE_PRINCIPAL)(eduPersonEntitlement=entitlement1)(eduPersonEntitlement=entitlement\\2A))");
         assertEquals(
                 filter.getResultCacheKey(),
-                "(&(cn=PETER_THE_PRINCIPAL)(eduPersonEntitlement=entitlement1)(eduPersonEntitlement=entitlement\\2a))");
+                "(&(cn=PETER_THE_PRINCIPAL)(eduPersonEntitlement=entitlement1)(eduPersonEntitlement=entitlement\\2A))");
     }
 
     @Test public void escape() throws ComponentInitializationException, ResolutionException {
@@ -273,8 +272,8 @@ public class LDAPDataConnectorTest {
                 TestSources.createResolutionContext("domain\\user*", TestSources.IDP_ENTITY_ID,
                         TestSources.SP_ENTITY_ID);
         final ExecutableSearchFilter filter = builder.build(context, null);
-        assertEquals(filter.getSearchFilter().format(), "(cn=domain\\5cuser\\2a)");
-        assertEquals(filter.getResultCacheKey(), "(cn=domain\\5cuser\\2a)");
+        assertEquals(filter.getFilterTemplate().format(), "(cn=domain\\5Cuser\\2A)");
+        assertEquals(filter.getResultCacheKey(), "(cn=domain\\5Cuser\\2A)");
     }
 
     @Test public void resolveTemplate() throws ComponentInitializationException, ResolutionException {
@@ -312,7 +311,7 @@ public class LDAPDataConnectorTest {
         attributeValues.add(new StringAttributeValue("student"));
         dependsAttributes.put("affiliation", attributeValues);
         final ExecutableSearchFilter filter = builder.build(context, dependsAttributes);
-        assertEquals(filter.getSearchFilter().format(), "(&(cn=PETER_THE_PRINCIPAL)(eduPersonAffiliation=student))");
+        assertEquals(filter.getFilterTemplate().format(), "(&(cn=PETER_THE_PRINCIPAL)(eduPersonAffiliation=student))");
         assertEquals(filter.getResultCacheKey(), "(&(cn=PETER_THE_PRINCIPAL)(eduPersonAffiliation=student))");
     }
 
@@ -332,11 +331,11 @@ public class LDAPDataConnectorTest {
         dependsAttributes.put("entitlement", attributeValues);
         final ExecutableSearchFilter filter = builder.build(context, dependsAttributes);
         assertEquals(
-                filter.getSearchFilter().format(),
-                "(&(cn=PETER_THE_PRINCIPAL)(eduPersonEntitlement=entitlement1)(eduPersonEntitlement=entitlement\\2a))");
+                filter.getFilterTemplate().format(),
+                "(&(cn=PETER_THE_PRINCIPAL)(eduPersonEntitlement=entitlement1)(eduPersonEntitlement=entitlement\\2A))");
         assertEquals(
                 filter.getResultCacheKey(),
-                "(&(cn=PETER_THE_PRINCIPAL)(eduPersonEntitlement=entitlement1)(eduPersonEntitlement=entitlement\\2a))");
+                "(&(cn=PETER_THE_PRINCIPAL)(eduPersonEntitlement=entitlement1)(eduPersonEntitlement=entitlement\\2A))");
     }
 
     @Test public void escapeTemplate() throws ComponentInitializationException, ResolutionException {
@@ -348,8 +347,8 @@ public class LDAPDataConnectorTest {
                 TestSources.createResolutionContext("domain\\user*", TestSources.IDP_ENTITY_ID,
                         TestSources.SP_ENTITY_ID);
         final ExecutableSearchFilter filter = builder.build(context, null);
-        assertEquals(filter.getSearchFilter().format(), "(cn=domain\\5cuser\\2a)");
-        assertEquals(filter.getResultCacheKey(), "(cn=domain\\5cuser\\2a)");
+        assertEquals(filter.getFilterTemplate().format(), "(cn=domain\\5Cuser\\2A)");
+        assertEquals(filter.getResultCacheKey(), "(cn=domain\\5Cuser\\2A)");
     }
 
     protected void resolve(final ExecutableSearchBuilder<ExecutableSearchFilter> builder) throws ComponentInitializationException,
@@ -363,21 +362,21 @@ public class LDAPDataConnectorTest {
         final Map<String, IdPAttribute> attrs = connector.resolve(context);
         assertNotNull(attrs);
         // check total attributes: uid, cn, sn, mail
-        assertEquals(attrs.size(), 4);
+        assertEquals(attrs.size(), 4, attrs + " should only contain 4 elements");
         // check uid
-        assertEquals(attrs.get("uid").getValues().size(), 1);
+        assertEquals(attrs.get("uid").getValues().size(), 1, attrs.get("uid") + " should only contain 1 element");
         assertEquals(new StringAttributeValue(TestSources.PRINCIPAL_ID), attrs.get("uid").getValues().iterator()
                 .next());
         // check cn
-        assertEquals(attrs.get("cn").getValues().size(), 3);
+        assertEquals(attrs.get("cn").getValues().size(), 3, attrs.get("cn") + " should only contain 3 elements");
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("Peter Principal")));
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("Peter J Principal")));
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("pete principal")));
         // check sn
-        assertEquals(attrs.get("sn").getValues().size(), 1);
+        assertEquals(attrs.get("sn").getValues().size(), 1, attrs.get("sn") + " should only contain 1 element");
         assertEquals(new StringAttributeValue("Principal"), attrs.get("sn").getValues().iterator().next());
         // check mail
-        assertEquals(attrs.get("mail").getValues().size(), 2);
+        assertEquals(attrs.get("mail").getValues().size(), 2, attrs.get("mail") + " should only contain 2 elements");
         assertTrue(attrs.get("mail").getValues().contains(new StringAttributeValue("peter.principal@shibboleth.net")));
         assertTrue(attrs.get("mail").getValues().contains(new StringAttributeValue("peterprincipal@shibboleth.net")));
     }
@@ -395,22 +394,22 @@ public class LDAPDataConnectorTest {
         // check total attributes: uid, cn, sn, mail
         assertEquals(attrs.size(), 4);
         // check uid
-        assertEquals(attrs.get("uid").getValues().size(), 3);
+        assertEquals(attrs.get("uid").getValues().size(), 3, attrs.get("uid") + " should only contain 3 elements");
         assertTrue(attrs.get("uid").getValues().contains(new StringAttributeValue(TestSources.PRINCIPAL_ID)));
         assertTrue(attrs.get("uid").getValues().contains(new StringAttributeValue("PAUL_THE_PRINCIPAL")));
         assertTrue(attrs.get("uid").getValues().contains(new StringAttributeValue("PHILIP_THE_PRINCIPAL")));
         // check cn
-        assertEquals(attrs.get("cn").getValues().size(), 5);
+        assertEquals(attrs.get("cn").getValues().size(), 5, attrs.get("cn") + " should only contain 5 elements");
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("Peter Principal")));
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("Peter J Principal")));
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("pete principal")));
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("Paul Principal")));
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("Philip Principal")));
         // check sn
-        assertEquals(attrs.get("sn").getValues().size(), 3);
+        assertEquals(attrs.get("sn").getValues().size(), 3, attrs.get("sn") + " should only contain 3 elements");
         assertTrue(attrs.get("sn").getValues().contains(new StringAttributeValue("Principal")));
         // check mail
-        assertEquals(attrs.get("mail").getValues().size(), 8);
+        assertEquals(attrs.get("mail").getValues().size(), 8, attrs.get("mail") + " should only contain 8 elements");
         assertTrue(attrs.get("mail").getValues().contains(new StringAttributeValue("peter.principal@shibboleth.net")));
         assertTrue(attrs.get("mail").getValues().contains(new StringAttributeValue("peterprincipal@shibboleth.net")));
         assertTrue(attrs.get("mail").getValues().contains(new StringAttributeValue("paul.principal@shibboleth.net")));
@@ -535,19 +534,19 @@ public class LDAPDataConnectorTest {
         final Map<String, IdPAttribute> attrs = connector.resolve(context);
         assertNotNull(attrs);
         // check total attributes: uid, cn, sn, mail
-        assertEquals(attrs.size(), 4);
+        assertEquals(attrs.size(), 4, attrs + " should only contain 4 elements");
         // check uid
         assertEquals(attrs.get("uid").getValues().size(), 1);
         assertEquals(attrs.get("uid").getValues().iterator().next(), new StringAttributeValue(
                 "PHILIP_THE_PRINCIPAL"));
         // check cn
-        assertEquals(attrs.get("cn").getValues().size(), 1);
+        assertEquals(attrs.get("cn").getValues().size(), 1, attrs.get("cn") + " should only contain 1 element");
         assertTrue(attrs.get("cn").getValues().contains(new StringAttributeValue("Philip Principal")));
         // check sn
-        assertEquals(attrs.get("sn").getValues().size(), 1);
+        assertEquals(attrs.get("sn").getValues().size(), 1, attrs.get("sn") + " should only contain 1 element");
         assertEquals(attrs.get("sn").getValues().iterator().next(), new StringAttributeValue("Principal"));
         // check mail
-        assertEquals(attrs.get("mail").getValues().size(), 4);
+        assertEquals(attrs.get("mail").getValues().size(), 4, attrs.get("mail") + " should only contain 4 elements");
         assertTrue(attrs.get("mail").getValues().contains(new EmptyAttributeValue(EmptyType.ZERO_LENGTH_VALUE)));
         assertTrue(attrs.get("mail").getValues().contains(new StringAttributeValue("\"\"")));
         assertTrue(attrs.get("mail").getValues().contains(new StringAttributeValue("  ")));
